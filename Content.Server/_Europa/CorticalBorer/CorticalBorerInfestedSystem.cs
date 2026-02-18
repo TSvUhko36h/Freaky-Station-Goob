@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System.Diagnostics.CodeAnalysis;
 using Content.Shared._Orion.CorticalBorer.Components;
 using Content.Shared.Body.Part;
 using Content.Shared.Examine;
@@ -29,6 +30,7 @@ public sealed class CorticalBorerInfestedSystem : EntitySystem
         SubscribeLocalEvent<CorticalBorerInfestedComponent, BodyPartRemovedEvent>(OnBodyPartRemoved);
         SubscribeLocalEvent<CorticalBorerInfestedComponent, MobStateChangedEvent>(OnStateChange);
         SubscribeLocalEvent<CorticalBorerInfestedComponent, MindRemovedMessage>(OnMindRemoved);
+        SubscribeLocalEvent<CorticalBorerInfestedComponent, EntityTerminatingEvent>(OnHostTerminating);
     }
 
     private void OnInit(Entity<CorticalBorerInfestedComponent> infested, ref MapInitEvent args)
@@ -42,7 +44,7 @@ public sealed class CorticalBorerInfestedSystem : EntitySystem
         if (!args.IsInDetailsRange)
             return;
 
-        if (!infected.Comp.Borer.Comp.ControlingHost)
+        if (!TryGetBorer(infected, out var borerComp) || !borerComp.ControllingHost)
             return;
 
         args.PushMarkup(Loc.GetString("cortical-borer-infested-examine"));
@@ -56,7 +58,16 @@ public sealed class CorticalBorerInfestedSystem : EntitySystem
             args.PushMarkup(Loc.GetString("infested-control-examined", ("timeremaining", timeRemaining)));
         }
 
-        args.PushMarkup(Loc.GetString("cortical-borer-self-examine", ("chempoints", infected.Comp.Borer.Comp.ChemicalPoints)));
+        args.PushMarkup(Loc.GetString("cortical-borer-self-examine", ("chempoints", borerComp.ChemicalPoints)));
+    }
+
+    private void EndControlAndEject(Entity<CorticalBorerInfestedComponent> infected)
+    {
+        if (!TryGetBorer(infected, out var _))
+            return;
+
+        _borer.EndControl(infected);
+        _borer.TryEjectBorer(infected.Comp.Borer);
     }
 
     private void OnStateChange(Entity<CorticalBorerInfestedComponent> infected, ref MobStateChangedEvent args)
@@ -64,26 +75,42 @@ public sealed class CorticalBorerInfestedSystem : EntitySystem
         if (args.NewMobState != MobState.Dead)
             return;
 
-        if(infected.Comp.Borer.Comp.ControlingHost)
+        if (TryGetBorer(infected, out var borerComp) && borerComp.ControllingHost)
             _borer.EndControl(infected);
     }
 
     private void OnBodyPartRemoved(Entity<CorticalBorerInfestedComponent> infected, ref BodyPartRemovedEvent args)
     {
-        if (TryComp<BodyPartComponent>(args.Part, out var part) &&
-            part.PartType == BodyPartType.Head)
-        {
-            _borer.EndControl(infected);
-            _borer.TryEjectBorer(infected.Comp.Borer);
-        }
+        if (!TryComp<BodyPartComponent>(args.Part, out var part) ||
+            part.PartType != BodyPartType.Head)
+            return;
+
+        EndControlAndEject(infected);
     }
 
     private void OnMindRemoved(Entity<CorticalBorerInfestedComponent> infected, ref MindRemovedMessage args)
     {
-        if (infected.Comp.Borer.Comp.ControlingHost)
-        {
-            _borer.EndControl(infected);
-            _borer.TryEjectBorer(infected.Comp.Borer);
-        }
+        if (!TryGetBorer(infected, out var borerComp) || !borerComp.ControllingHost)
+            return;
+
+        EndControlAndEject(infected);
+    }
+
+    private void OnHostTerminating(Entity<CorticalBorerInfestedComponent> infected, ref EntityTerminatingEvent args)
+    {
+        if (TerminatingOrDeleted(infected.Comp.Borer))
+            return;
+
+        _borer.HandleHostTerminating(infected);
+    }
+
+    private bool TryGetBorer(Entity<CorticalBorerInfestedComponent> infected, [NotNullWhen(true)] out CorticalBorerComponent? borerComp)
+    {
+        borerComp = null;
+
+        if (TerminatingOrDeleted(infected.Comp.Borer))
+            return false;
+
+        return TryComp(infected.Comp.Borer, out borerComp);
     }
 }
