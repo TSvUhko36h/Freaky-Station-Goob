@@ -194,7 +194,6 @@ public sealed partial class BotanySystem : EntitySystem
             totalYield = Math.Max(1, totalYield);
         }
     */
-        var totalYield = CalculateTotalYield(proto.Yield, yieldMod);
     // CorvaxGoob-Plant-Analyzer-End
         var products = new List<EntityUid>();
 
