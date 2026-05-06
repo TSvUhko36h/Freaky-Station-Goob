@@ -1,17 +1,34 @@
 {
   "version": 1,
   "license": "CC-BY-SA-3.0",
-  "copyright": "fills by RedTerror",
+  "copyright": "Taken from TG Station | Edited by PuroSlavKing (Github) | Brown sprited by PuroSlavKing (Github)",
   "size": {
     "x": 32,
     "y": 32
   },
   "states": [
     {
-      "name": "pureshka"
+        "name": "pureshka"
     },
     {
-      "name": "salt"
+        "name": "salt"
+    },
+    {
+        "name": "sword"
+    },
+    {
+        "name": "bitrun-avatar",
+        "delays": [
+            [
+                0.1,
+                0.1,
+                0.1,
+                0.1
+            ]
+        ]
+    },
+    {
+        "name": "bitrunner"
     }
   ]
 }
