@@ -284,6 +284,7 @@ public sealed partial class SlimeLatchSystem : EntitySystem
             ClearLatchAttempt(ent);
             RemCompDeferred<BeingLatchedComponent>(target);
             return;
+        }
 
         ClearLatchAttempt(ent);
         Latch(ent, target);
