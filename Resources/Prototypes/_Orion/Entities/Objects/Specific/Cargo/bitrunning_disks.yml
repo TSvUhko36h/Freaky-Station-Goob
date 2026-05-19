@@ -35,7 +35,6 @@
       bitrunning-disk-option-pizza-box: FoodBoxPizza
       bitrunning-disk-option-medical-beam-gun: MedicalBeamGun
       bitrunning-disk-option-c4: C4
-      bitrunning-disk-option-boombox: HandledBoomBox
 
 - type: entity
   parent: BaseBitrunningDisk
@@ -61,7 +60,6 @@
     options:
       bitrunning-disk-option-advanced-laser-gun: WeaponAdvancedLaser
       bitrunning-disk-option-double-energy-sword: EnergySwordDouble
-      bitrunning-disk-option-energy-scythe: PlasmaScythe
       bitrunning-disk-option-syndicate-mini-bomb: SyndieMiniBomb
 
 - type: entity

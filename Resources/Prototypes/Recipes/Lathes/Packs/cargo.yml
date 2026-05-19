@@ -38,9 +38,6 @@
   - CargoTelepadMachineCircuitboard
   #- ShuttleGunKineticCircuitboard - Goobstation - Moved to MiningBoards
   # Orion-Start
-  - CargoRequestComputerCircuitboard
-  - CargoBountyComputerCircuitboard
-  - MaterialSiloMachineCircuitboard
   - QuantumConsoleCircuitboard
   - QuantumServerMachineCircuitboard
   - NetpodMachineCircuitboard
