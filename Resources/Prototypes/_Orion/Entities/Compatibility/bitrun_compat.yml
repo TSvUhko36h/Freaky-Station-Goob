@@ -36,5 +36,9 @@
   id: WeaponEarthGovLaserSniper
 
 - type: entity
+  parent: WeaponLaserCarbine
+  id: WeaponEarthGovLaserRifle
+
+- type: entity
   parent: StatueVenusRed
   id: StatueBustDecoration
