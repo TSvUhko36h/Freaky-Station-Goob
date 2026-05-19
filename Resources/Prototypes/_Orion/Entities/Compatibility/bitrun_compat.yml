@@ -42,3 +42,19 @@
 - type: entity
   parent: StatueVenusRed
   id: StatueBustDecoration
+
+- type: entity
+  parent: ClothingOuterCoatCaptain
+  id: ClothingOuterCoatCaptainWhite
+
+- type: entity
+  parent: Bed
+  id: DoubleBed
+
+- type: entity
+  parent: BedsheetClown
+  id: DoubleBedsheetClown
+
+- type: entity
+  parent: SuitStorageEVA
+  id: SuitStorageExplorerSuit
