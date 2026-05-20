@@ -652,6 +652,7 @@
   name: skeleton bartender
   components:
   - type: Sprite
+    sprite: Markers/jobs.rsi
     layers:
       - state: green
       - sprite: Mobs/Species/Skeleton/parts.rsi
