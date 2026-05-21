@@ -36,6 +36,9 @@ antag-store-status-unavailable = This role is temporarily unavailable.
 antag-store-status-min-players = There are not enough players online for this role.
 antag-store-status-round-only = This role can only be purchased while a round is in progress.
 antag-store-status-lobby-only = This role can only be queued from the preround lobby.
+antag-store-status-last-round-purchased = Already purchased last round
+antag-store-status-job-blocked = Job not allowed
+antag-store-status-species-blocked = Species not allowed
 antag-store-unavailable-yao = This role still needs its real prototype ID in the fork.
 
 antag-store-role-thief-name = Thief

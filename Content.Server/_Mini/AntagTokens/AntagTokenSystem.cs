@@ -16,6 +16,7 @@ using Content.Server.GameTicking;
 using Content.Server.GameTicking.Events;
 using Content.Server.Mind;
 using Content.Server.Popups;
+using Content.Server.Preferences.Managers;
 using Content.Server.Roles;
 using Content.Server.Roles.Jobs;
 using Content.Shared._Mini.AntagTokens;
@@ -29,6 +30,9 @@ using Robust.Shared.Network;
 using Robust.Shared.Player;
 using Robust.Shared.Timing;
 using Content.Shared.Chat;
+using Content.Shared.Humanoid;
+using Content.Shared.Humanoid.Prototypes;
+using Content.Shared.Preferences;
 using Content.Server.Chat.Systems;
 using Content.Server.Ghost.Roles;
 using Content.Server.Ghost.Roles;
@@ -61,6 +65,7 @@ public sealed class AntagTokenSystem : EntitySystem
     [Dependency] private readonly IPrototypeManager _prototype = default!;
     [Dependency] private readonly TransformSystem _transform = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private readonly IServerPreferencesManager _preferences = default!;
 
     private readonly Dictionary<NetUserId, PlayerTokenState> _states = new();
     private readonly Dictionary<NetUserId, int?> _sponsorLevelOverrides = new();
@@ -68,6 +73,8 @@ public sealed class AntagTokenSystem : EntitySystem
     private readonly HashSet<NetUserId> _roundGrantedLobbyAntag = new();
     private readonly HashSet<NetUserId> _roundGrantedGhostRule = new();
     private readonly HashSet<string> _globallyClaimedGhostRoles = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _currentRoundPurchasedRoles = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _lastRoundPurchasedRoles = new(StringComparer.Ordinal);
     private float _databaseSyncAccumulator;
     private float _lobbyDepositCapacityEnforceAccumulator;
     private bool _databaseSyncPassRunning;
@@ -83,6 +90,10 @@ public sealed class AntagTokenSystem : EntitySystem
         "Greenshift",
         "SecretGreenshift",
         "TheGhost",
+        "Nukeops",
+        "NukeTraitor",
+        "NukeLing",
+        "Honkops",
     };
 
     private static int EncodeUtcDayNumber(DateTime utc)
@@ -399,6 +410,12 @@ public sealed class AntagTokenSystem : EntitySystem
         if (!TryGetRoleAvailability(role, session.UserId, holdsThisCap, out var statusLocKey, in cache))
         {
             error = statusLocKey == null ? Loc.GetString("antag-tokens-error-role-unavailable-generic") : Loc.GetString(statusLocKey);
+            return false;
+        }
+
+        if (IsRoleBlockedBySpecies(session, role))
+        {
+            error = Loc.GetString("antag-store-status-species-blocked");
             return false;
         }
 
@@ -903,6 +920,10 @@ public sealed class AntagTokenSystem : EntitySystem
     {
         _ghostMinimumTimeRandomBonusByRole.Clear();
         _globallyClaimedGhostRoles.Clear();
+        _lastRoundPurchasedRoles.Clear();
+        foreach (var roleId in _currentRoundPurchasedRoles)
+            _lastRoundPurchasedRoles.Add(roleId);
+        _currentRoundPurchasedRoles.Clear();
 
         var grantedGhost = new HashSet<NetUserId>(_roundGrantedGhostRule);
         _roundGrantedLobbyAntag.Clear();
@@ -961,7 +982,7 @@ public sealed class AntagTokenSystem : EntitySystem
                 continue;
             }
 
-            if (IsReservedRoleBlockedByCurrentJob(session))
+            if (IsReservedRoleBlockedByCurrentJob(session, role))
             {
                 ShowPopup(session, Loc.GetString("antag-tokens-popup-job-blocks-queued"));
                 SendState(session.UserId);
@@ -981,7 +1002,7 @@ public sealed class AntagTokenSystem : EntitySystem
             state.PendingDepositQueuedAtUtc = null;
             state.PendingDepositUsedRoleCredit = false;
             state.PendingDepositUsedDonorDailyFree = false;
-            MarkLobbyTokenAntagGranted(session.UserId);
+            MarkLobbyTokenAntagGranted(session.UserId, role.Id);
             PersistState(session.UserId, state);
             SendState(session.UserId);
             ShowPopup(session, Loc.GetString("antag-tokens-popup-role-assigned", ("role", Loc.GetString(role.NameLocKey))));
@@ -1131,14 +1152,16 @@ public sealed class AntagTokenSystem : EntitySystem
         return StillOccupiesGhostRuleGrant(userId);
     }
 
-    private void MarkLobbyTokenAntagGranted(NetUserId userId)
+    private void MarkLobbyTokenAntagGranted(NetUserId userId, string roleId)
     {
         _roundGrantedLobbyAntag.Add(userId);
+        _currentRoundPurchasedRoles.Add(roleId);
     }
 
-    private void MarkGhostRuleTokenGranted(NetUserId userId)
+    private void MarkGhostRuleTokenGranted(NetUserId userId, string roleId)
     {
         _roundGrantedGhostRule.Add(userId);
+        _currentRoundPurchasedRoles.Add(roleId);
         if (_states.TryGetValue(userId, out var state))
             state.GhostAntagConsumedMark = true;
     }
@@ -1275,7 +1298,7 @@ public sealed class AntagTokenSystem : EntitySystem
         return false;
     }
 
-    private bool IsReservedRoleBlockedByCurrentJob(ICommonSession session)
+    private bool IsReservedRoleBlockedByCurrentJob(ICommonSession session, AntagRoleDefinition role)
     {
         if (!_mind.TryGetMind(session, out var mindId, out _) ||
             !_jobs.MindTryGetJobId(mindId, out var jobId) ||
@@ -1284,10 +1307,39 @@ public sealed class AntagTokenSystem : EntitySystem
             return false;
         }
 
+        if (role.JobBlacklist is { Count: > 0 } && role.JobBlacklist.Contains(jobId.Value))
+            return true;
+
         if (!_jobs.TryGetAllDepartments(jobId.Value, out var departments))
             return false;
 
         return departments.Any(d => d.ID is "Command" or "Security" or "Silicon" or "Typan" or "Typan2");
+    }
+
+    private bool IsRoleBlockedBySpecies(ICommonSession session, AntagRoleDefinition role)
+    {
+        if (role.SpeciesBlacklist is not { Count: > 0 })
+            return false;
+
+        var species = TryGetSessionSpecies(session);
+        return species != null && role.SpeciesBlacklist.Contains(species.Value);
+    }
+
+    private ProtoId<SpeciesPrototype>? TryGetSessionSpecies(ICommonSession session)
+    {
+        if (session.AttachedEntity is { Valid: true } attached &&
+            TryComp<HumanoidAppearanceComponent>(attached, out var humanoid))
+        {
+            return humanoid.Species;
+        }
+
+        if (_preferences.TryGetCachedPreferences(session.UserId, out var prefs) &&
+            prefs.SelectedCharacter is HumanoidCharacterProfile profile)
+        {
+            return profile.Species;
+        }
+
+        return null;
     }
 
     private bool TryGetRoleAvailability(AntagRoleDefinition role, NetUserId userId, bool purchased, out string? statusLocKey)
@@ -1375,6 +1427,30 @@ public sealed class AntagTokenSystem : EntitySystem
         {
             statusLocKey = "antag-store-status-ghost-taken-by-other";
             return false;
+        }
+
+        if (!purchased &&
+            !AntagTokenCatalog.IsExemptFromLastRoundPurchaseRepeat(role.Id, role.Mode) &&
+            _lastRoundPurchasedRoles.Contains(role.Id))
+        {
+            statusLocKey = "antag-store-status-last-round-purchased";
+            return false;
+        }
+
+        if (!purchased &&
+            _playerManager.TryGetSessionById(userId, out var session))
+        {
+            if (IsRoleBlockedBySpecies(session, role))
+            {
+                statusLocKey = "antag-store-status-species-blocked";
+                return false;
+            }
+
+            if (IsReservedRoleBlockedByCurrentJob(session, role))
+            {
+                statusLocKey = "antag-store-status-job-blocked";
+                return false;
+            }
         }
 
         return true;
@@ -1683,8 +1759,9 @@ public sealed class AntagTokenSystem : EntitySystem
             return false;
 
         // Recovery path for missed TakeGhostRoleEvent: consume pending if the player already controls the target role entity.
+        var grantedRoleId = pendingRole.Id;
         ClearPendingGhostAuto(state);
-        MarkGhostRuleTokenGranted(userId);
+        MarkGhostRuleTokenGranted(userId, grantedRoleId);
         return true;
     }
 
@@ -1964,8 +2041,9 @@ private void NormalizeMonthlyState(PlayerTokenState state, DateTime nowUtc, NetU
         if (!IsGhostAutoJoinPrototypeMatch(MetaData(uid).EntityPrototype?.ID, listing.GhostAutoJoinEntityProto))
             return;
 
+        var grantedRoleId = listing.Id;
         ClearPendingGhostAuto(state);
-        MarkGhostRuleTokenGranted(session.UserId);
+        MarkGhostRuleTokenGranted(session.UserId, grantedRoleId);
         PersistState(session.UserId, state);
         SendState(session.UserId);
     }
@@ -2046,8 +2124,9 @@ private void NormalizeMonthlyState(PlayerTokenState state, DateTime nowUtc, NetU
 
         if (_ghostRoles.Takeover(session, ghostRole.Identifier))
         {
+            var grantedRoleId = state.PendingGhostAutoRoleId!;
             ClearPendingGhostAuto(state);
-            MarkGhostRuleTokenGranted(session.UserId);
+            MarkGhostRuleTokenGranted(session.UserId, grantedRoleId);
             PersistState(session.UserId, state);
             SendState(session.UserId);
             Logger.InfoS("AntagTokens", $"Ghost auto-join instant takeover ok: user={session.Name}");

@@ -2,6 +2,8 @@
 // Мини-станция/Freaky-station, Licensed under custom terms with restrictions on public hosting and commercial use, full text: https://raw.githubusercontent.com/ministation/mini-station-goob/master/LICENSE.TXT
 
 using System.Collections.Generic;
+using Content.Shared.Humanoid.Prototypes;
+using Content.Shared.Roles;
 using Robust.Shared.Prototypes;
 
 namespace Content.Shared._Mini.AntagTokens;
@@ -60,6 +62,12 @@ public sealed partial class AntagTokenListingEntry
     [DataField]
     public int? FreeMinimumSponsorLevel;
 
+    [DataField]
+    public List<ProtoId<JobPrototype>>? JobBlacklist;
+
+    [DataField]
+    public List<ProtoId<SpeciesPrototype>>? SpeciesBlacklist;
+
     public AntagRoleDefinition ToDefinition()
     {
         return new AntagRoleDefinition(
@@ -79,7 +87,9 @@ public sealed partial class AntagTokenListingEntry
             UnavailableReasonLocKey,
             GhostRulesLocKey,
             GhostAutoJoinEntityProto,
-            FreeMinimumSponsorLevel ?? -1);
+            FreeMinimumSponsorLevel ?? -1,
+            JobBlacklist,
+            SpeciesBlacklist);
     }
 }
 

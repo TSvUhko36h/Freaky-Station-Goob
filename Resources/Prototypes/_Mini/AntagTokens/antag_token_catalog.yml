@@ -102,6 +102,7 @@
       tagLocKey: antag-token-window-tag-queue
       requiresPreRoundLobby: true
       freeMinimumSponsorLevel: 3
+      jobBlacklist: [Chaplain]
 
     - id: rat_king
       nameLocKey: antag-store-role-rat-king-name
@@ -201,6 +202,7 @@
       minimumPlayers: 20
       requiresPreRoundLobby: true
       freeMinimumSponsorLevel: 3
+      jobBlacklist: [Chaplain]
 
     - id: slasher
       nameLocKey: antag-store-role-slasher-name
@@ -259,6 +261,7 @@
       minimumPlayers: 20
       requiresPreRoundLobby: true
       freeMinimumSponsorLevel: 4
+      jobBlacklist: [Chaplain]
 
     - id: shadowling
       nameLocKey: antag-store-role-shadowling-name
@@ -313,6 +316,7 @@
       minimumPlayers: 25
       requiresPreRoundLobby: true
       freeMinimumSponsorLevel: 5
+      speciesBlacklist: [IPC]
 
     - id: wraith
       nameLocKey: antag-store-role-wraith-name
