@@ -76,6 +76,11 @@
   - type: Aggressive
     autoAddOnDamage: false
     forgiveRange: 40.0
+  - type: Anger
+    totalHp: 2500
+  - type: AngerPlayerScaling
+    angerScale: 1.1
+    hpScale: 1.2
   - type: CombatPower
     factor: 25
   - type: Bubblegum
