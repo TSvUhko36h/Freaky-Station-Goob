@@ -1,0 +1,6 @@
+- type: entity
+  parent: LavalandBossBubblegum
+  id: LavalandBossBubblegumBitrunning
+  suffix: Bitrunning
+  components:
+  - type: BitrunningDomainEnemyObjective

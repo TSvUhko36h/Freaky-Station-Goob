@@ -1,0 +1,87 @@
+# --- --- ---
+#  МИРНЫЙ
+# --- --- ---
+
+# Пример
+# - type: bitrunningVirtualDomain
+#   id: BeachBar
+#   name: bitrunning-domain-beach-bar-name
+#   description: bitrunning-domain-beach-bar-desc
+#   difficulty: Peaceful
+#   serverRewardPoints: 1
+#   bitrunningRewardPoints: 30
+#   completionLoot:
+#     BeachBall: 1
+#   mapPath: /Maps/_Orion/Bitrun/beach-bar.yml
+#   objectiveType: OverhydrateStomach
+
+# --- --- ---
+#    ЛЕГКИЙ
+# --- --- ---
+
+# Пример
+# - type: bitrunningVirtualDomain
+#   id: MetaCentral
+#   name: bitrunning-domain-meta-central-name
+#   description: bitrunning-domain-meta-central-desc
+#   difficulty: Easy
+#   cost: 1
+#   serverRewardPoints: 3
+#   bitrunningRewardPoints: 150
+#   forcedLoadout: BitrunnerAvatarSecurityOfficerMODGear
+#   isModular: true
+#   mapPath: /Maps/_Orion/Bitrun/meta-central.yml
+#   objectiveTypePool:
+#   - DeliveryCacheCrate
+#   - EliminateEnemies
+#   objectiveTargetByType:
+#     DeliveryCacheCrate: 1
+#     EliminateEnemies: 0
+
+# --- --- ---
+#   СРЕДНИЙ
+# --- --- ---
+
+# Пример
+# - type: bitrunningVirtualDomain
+#   id: CorsairCove
+#   name: bitrunning-domain-corsair-cove-name
+#   description: bitrunning-domain-corsair-cove-desc
+#   difficulty: Medium
+#   cost: 2
+#   serverRewardPoints: 4
+#   bitrunningRewardPoints: 220
+#   completionLoot:
+#     IngotGold1: 1
+#   mapPath: /Maps/_Orion/Bitrun/corsair-cove.yml
+#   objectiveTypePool:
+#   - DeliveryCacheCrate
+#   - EliminateEnemies
+#   objectiveTargetByType:
+#     DeliveryCacheCrate: 1
+#     EliminateEnemies: 0
+
+# --- --- ---
+#    ТРУДНЫЙ
+# --- --- ---
+
+- type: bitrunningVirtualDomain
+  id: BubblegumArena
+  name: bitrunning-domain-bubblegum-arena-name
+  description: bitrunning-domain-bubblegum-arena-desc
+  difficulty: Hard
+  cost: 3
+  serverRewardPoints: 6
+  bitrunningRewardPoints: 600
+  forcedLoadout: BitrunnerAvatarShaftMinerExplorerGear
+  completionLoot:
+    MaterialDiamond1: 5
+    MaterialBSCrystal1: 5
+  allowDiskModifications: false
+  mapPath: /Maps/_Mini/Bitrun/bubblegum.yml
+  objectiveType: EliminateEnemies
+# --- --- ---
+#  ЭКСТРЕМАЛЬНЫЙ
+# --- --- ---
+
+# TODO

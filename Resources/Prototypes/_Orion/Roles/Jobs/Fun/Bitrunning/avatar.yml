@@ -109,6 +109,14 @@
     neck: ClothingNeckScarfStripedBrown
     shoes: ClothingShoesBootsSalvage
 
+- type: startingGear
+  parent: BitrunnerAvatarShaftMinerGear
+  id: BitrunnerAvatarShaftMinerExplorerGear
+  equipment:
+    outerClothing: LavalandEquipmentExplorerSuit
+    mask: ClothingMaskGasExplorer
+    pocket1: DoubleEmergencyOxygenTankFilled
+
 # --- Domain Loadouts ---
 
 - type: startingGear

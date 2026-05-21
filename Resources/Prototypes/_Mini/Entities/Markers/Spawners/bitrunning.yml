@@ -1,0 +1,10 @@
+- type: entity
+  parent: SpawnMobBubblegum
+  id: SpawnMobBubblegumBitrunning
+  name: Bubblegum spawner
+  suffix: Bitrunning
+  categories: [ Spawner ]
+  components:
+  - type: ConditionalSpawner
+    prototypes:
+      - LavalandBossBubblegumBitrunning

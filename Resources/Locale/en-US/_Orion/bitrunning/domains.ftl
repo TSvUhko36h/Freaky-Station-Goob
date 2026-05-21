@@ -21,3 +21,6 @@ bitrunning-domain-corsair-cove-desc = Battle your way to the hidden treasure, se
 
 bitrunning-domain-zealot-arena-name = Zealot Arena
 bitrunning-domain-zealot-arena-desc = Dance, puppets, dance!
+
+bitrunning-domain-bubblegum-arena-name = Bubblegum Arena
+bitrunning-domain-bubblegum-arena-desc = A pink nightmare from the ashlands. Don't step in the blood.
