@@ -1194,7 +1194,9 @@ public sealed class AntagTokenSystem : EntitySystem
             return false;
         }
 
-        var ruleEntity = _gameTicker.AddGameRule(role.GameRuleId!);
+        var ruleEntity = TryResolveGameRuleForTokenRole(role, out var existingRule)
+            ? existingRule
+            : _gameTicker.AddGameRule(role.GameRuleId!);
         if (!TryComp<AntagSelectionComponent>(ruleEntity, out var selection))
         {
             error = Loc.GetString("antag-tokens-error-rule-missing-antag-selection");
@@ -1408,6 +1410,23 @@ public sealed class AntagTokenSystem : EntitySystem
         {
             statusLocKey = "antag-store-status-unavailable";
             return false;
+        }
+
+        if (!string.IsNullOrEmpty(role.RequiresPresetGameRuleId))
+        {
+            if (cache.InRound)
+            {
+                if (!_gameTicker.IsGameRuleAdded(role.RequiresPresetGameRuleId))
+                {
+                    statusLocKey = "antag-store-status-unavailable";
+                    return false;
+                }
+            }
+            else if (IsPresetMissingRequiredGameRule(role.RequiresPresetGameRuleId))
+            {
+                statusLocKey = "antag-store-status-unavailable";
+                return false;
+            }
         }
 
         if (role.Mode == AntagPurchaseMode.LobbyDeposit && !purchased && IsAntagTrackGloballySaturated(in cache))
@@ -1858,6 +1877,49 @@ private void NormalizeMonthlyState(PlayerTokenState state, DateTime nowUtc, NetU
             : _gameTicker.CurrentPreset ?? _gameTicker.Preset;
 
         return preset != null && BlockedRoundstartRolePresets.Contains(preset.ID);
+    }
+
+    private bool IsPresetMissingRequiredGameRule(string requiredRuleId)
+    {
+        var preset = _gameTicker.RunLevel == GameRunLevel.PreRoundLobby
+            ? _gameTicker.Preset
+            : _gameTicker.CurrentPreset ?? _gameTicker.Preset;
+
+        if (preset == null)
+            return true;
+
+        foreach (var rule in preset.Rules)
+        {
+            if (rule.Id == requiredRuleId)
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool TryFindAddedGameRule(string ruleId, out EntityUid ruleEntity)
+    {
+        foreach (var rule in _gameTicker.GetAddedGameRules())
+        {
+            if (MetaData(rule).EntityPrototype?.ID == ruleId)
+            {
+                ruleEntity = rule;
+                return true;
+            }
+        }
+
+        ruleEntity = EntityUid.Invalid;
+        return false;
+    }
+
+    private bool TryResolveGameRuleForTokenRole(AntagRoleDefinition role, out EntityUid ruleEntity)
+    {
+        ruleEntity = EntityUid.Invalid;
+
+        if (string.IsNullOrEmpty(role.RequiresPresetGameRuleId))
+            return false;
+
+        return TryFindAddedGameRule(role.RequiresPresetGameRuleId, out ruleEntity);
     }
 
     private static void SpendForRole(PlayerTokenState state, AntagRoleDefinition role, bool useRoleCredit, bool useDonorDailyFree,

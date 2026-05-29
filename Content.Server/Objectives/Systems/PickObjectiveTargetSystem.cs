@@ -63,13 +63,11 @@ public sealed class PickObjectiveTargetSystem : EntitySystem
             return;
         }
 
-        // CorvaxGoob antag-target-immunity start
-        if (HasComp<AntagObjectiveImmunityComponent>(ent.Owner))
+        if (HasComp<AntagObjectiveImmunityComponent>(targetComp.Target.Value))
         {
             args.Cancelled = true;
             return;
         }
-        // CorvaxGoob antag-target-immunity end
 
         _target.SetTarget(ent.Owner, targetComp.Target.Value);
     }
@@ -94,13 +92,11 @@ public sealed class PickObjectiveTargetSystem : EntitySystem
             return;
         }
 
-        // CorvaxGoob antag-target-immunity start
-        if (HasComp<AntagObjectiveImmunityComponent>(ent.Owner))
+        if (picked.Comp.OwnedEntity is { } targetEnt && HasComp<AntagObjectiveImmunityComponent>(targetEnt))
         {
             args.Cancelled = true;
             return;
         }
-        // CorvaxGoob antag-target-immunity end
 
         _target.SetTarget(ent, picked, target);
     }

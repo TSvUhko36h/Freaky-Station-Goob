@@ -198,6 +198,7 @@
       mode: LobbyDeposit
       antagId: CosmicAntagCultist
       gameRuleId: CosmicCult
+      requiresPresetGameRuleId: CosmicCult
       tagLocKey: antag-token-window-tag-queue
       minimumPlayers: 20
       requiresPreRoundLobby: true

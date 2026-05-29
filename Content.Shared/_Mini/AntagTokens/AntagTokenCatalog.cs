@@ -130,4 +130,5 @@ public sealed record AntagRoleDefinition(
     string? GhostAutoJoinEntityProto = null,
     int FreeMinimumSponsorLevel = -1,
     IReadOnlyList<ProtoId<JobPrototype>>? JobBlacklist = null,
-    IReadOnlyList<ProtoId<SpeciesPrototype>>? SpeciesBlacklist = null);
+    IReadOnlyList<ProtoId<SpeciesPrototype>>? SpeciesBlacklist = null,
+    string? RequiresPresetGameRuleId = null);

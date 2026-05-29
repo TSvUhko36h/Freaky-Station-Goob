@@ -68,6 +68,9 @@ public sealed partial class AntagTokenListingEntry
     [DataField]
     public List<ProtoId<SpeciesPrototype>>? SpeciesBlacklist;
 
+    [DataField]
+    public string? RequiresPresetGameRuleId;
+
     public AntagRoleDefinition ToDefinition()
     {
         return new AntagRoleDefinition(
@@ -89,7 +92,8 @@ public sealed partial class AntagTokenListingEntry
             GhostAutoJoinEntityProto,
             FreeMinimumSponsorLevel ?? -1,
             JobBlacklist,
-            SpeciesBlacklist);
+            SpeciesBlacklist,
+            RequiresPresetGameRuleId);
     }
 }
 
