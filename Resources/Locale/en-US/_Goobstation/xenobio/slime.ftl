@@ -20,6 +20,8 @@ slime-interaction-tame-fail = Кажется, ты ему неинтересен
 
 slime-overcrowding-htn-off = The slimes here are packed too tightly and go dormant from overcrowding.
 
+slime-cluster-name = big {$breed}
+
 slime-overcrowding-merged = The slimes merge into one big blob!
 
 slime-cluster-examine = [color=cyan]It contains {$count} slimes. You can peel one off with a knife.[/color]

@@ -17,7 +17,13 @@ public sealed partial class SlimeClusterComponent : Component
     public int Count = 1;
 
     [DataField]
-    public EntProtoId PeelPrototype = "MobSlimeXenobioAdult";
+    public EntProtoId PeelPrototype = "MobSlimeXenobioBaby";
+
+    [DataField]
+    public EntProtoId MergeEffectPrototype = "XenoSlimeClusterMergeEffect";
+
+    [DataField]
+    public TimeSpan MergeDelay = TimeSpan.FromSeconds(1.5);
 
     [DataField]
     public TimeSpan PeelDelay = TimeSpan.FromSeconds(2);

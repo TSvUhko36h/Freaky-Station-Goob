@@ -5,8 +5,13 @@
 using Content.Goobstation.Common.CCVar;
 using Content.Goobstation.Shared.Xenobiology;
 using Content.Goobstation.Shared.Xenobiology.Components;
+using Content.Server.Mind;
 using Content.Server.NPC.HTN;
+using Content.Shared.Jittering;
+using Content.Shared.Mind;
+using Content.Shared.Mind.Components;
 using Robust.Shared.Containers;
+using Robust.Shared.Player;
 using Robust.Shared.Physics;
 using Content.Shared.DoAfter;
 using Content.Shared.Examine;
@@ -15,11 +20,19 @@ using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Nutrition.Components;
 using Content.Shared.Popups;
+using Content.Shared.Interaction;
+using Content.Shared.Movement.Components;
 using Content.Shared.Prototypes;
+using Robust.Shared.Audio;
+using Robust.Shared.Audio.Systems;
 using Robust.Shared.Configuration;
+using Robust.Shared.Map;
+using Robust.Shared.Maths;
+using Robust.Shared.Physics.Components;
 using Robust.Shared.Physics.Systems;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
+using System.Numerics;
 
 namespace Content.Goobstation.Server.Xenobiology;
 
@@ -32,12 +45,18 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly SharedContainerSystem _container = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
+    [Dependency] private readonly SharedAudioSystem _audio = default!;
+    [Dependency] private readonly SharedJitteringSystem _jitter = default!;
+    [Dependency] private readonly SharedTransformSystem _transform = default!;
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
     [Dependency] private readonly SharedPhysicsSystem _physics = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly SlimeLatchSystem _latch = default!;
     [Dependency] private readonly MetaDataSystem _meta = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
+    [Dependency] private readonly MindSystem _mind = default!;
+    [Dependency] private readonly SharedMindSystem _sharedMind = default!;
+    [Dependency] private readonly SharedInteractionSystem _interaction = default!;
 
     private EntityQuery<SlimeComponent> _slimeQuery;
     private EntityQuery<SlimeClusterComponent> _clusterQuery;
@@ -69,54 +88,146 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
     {
         base.Update(frameTime);
 
+        UpdateMergeAnimations();
+
         if (_timing.CurTime < _nextCheck)
             return;
 
         _nextCheck = _timing.CurTime + TimeSpan.FromSeconds(_checkInterval);
+        ClearStaleMerging();
         ProcessOvercrowding();
+    }
+
+    private void UpdateMergeAnimations()
+    {
+        var anchors = new List<EntityUid>();
+        var mergeQuery = EntityQueryEnumerator<SlimeMergingComponent>();
+        while (mergeQuery.MoveNext(out var uid, out var merging))
+        {
+            if (merging.IsAnchor)
+                anchors.Add(uid);
+        }
+
+        foreach (var anchor in anchors)
+        {
+            if (!TryComp<SlimeMergingComponent>(anchor, out var merge) || !merge.IsAnchor)
+                continue;
+
+            if (TerminatingOrDeleted(anchor))
+            {
+                CancelMerge(anchor, merge);
+                continue;
+            }
+
+            var durationSeconds = merge.Duration.TotalSeconds;
+            var progress = durationSeconds <= 0
+                ? 1f
+                : Math.Clamp((float)((_timing.CurTime - merge.StartedAt).TotalSeconds / durationSeconds), 0f, 1f);
+
+            var eased = progress * progress;
+            var anchorPos = _transform.GetWorldPosition(anchor);
+            var scale = MathHelper.Lerp(merge.StartScale, merge.TargetScale, progress);
+            SetClusterVisualScale(anchor, scale);
+
+            foreach (var victim in merge.Victims.ToArray())
+            {
+                if (TerminatingOrDeleted(victim)
+                    || !TryComp<SlimeMergingComponent>(victim, out var victimMerge)
+                    || !CanReachSlime(victim, anchor))
+                {
+                    merge.Victims.Remove(victim);
+                    RemComp<SlimeMergingComponent>(victim);
+                    RestoreVictimMovement(victim);
+                    continue;
+                }
+
+                var pos = Vector2.Lerp(victimMerge.MergeStartPosition, anchorPos, eased);
+                _transform.SetWorldPosition(victim, pos);
+
+                if (TryComp<PhysicsComponent>(victim, out var body))
+                    _physics.SetLinearVelocity(victim, Vector2.Zero, body: body);
+            }
+
+            if (progress < 1f)
+                continue;
+
+            CompleteMergeGroup(anchor, merge.Victims, merge.Breed, merge.TotalCount);
+        }
+    }
+
+    private void ClearStaleMerging()
+    {
+        var cutoff = _timing.CurTime - TimeSpan.FromSeconds(6);
+        var query = EntityQueryEnumerator<SlimeMergingComponent>();
+        while (query.MoveNext(out var uid, out var merging))
+        {
+            if (merging.StartedAt >= cutoff)
+                continue;
+
+            if (merging.IsAnchor)
+                CancelMerge(uid, merging);
+            else
+                RemComp<SlimeMergingComponent>(uid);
+        }
+    }
+
+    private void CancelMerge(EntityUid anchor, SlimeMergingComponent merge)
+    {
+        foreach (var victim in merge.Victims)
+        {
+            RemComp<SlimeMergingComponent>(victim);
+            RestoreVictimMovement(victim);
+        }
+
+        if (!TerminatingOrDeleted(anchor))
+            RemComp<SlimeMergingComponent>(anchor);
     }
 
     private void ProcessOvercrowding()
     {
-        var visited = new HashSet<EntityUid>();
+        var visitedSpatial = new HashSet<EntityUid>();
+        var visitedMerge = new HashSet<EntityUid>();
         var overcrowdedNow = new HashSet<EntityUid>();
 
         var slimeEnum = EntityQueryEnumerator<SlimeComponent, MobStateComponent>();
         while (slimeEnum.MoveNext(out var uid, out _, out _))
         {
-            if (visited.Contains(uid) || !CanParticipate(uid))
+            if (visitedSpatial.Contains(uid) || !CanParticipate(uid))
                 continue;
 
-            var group = BuildGroup(uid, visited);
-            if (group.Count == 0)
+            var spatialGroup = BuildSpatialGroup(uid, visitedSpatial);
+            if (spatialGroup.Count < _htnThreshold)
                 continue;
 
-            var totalCount = CountSlimes(group);
-            var uniformBreed = TryGetUniformBreed(group, out var breed);
-
-            if (uniformBreed && totalCount >= _mergeThreshold)
+            var showedPopup = false;
+            foreach (var member in spatialGroup)
             {
-                if (!(group.Count == 1
-                    && _clusterQuery.TryComp(group[0], out var existing)
-                    && existing.Count == totalCount))
-                {
-                    MergeGroup(group, breed!, totalCount);
-                }
-
-                foreach (var member in group)
-                    overcrowdedNow.Add(member);
-
-                continue;
+                overcrowdedNow.Add(member);
+                SetOvercrowded(member, ref showedPopup);
             }
+        }
 
-            if (totalCount >= _htnThreshold)
+        slimeEnum = EntityQueryEnumerator<SlimeComponent, MobStateComponent>();
+        while (slimeEnum.MoveNext(out var uid, out _, out _))
+        {
+            if (visitedMerge.Contains(uid) || !CanParticipate(uid))
+                continue;
+
+            var spatialGroup = BuildSpatialGroup(uid, visitedMerge);
+
+            foreach (var (breed, members) in GroupByBreed(spatialGroup))
             {
-                var showedPopup = false;
-                foreach (var member in group)
-                {
+                var anchor = SelectMergeAnchor(members);
+                var reachable = FilterReachableFromAnchor(anchor, members, spatialGroup);
+                var totalCount = CountSlimes(reachable);
+
+                if (!ShouldMergeGroup(reachable, totalCount))
+                    continue;
+
+                BeginMergeGroup(reachable, breed, totalCount);
+
+                foreach (var member in reachable)
                     overcrowdedNow.Add(member);
-                    SetOvercrowded(member, ref showedPopup);
-                }
             }
         }
 
@@ -130,31 +241,148 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
         }
     }
 
-    private void MergeGroup(List<EntityUid> group, ProtoId<BreedPrototype> breed, int totalCount)
+    private bool ShouldMergeGroup(List<EntityUid> group, int totalCount)
+    {
+        if (totalCount < _mergeThreshold || group.Count <= 1)
+            return false;
+
+        var clusterEntities = 0;
+        var looseCount = 0;
+
+        foreach (var uid in group)
+        {
+            if (_clusterQuery.HasComp(uid))
+                clusterEntities++;
+            else
+                looseCount++;
+        }
+
+        if (clusterEntities == 1 && looseCount == 1)
+            return false;
+
+        return true;
+    }
+
+    private void BeginMergeGroup(List<EntityUid> group, ProtoId<BreedPrototype> breed, int totalCount)
     {
         if (group.Count == 0)
             return;
 
-        var anchor = group[0];
         foreach (var uid in group)
         {
-            if (HasComp<SlimeClusterComponent>(uid))
-            {
-                anchor = uid;
-                break;
-            }
+            if (HasComp<SlimeMergingComponent>(uid))
+                return;
         }
+
+        var anchor = SelectMergeAnchor(group);
+        var victims = new List<EntityUid>();
 
         foreach (var uid in group)
         {
             if (uid == anchor)
                 continue;
 
+            victims.Add(uid);
+        }
+
+        var duration = _clusterQuery.TryComp(anchor, out var cluster)
+            ? cluster.MergeDelay
+            : TimeSpan.FromSeconds(1.5);
+
+        var startScale = _clusterQuery.TryComp(anchor, out var existingCluster)
+            ? GetScaleForCount(existingCluster.Count)
+            : 1f;
+
+        var targetScale = GetScaleForCount(totalCount);
+
+        var anchorMerge = EnsureComp<SlimeMergingComponent>(anchor);
+        anchorMerge.IsAnchor = true;
+        anchorMerge.Anchor = anchor;
+        anchorMerge.StartedAt = _timing.CurTime;
+        anchorMerge.Duration = duration;
+        anchorMerge.TotalCount = totalCount;
+        anchorMerge.Breed = breed;
+        anchorMerge.StartScale = startScale;
+        anchorMerge.TargetScale = targetScale;
+        anchorMerge.Victims = victims;
+
+        foreach (var victim in victims)
+        {
+            if (_slimeQuery.TryComp(victim, out var slime) && _latch.IsLatched((victim, slime)))
+                _latch.Unlatch((victim, slime));
+
+            if (TryComp<HTNComponent>(victim, out _))
+                _htn.SetHTNEnabled(victim, false);
+
+            DisableVictimMovement(victim);
+
+            var victimMerge = EnsureComp<SlimeMergingComponent>(victim);
+            victimMerge.IsAnchor = false;
+            victimMerge.Anchor = anchor;
+            victimMerge.MergeStartPosition = _transform.GetWorldPosition(victim);
+            victimMerge.StartedAt = anchorMerge.StartedAt;
+            victimMerge.Duration = duration;
+        }
+
+        if (!IsPlayerControlled(anchor) && TryComp<HTNComponent>(anchor, out _))
+            _htn.SetHTNEnabled(anchor, false);
+
+        SetClusterVisualScale(anchor, startScale);
+        PlayMergeStartEffects(anchor, duration);
+    }
+
+    private void PlayMergeStartEffects(EntityUid anchor, TimeSpan duration)
+    {
+        if (_slimeQuery.TryComp(anchor, out var anchorSlime))
+            _audio.PlayPvs(anchorSlime.MitosisSound, anchor);
+
+        _jitter.DoJitter(anchor, duration, true, amplitude: 6f, frequency: 12);
+    }
+
+    private void DisableVictimMovement(EntityUid uid)
+    {
+        if (TryComp<InputMoverComponent>(uid, out var mover))
+            mover.CanMove = false;
+    }
+
+    private void RestoreVictimMovement(EntityUid uid)
+    {
+        if (TryComp<InputMoverComponent>(uid, out var mover))
+            mover.CanMove = true;
+    }
+
+    private static float GetScaleForCount(int count)
+    {
+        return Math.Clamp(1f + (count - 1) * 0.12f, 1f, 3f);
+    }
+
+    private void CompleteMergeGroup(EntityUid anchor, List<EntityUid> victims, ProtoId<BreedPrototype> breed, int totalCount)
+    {
+        if (TerminatingOrDeleted(anchor))
+        {
+            foreach (var victim in victims)
+                RemComp<SlimeMergingComponent>(victim);
+
+            RemComp<SlimeMergingComponent>(anchor);
+            return;
+        }
+
+        foreach (var uid in victims)
+        {
+            if (TerminatingOrDeleted(uid))
+                continue;
+
+            if (_sharedMind.TryGetMind(uid, out var mindId, out var mind))
+                _mind.TransferTo(mindId, anchor, ghostCheckOverride: true, mind: mind);
+
             if (_slimeQuery.TryComp(uid, out var slime) && _latch.IsLatched((uid, slime)))
                 _latch.Unlatch((uid, slime));
 
+            RemComp<SlimeMergingComponent>(uid);
             QueueDel(uid);
         }
+
+        RemComp<SlimeMergingComponent>(anchor);
 
         var cluster = EnsureComp<SlimeClusterComponent>(anchor);
         cluster.Count = totalCount;
@@ -167,13 +395,51 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
         }
 
         UpdateClusterScale(anchor, cluster.Count);
-        EnsureComp<SlimeOvercrowdedComponent>(anchor);
-        _htn.SetHTNEnabled(anchor, false);
+        UpdateClusterName(anchor, breed);
+
+        if (!IsPlayerControlled(anchor))
+        {
+            EnsureComp<SlimeOvercrowdedComponent>(anchor);
+            _htn.SetHTNEnabled(anchor, false);
+        }
 
         _popup.PopupCoordinates(Loc.GetString("slime-overcrowding-merged"), Transform(anchor).Coordinates, PopupType.MediumCaution);
     }
 
-    private List<EntityUid> BuildGroup(EntityUid start, HashSet<EntityUid> visited)
+    private EntityUid SelectMergeAnchor(List<EntityUid> group)
+    {
+        foreach (var uid in group)
+        {
+            if (IsPlayerControlled(uid))
+                return uid;
+        }
+
+        foreach (var uid in group)
+        {
+            if (HasComp<SlimeClusterComponent>(uid))
+                return uid;
+        }
+
+        return group[0];
+    }
+
+    private bool IsPlayerControlled(EntityUid uid)
+    {
+        if (HasComp<ActorComponent>(uid))
+            return true;
+
+        return TryComp<MindContainerComponent>(uid, out var mind) && mind.HasMind;
+    }
+
+    private void UpdateClusterName(EntityUid uid, ProtoId<BreedPrototype> breed)
+    {
+        if (!_proto.TryIndex(breed, out var breedProto))
+            return;
+
+        _meta.SetEntityName(uid, Loc.GetString("slime-cluster-name", ("breed", breedProto.BreedName)));
+    }
+
+    private List<EntityUid> BuildSpatialGroup(EntityUid start, HashSet<EntityUid> visited)
     {
         var group = new List<EntityUid>();
         var queue = new Queue<EntityUid>();
@@ -182,19 +448,91 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
         while (queue.Count > 0)
         {
             var uid = queue.Dequeue();
-            if (!visited.Add(uid) || !CanParticipate(uid))
+            if (!visited.Add(uid))
                 continue;
 
-            group.Add(uid);
+            if (CanParticipate(uid))
+                group.Add(uid);
 
             foreach (var nearby in _lookup.GetEntitiesInRange<SlimeComponent>(Transform(uid).Coordinates, _radius))
             {
-                if (!visited.Contains(nearby))
-                    queue.Enqueue(nearby);
+                if (visited.Contains(nearby) || !CanReachSlime(uid, nearby))
+                    continue;
+
+                queue.Enqueue(nearby);
             }
         }
 
         return group;
+    }
+
+    private List<EntityUid> FilterReachableFromAnchor(
+        EntityUid anchor,
+        IReadOnlyList<EntityUid> breedMembers,
+        IReadOnlyList<EntityUid> spatialGroup)
+    {
+        var reachable = new HashSet<EntityUid>();
+        var queue = new Queue<EntityUid>();
+        queue.Enqueue(anchor);
+        reachable.Add(anchor);
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+
+            foreach (var other in spatialGroup)
+            {
+                if (reachable.Contains(other) || !CanReachSlime(current, other))
+                    continue;
+
+                reachable.Add(other);
+                queue.Enqueue(other);
+            }
+        }
+
+        var result = new List<EntityUid>();
+        foreach (var uid in breedMembers)
+        {
+            if (reachable.Contains(uid))
+                result.Add(uid);
+        }
+
+        return result;
+    }
+
+    private bool CanReachSlime(EntityUid from, EntityUid to)
+    {
+        if (from == to)
+            return true;
+
+        return _interaction.InRangeUnobstructed(
+            from,
+            to,
+            range: 0,
+            predicate: entity => entity == from || entity == to || _slimeQuery.HasComp(entity),
+            overlapCheck: false);
+    }
+
+    private IEnumerable<KeyValuePair<ProtoId<BreedPrototype>, List<EntityUid>>> GroupByBreed(IReadOnlyList<EntityUid> spatialGroup)
+    {
+        var byBreed = new Dictionary<ProtoId<BreedPrototype>, List<EntityUid>>();
+
+        foreach (var uid in spatialGroup)
+        {
+            if (!_slimeQuery.TryComp(uid, out var slime))
+                continue;
+
+            if (!byBreed.TryGetValue(slime.Breed, out var members))
+            {
+                members = new List<EntityUid>();
+                byBreed[slime.Breed] = members;
+            }
+
+            members.Add(uid);
+        }
+
+        foreach (var entry in byBreed)
+            yield return entry;
     }
 
     private bool CanParticipate(EntityUid uid)
@@ -203,6 +541,9 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
             return false;
 
         if (_container.IsEntityInContainer(uid))
+            return false;
+
+        if (HasComp<SlimeMergingComponent>(uid))
             return false;
 
         if (HasComp<BeingLatchedComponent>(uid))
@@ -228,37 +569,18 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
         return total;
     }
 
-    private bool TryGetUniformBreed(IReadOnlyCollection<EntityUid> group, out ProtoId<BreedPrototype> breed)
-    {
-        breed = default;
-        ProtoId<BreedPrototype>? expected = null;
-
-        foreach (var uid in group)
-        {
-            if (!_slimeQuery.TryComp(uid, out var slime))
-                return false;
-
-            if (expected == null)
-                expected = slime.Breed;
-            else if (expected != slime.Breed)
-                return false;
-        }
-
-        if (expected == null)
-            return false;
-
-        breed = expected.Value;
-        return true;
-    }
-
     private void SetOvercrowded(EntityUid uid, ref bool showedPopup)
     {
+        if (IsPlayerControlled(uid))
+            return;
+
+        var alreadyOvercrowded = HasComp<SlimeOvercrowdedComponent>(uid);
         EnsureComp<SlimeOvercrowdedComponent>(uid);
 
         if (TryComp<HTNComponent>(uid, out _))
             _htn.SetHTNEnabled(uid, false);
 
-        if (showedPopup)
+        if (showedPopup || alreadyOvercrowded)
             return;
 
         showedPopup = true;
@@ -280,8 +602,11 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
 
     public void UpdateClusterScale(EntityUid uid, int count)
     {
-        var scale = Math.Clamp(1f + (count - 1) * 0.12f, 1f, 3f);
+        SetClusterVisualScale(uid, GetScaleForCount(count));
+    }
 
+    private void SetClusterVisualScale(EntityUid uid, float scale)
+    {
         if (TryComp<AppearanceComponent>(uid, out var appearance))
             _appearance.SetData(uid, XenoSlimeVisuals.ClusterScale, scale, appearance);
 
@@ -352,7 +677,11 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
             RemComp<SlimeClusterComponent>(ent);
             UpdateClusterScale(ent, 1);
             RemComp<SlimeOvercrowdedComponent>(ent);
-            _htn.SetHTNEnabled(ent, true, 2f);
+            _meta.SetEntityName(ent, breed.BreedName);
+
+            if (!IsPlayerControlled(ent))
+                _htn.SetHTNEnabled(ent, true, 2f);
+
             return;
         }
 
