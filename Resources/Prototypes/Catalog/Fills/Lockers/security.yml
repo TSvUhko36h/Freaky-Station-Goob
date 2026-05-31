@@ -128,6 +128,7 @@
     - id: Multitool # Goobstation
     - id: Wrench # Goobstation
     - id: ContrabandDetectorFlatpack # Goobstation
+      amount: 2 # CorvaxGoob: added amount, 1 > 2
     - id: WeaponSniperVulture # Mini
     - id: MagazineMagnumAntimaterial # Mini
     - id: MagazineMagnumAntimaterial # Mini
