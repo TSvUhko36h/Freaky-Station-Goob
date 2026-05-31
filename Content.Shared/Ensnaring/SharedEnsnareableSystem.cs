@@ -34,6 +34,7 @@ using Content.Shared.Projectiles;
 using Content.Shared.StepTrigger.Systems;
 using Content.Shared.Strip.Components;
 using Content.Shared.Throwing;
+using Content.Shared.Whitelist;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
 using Robust.Shared.Network;
@@ -59,6 +60,7 @@ public abstract class SharedEnsnareableSystem : EntitySystem
     [Dependency] private   readonly SharedHandsSystem _hands = default!;
     [Dependency] protected readonly SharedPopupSystem Popup = default!;
     [Dependency] private   readonly SharedStaminaSystem _stamina = default!;
+    [Dependency] private   readonly EntityWhitelistSystem _entityWhitelist = default!;
 
     public override void Initialize()
     {
@@ -300,6 +302,9 @@ public abstract class SharedEnsnareableSystem : EntitySystem
     {
         //Don't do anything if they don't have the ensnareable component.
         if (!TryComp<EnsnareableComponent>(target, out var ensnareable))
+            return false;
+
+        if (component.IgnoredTargets is not null && _entityWhitelist.IsValid(component.IgnoredTargets, target))
             return false;
 
         var numEnsnares = ensnareable.Container.ContainedEntities.Count;

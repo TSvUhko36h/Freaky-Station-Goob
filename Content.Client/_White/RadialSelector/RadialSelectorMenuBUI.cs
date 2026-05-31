@@ -9,7 +9,7 @@ using Robust.Client.Input;
 namespace Content.Client._White.RadialSelector;
 
 [UsedImplicitly]
-public sealed class AttachedRadialSelectorMenuBUI(EntityUid owner, Enum uiKey)
+public sealed class RadialSelectorMenuBUI(EntityUid owner, Enum uiKey)
     : BasedRadialSelectorMenuBUI(owner, uiKey)
 {
     [Dependency] private readonly IClyde _displayManager = default!;

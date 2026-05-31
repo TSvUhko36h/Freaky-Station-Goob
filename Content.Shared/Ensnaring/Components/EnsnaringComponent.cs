@@ -11,6 +11,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using Content.Shared.Whitelist;
 using Robust.Shared.Audio;
 using Robust.Shared.GameStates;
 
@@ -84,6 +85,9 @@ public sealed partial class EnsnaringComponent : Component
     /// </summary>
     [DataField]
     public bool DestroyOnRemove;
+
+    [DataField]
+    public EntityWhitelist? IgnoredTargets;
 }
 
 /// <summary>

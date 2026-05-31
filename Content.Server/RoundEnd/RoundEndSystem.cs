@@ -441,6 +441,22 @@ namespace Content.Server.RoundEnd
                 SetAutoCallTime();
             }
         }
+
+        public void DelayShuttle(TimeSpan delay)
+        {
+            if (_countdownTokenSource == null || !ExpectedCountdownEnd.HasValue)
+                return;
+
+            var countdown = ExpectedCountdownEnd.Value - _gameTiming.CurTime + delay;
+            if (countdown.TotalSeconds < 0)
+                return;
+
+            ExpectedCountdownEnd = _gameTiming.CurTime + countdown;
+            _countdownTokenSource.Cancel();
+            _countdownTokenSource = new CancellationTokenSource();
+
+            Timer.Spawn(countdown, _shuttle.DockEmergencyShuttle, _countdownTokenSource.Token);
+        }
     }
 
     public sealed class RoundEndSystemChangedEvent : EntityEventArgs

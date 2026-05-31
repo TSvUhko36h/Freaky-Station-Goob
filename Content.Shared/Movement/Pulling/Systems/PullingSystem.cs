@@ -99,6 +99,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System.Diagnostics.CodeAnalysis;
 using Content.Goobstation.Common.Grab;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Administration.Logs;
@@ -586,6 +587,16 @@ public sealed class PullingSystem : EntitySystem
     }
     // Goob - Grab Intent End
 
+    public bool TryGetPulledEntity(EntityUid puller, [NotNullWhen(true)] out EntityUid? pulling, PullerComponent? component = null)
+    {
+        pulling = null;
+        if (!Resolve(puller, ref component, false) || !component.Pulling.HasValue)
+            return false;
+
+        pulling = component.Pulling;
+        return true;
+    }
+
     public bool TryStartPull(EntityUid pullerUid,
         EntityUid pullableUid,
         PullerComponent? pullerComp = null,
@@ -732,8 +743,11 @@ public sealed class PullingSystem : EntitySystem
         return true;
     }
 
-    public bool TryStopPull(EntityUid pullableUid, PullableComponent pullable, EntityUid? user = null, bool ignoreGrab = false)
+    public bool TryStopPull(EntityUid pullableUid, PullableComponent? pullable = null, EntityUid? user = null, bool ignoreGrab = false)
     {
+        if (!Resolve(pullableUid, ref pullable, false))
+            return false;
+
         var pullerUidNull = pullable.Puller;
 
         if (pullerUidNull == null)
