@@ -90,6 +90,7 @@ public sealed class SlasherMassacreSystem : EntitySystem
             ent.Comp.HitCount = 0;
             ent.Comp.CurrentVictim = null;
             ent.Comp.LastAttackTime = _timing.CurTime;
+            ent.Comp.MassacreMissForgivenessRemaining = ent.Comp.MassacreMissForgivenessCharges;
 
             _popup.PopupPredicted(Loc.GetString("slasher-massacre-start"), ent.Owner, ent.Owner, PopupType.MediumCaution);
             _audio.PlayPredicted(ent.Comp.MassacreIntro, ent.Owner, ent.Owner);

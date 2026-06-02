@@ -280,7 +280,7 @@ public sealed partial class GoobCVars
         CVarDef.Create("xenobiology.breeding.interval", 1f, CVar.REPLICATED | CVar.SERVER);
 
     public static readonly CVarDef<float> OvercrowdingRadius =
-        CVarDef.Create("xenobiology.overcrowding.radius", 4f, CVar.SERVERONLY);
+        CVarDef.Create("xenobiology.overcrowding.radius", 3f, CVar.SERVERONLY);
 
     public static readonly CVarDef<int> OvercrowdingHtnThreshold =
         CVarDef.Create("xenobiology.overcrowding.htn_threshold", 8, CVar.SERVERONLY);

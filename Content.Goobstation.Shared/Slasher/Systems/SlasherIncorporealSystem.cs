@@ -264,6 +264,7 @@ public sealed class SlasherIncorporealSystem : EntitySystem
 
         // Recycler immunity
         EnsureComp<MaterialReclaimerImmuneComponent>(uid);
+        EnsureComp<FacehuggerImmuneComponent>(uid);
 
         // Raise event for server systems to handle additional logic (like disabling lights)
         var enteredEv = new SlasherIncorporealEnteredEvent();
@@ -323,6 +324,7 @@ public sealed class SlasherIncorporealSystem : EntitySystem
 
         // Remove recycler immunity
         RemComp<MaterialReclaimerImmuneComponent>(uid);
+        RemComp<FacehuggerImmuneComponent>(uid);
     }
 
     // Goida as shit.. I couldn't find a better way stop cooldowns

@@ -19,6 +19,7 @@ using Content.Shared.Interaction;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Nutrition.Components;
+using Content.Shared.Physics;
 using Content.Shared.Popups;
 using Content.Shared.Interaction;
 using Content.Shared.Movement.Components;
@@ -509,6 +510,7 @@ public sealed class SlimeOvercrowdingSystem : EntitySystem
             from,
             to,
             range: 0,
+            collisionMask: CollisionGroup.Impassable | CollisionGroup.InteractImpassable | CollisionGroup.TableLayer,
             predicate: entity => entity == from || entity == to || _slimeQuery.HasComp(entity),
             overlapCheck: false);
     }

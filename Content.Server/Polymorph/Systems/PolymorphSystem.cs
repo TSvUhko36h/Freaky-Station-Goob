@@ -495,19 +495,24 @@ public sealed partial class PolymorphSystem : EntitySystem
 
         _tag.RemoveTag(uid, SharedBindSoulSystem.IgnoreBindSoulTag); // Goobstation
 
-        // CorvaxGoob edit start - items that failed to transfer must not disappear to paused map
-        if (_inventory.TryGetContainerSlotEnumerator(uid, out var safetyEnum))
+        // CorvaxGoob edit start - items that failed to transfer must not disappear to paused map.
+        // This only applies to transfer mode: for inventory None (e.g. jaunts), force-dropping here strips the parent body.
+        if (configuration.Inventory == PolymorphInventoryChange.Transfer)
         {
-            while (safetyEnum.MoveNext(out var slot))
+            if (_inventory.TryGetContainerSlotEnumerator(uid, out var safetyEnum))
             {
-                if (slot.ContainedEntity is { } item && !HasComp<UnremoveableComponent>(item))
-                    _inventory.TryUnequip(uid, slot.ID, silent: true, force: true);
+                while (safetyEnum.MoveNext(out var slot))
+                {
+                    if (slot.ContainedEntity is { } item && !HasComp<UnremoveableComponent>(item))
+                        _inventory.TryUnequip(uid, slot.ID, silent: true, force: true);
+                }
             }
-        }
-        foreach (var held in _hands.EnumerateHeld(uid))
-        {
-            if (!HasComp<UnremoveableComponent>(held))
-                _hands.TryDrop(uid, held, checkActionBlocker: false);
+
+            foreach (var held in _hands.EnumerateHeld(uid))
+            {
+                if (!HasComp<UnremoveableComponent>(held))
+                    _hands.TryDrop(uid, held, checkActionBlocker: false);
+            }
         }
         // CorvaxGoob edit end
 

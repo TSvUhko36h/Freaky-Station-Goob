@@ -52,6 +52,7 @@ public abstract partial class SharedHereticAbilitySystem
 
         PredictedSpawnAtPosition(args.InEffect, xform.Coordinates);
         _transform.SetCoordinates(ent, xform, args.Target);
+        _transform.AttachToGridOrMap(ent, xform);
         PredictedSpawnAtPosition(args.OutEffect, args.Target);
 
         var condition = path == "Void";

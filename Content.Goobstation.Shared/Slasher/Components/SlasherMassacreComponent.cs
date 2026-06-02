@@ -45,6 +45,9 @@ public sealed partial class SlasherMassacreUserComponent : Component
     public int MassacreMissForgivenessRemaining;
 
     [DataField]
+    public int MassacreMissForgivenessCharges = 1;
+
+    [DataField]
     public SoundSpecifier MassacreIntro =
          new SoundPathSpecifier("/Audio/_Goobstation/Effects/Slasher/MassacreIntro.ogg")
          {

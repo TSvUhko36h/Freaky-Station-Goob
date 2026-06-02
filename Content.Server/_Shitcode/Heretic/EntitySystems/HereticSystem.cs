@@ -20,6 +20,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Content.Server.Store.Systems;
+using Content.Goobstation.Shared.Mindcontrol;
 using Content.Goobstation.Maths.FixedPoint;
 using Content.Shared.Eye;
 using Content.Shared.Heretic;
@@ -319,6 +320,8 @@ public sealed partial class HereticSystem : SharedHereticSystem
 
     private void OnCompStartup(Entity<HereticComponent> ent, ref ComponentStartup args)
     {
+        EnsureComp<MindControlImmuneComponent>(ent.Owner);
+
         foreach (var k in ent.Comp.BaseKnowledge)
         {
             TryAddKnowledge(ent.AsNullable(), k);
@@ -331,6 +334,8 @@ public sealed partial class HereticSystem : SharedHereticSystem
 
     private void OnShutdown(Entity<HereticComponent> ent, ref ComponentShutdown args)
     {
+        RemComp<MindControlImmuneComponent>(ent.Owner);
+
         if (!TryComp(ent, out MindComponent? mind) || mind.CurrentEntity is not { } body || TerminatingOrDeleted(body))
             return;
 

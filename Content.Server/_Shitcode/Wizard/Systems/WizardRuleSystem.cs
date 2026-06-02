@@ -18,6 +18,7 @@ using Content.Server.GameTicking;
 using Content.Server.GameTicking.Rules;
 using Content.Server.Mind;
 using Content.Server.Roles;
+using Content.Goobstation.Shared.Mindcontrol;
 using Content.Server.Station.Components;
 using Content.Server.Station.Systems;
 using Content.Shared._Goobstation.Wizard;
@@ -73,6 +74,8 @@ public sealed class WizardRuleSystem : GameRuleSystem<WizardRuleComponent>
         SubscribeLocalEvent<ApprenticeRoleComponent, GetBriefingEvent>(OnApprenticeGetBriefing);
 
         SubscribeLocalEvent<WizardComponent, MobStateChangedEvent>(OnStateChanged);
+        SubscribeLocalEvent<WizardComponent, ComponentStartup>(OnWizardStartup);
+        SubscribeLocalEvent<WizardComponent, ComponentShutdown>(OnWizardShutdown);
         SubscribeLocalEvent<WizardComponent, ComponentRemove>(OnRemove);
         SubscribeLocalEvent<WizardComponent, CloningEvent>(OnWizardClone);
         SubscribeLocalEvent<ApprenticeComponent, MobStateChangedEvent>(OnStateChanged);
@@ -104,6 +107,16 @@ public sealed class WizardRuleSystem : GameRuleSystem<WizardRuleComponent>
         RemCompDeferred<WizardComponent>(ent);
         _faction.ClearFactions(args.CloneUid, false);
         _faction.AddFaction(args.CloneUid, Faction);
+    }
+
+    private void OnWizardStartup(Entity<WizardComponent> ent, ref ComponentStartup args)
+    {
+        EnsureComp<MindControlImmuneComponent>(ent.Owner);
+    }
+
+    private void OnWizardShutdown(Entity<WizardComponent> ent, ref ComponentShutdown args)
+    {
+        RemComp<MindControlImmuneComponent>(ent.Owner);
     }
 
     public EntityUid? GetTargetMap()
