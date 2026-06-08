@@ -34,7 +34,7 @@
   mapName: 'FRIK Омега'
   mapPath: /Maps/_FreakyStation/freaky-omega.yml # FreakyStation
   minPlayers: 0 # Freak, was 7
-  maxPlayers: 35
+  maxPlayers: 35 #ZAPRETILI GAGAHAHAHAHAHA
   stations:
     Omega:
       stationProto: StandardNanotrasenStation

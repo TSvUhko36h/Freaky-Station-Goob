@@ -1037,6 +1037,49 @@ namespace Content.Server.Database.Migrations.Sqlite
                     b.ToTable("player_antag_token_selection", (string)null);
                 });
 
+            modelBuilder.Entity("Content.Server.Database.PlayerGhostRoleTickets", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("player_ghost_role_tickets_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("LastGrantTime")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("last_grant_time");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("player_id");
+
+                    b.PrimitiveCollection<string>("StreakMilestones")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("streak_milestones");
+
+                    b.PrimitiveCollection<string>("TicketMilestones")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("ticket_milestones");
+
+                    b.Property<int>("Tickets")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("tickets");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("PK_player_ghost_role_tickets");
+
+                    b.ToTable("player_ghost_role_tickets", (string)null);
+                });
+
             modelBuilder.Entity("Content.Server.Database.Preference", b =>
                 {
                     b.Property<int>("Id")
@@ -1101,10 +1144,6 @@ namespace Content.Server.Database.Migrations.Sqlite
                         .HasColumnType("TEXT")
                         .HasColumnName("erp_consent");
 
-                    b.Property<bool>("NonCon")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("non_con");
-
                     b.Property<string>("EyeColor")
                         .IsRequired()
                         .HasColumnType("TEXT")
@@ -1156,6 +1195,10 @@ namespace Content.Server.Database.Migrations.Sqlite
                     b.Property<byte[]>("Markings")
                         .HasColumnType("jsonb")
                         .HasColumnName("markings");
+
+                    b.Property<bool>("NonCon")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("non_con");
 
                     b.Property<string>("OOCNotes")
                         .IsRequired()

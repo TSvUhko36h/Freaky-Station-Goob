@@ -2194,12 +2194,26 @@ private void NormalizeMonthlyState(PlayerTokenState state, DateTime nowUtc, NetU
             return true;
         }
 
-        if (_ghostRoles.HasAvailableGhostRoleForEntityProto(proto))
+        if (HasAvailableGhostRoleForEntityProto(proto))
             return false;
 
         Logger.InfoS("AntagTokens", $"Ghost auto-pending stale: no slot for proto {proto}, refund user {userId}");
         RefundPendingGhostAuto(userId, state);
         return true;
+    }
+
+    private bool HasAvailableGhostRoleForEntityProto(string protoId)
+    {
+        foreach (var role in _ghostRoles.GhostRoles)
+        {
+            if (role.Comp.Taken || MetaData(role.Owner).EntityPaused)
+                continue;
+
+            if (IsGhostAutoJoinPrototypeMatch(MetaData(role.Owner).EntityPrototype?.ID, protoId))
+                return true;
+        }
+
+        return false;
     }
 
     private void RefundPendingGhostAuto(NetUserId userId, PlayerTokenState state)
