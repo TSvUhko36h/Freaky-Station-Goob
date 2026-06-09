@@ -984,8 +984,10 @@ public sealed class AntagTokenSystem : EntitySystem
 
             if (IsReservedRoleBlockedByCurrentJob(session, role))
             {
-                ShowPopup(session, Loc.GetString("antag-tokens-popup-job-blocks-queued"));
+                RefundPendingDeposit(session.UserId, state);
+                PersistState(session.UserId, state);
                 SendState(session.UserId);
+                ShowPopup(session, Loc.GetString("antag-tokens-popup-job-blocks-queued"));
                 continue;
             }
 
