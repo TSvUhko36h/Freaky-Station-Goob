@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Content.Server.Roles.Jobs;
 using Content.Server.WhiteDream.BloodCult.Gamerule;
+using Content.Shared.WhiteDream.BloodCult.BloodCultist;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Objectives.Components;
@@ -27,8 +28,17 @@ public sealed class KillTargetCultSystem : EntitySystem
         if (cultistRule is null)
             return;
 
-        if (cultistRule.OfferingTarget is null)
+        var assignee = args.Mind.OwnedEntity;
+
+        if (cultistRule.OfferingTarget is null
+            || assignee == cultistRule.OfferingTarget
+            || HasComp<BloodCultistComponent>(cultistRule.OfferingTarget))
+        {
             _cultRule.SetRandomCultTarget(cultistRule);
+        }
+
+        if (assignee != null && cultistRule.OfferingTarget == assignee)
+            cultistRule.OfferingTarget = null;
 
         ent.Comp.Target = cultistRule.OfferingTarget;
     }
