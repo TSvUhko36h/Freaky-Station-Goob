@@ -1,5 +1,7 @@
-﻿using Content.Server.Actions;
+﻿using Content.Server._EinsteinEngines.Language;
+using Content.Server.Actions;
 using Content.Server.WhiteDream.BloodCult.Gamerule;
+using Content.Shared.Mind.Components;
 using Content.Shared.WhiteDream.BloodCult;
 using Content.Shared.WhiteDream.BloodCult.Constructs;
 using Robust.Server.GameObjects;
@@ -10,12 +12,14 @@ public sealed class ConstructSystem : EntitySystem
 {
     [Dependency] private readonly ActionsSystem _actions = default!;
     [Dependency] private readonly AppearanceSystem _appearanceSystem = default!;
+    [Dependency] private readonly LanguageSystem _language = default!;
 
     public override void Initialize()
     {
         base.Initialize();
 
         SubscribeLocalEvent<ConstructComponent, MapInitEvent>(OnMapInit);
+        SubscribeLocalEvent<ConstructComponent, MindAddedMessage>(OnMindAdded);
         SubscribeLocalEvent<ConstructComponent, ComponentShutdown>(OnComponentShutdown);
     }
 
@@ -38,6 +42,9 @@ public sealed class ConstructSystem : EntitySystem
             _appearanceSystem.SetData(uid, ConstructVisualsState.Transforming, false);
         }
     }
+
+    private void OnMindAdded(Entity<ConstructComponent> construct, ref MindAddedMessage args) =>
+        _language.UpdateEntityLanguages(construct.Owner);
 
     private void OnMapInit(Entity<ConstructComponent> construct, ref MapInitEvent args)
     {

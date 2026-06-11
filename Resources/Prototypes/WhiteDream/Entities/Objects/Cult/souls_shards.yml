@@ -33,6 +33,7 @@
           True: { state: "soul_stone_blessed" }
           False: { state: "soul_stone" }
   - type: Speech
+  - type: LanguageSpeaker
   - type: IsDeadIC
   - type: SoulShard
   - type: LanguageKnowledge

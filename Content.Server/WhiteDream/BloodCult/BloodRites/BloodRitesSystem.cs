@@ -23,6 +23,7 @@ using Content.Shared.WhiteDream.BloodCult.Spells;
 using Content.Shared.WhiteDream.BloodCult.UI;
 using Robust.Server.Audio;
 using Robust.Server.GameObjects;
+using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
 
 namespace Content.Server.WhiteDream.BloodCult.BloodRites;
@@ -51,7 +52,7 @@ public sealed class BloodRitesSystem : EntitySystem
         SubscribeLocalEvent<BloodRitesAuraComponent, AfterInteractEvent>(OnAfterInteract);
         SubscribeLocalEvent<BloodRitesAuraComponent, BloodRitesExtractDoAfterEvent>(OnDoAfter);
 
-        SubscribeLocalEvent<BloodRitesAuraComponent, MeleeHitEvent>(OnCultistHit);
+        SubscribeLocalEvent<BloodRitesAuraComponent, MeleeHitEvent>(OnMeleeHit);
 
         SubscribeLocalEvent<BloodRitesAuraComponent, BeforeActivatableUIOpenEvent>(BeforeUiOpen);
         SubscribeLocalEvent<BloodRitesAuraComponent, BloodRitesMessage>(OnRitesMessage);
@@ -70,20 +71,9 @@ public sealed class BloodRitesSystem : EntitySystem
 
         if (HasComp<BloodstreamComponent>(args.Target))
         {
-            if (rites.Comp.ExtractDoAfterId.HasValue)
-                return;
+            if (TryStartBloodExtraction(rites, args.User, args.Target.Value))
+                args.Handled = true;
 
-            var ev = new BloodRitesExtractDoAfterEvent();
-            var time = rites.Comp.BloodExtractionTime;
-            var doAfterArgs = new DoAfterArgs(EntityManager, args.User, time, ev, rites, args.Target)
-            {
-                BreakOnMove = true,
-                BreakOnDamage = true
-            };
-            if (_doAfter.TryStartDoAfter(doAfterArgs, out var doAfterId))
-                rites.Comp.ExtractDoAfterId = doAfterId;
-
-            args.Handled = true;
             return;
         }
 
@@ -112,33 +102,86 @@ public sealed class BloodRitesSystem : EntitySystem
         args.Handled = true;
     }
 
-    private void OnCultistHit(Entity<BloodRitesAuraComponent> rites, ref MeleeHitEvent args)
+    private void OnMeleeHit(Entity<BloodRitesAuraComponent> rites, ref MeleeHitEvent args)
     {
-        if (args.HitEntities.Count == 0)
+        if (!args.IsHit)
             return;
+
+        if (args.HitEntities.Count == 0)
+        {
+            TryConsumePuddlesAtCoordinates(args.Coords, rites);
+            return;
+        }
 
         var playSound = false;
 
         foreach (var target in args.HitEntities)
         {
-            if (!HasComp<BloodCultistComponent>(target) && !HasComp<ConstructComponent>(target))
-                return;
-
-            if (TryComp(target, out BloodstreamComponent? bloodstream))
+            if (HasComp<BloodCultistComponent>(target) || HasComp<ConstructComponent>(target))
             {
-                if (RestoreBloodLevel(rites, args.User, (target, bloodstream)))
+                if (TryComp(target, out BloodstreamComponent? bloodstream) &&
+                    RestoreBloodLevel(rites, args.User, (target, bloodstream)))
+                {
                     playSound = true;
+                }
+
+                if (TryComp(target, out DamageableComponent? damageable) &&
+                    Heal(rites, args.User, (target, damageable)))
+                {
+                    playSound = true;
+                }
+
+                continue;
             }
 
-            if (TryComp(target, out DamageableComponent? damageable))
+            if (HasComp<PuddleComponent>(target))
             {
-                if (Heal(rites, args.User, (target, damageable)))
-                    playSound = true;
+                ConsumePuddles(target, rites);
+                playSound = true;
+                continue;
             }
+
+            if (HasComp<BloodstreamComponent>(target) && TryStartBloodExtraction(rites, args.User, target))
+                playSound = true;
         }
 
         if (playSound)
             _audio.PlayPvs(rites.Comp.BloodRitesAudio, rites);
+    }
+
+    private bool TryStartBloodExtraction(Entity<BloodRitesAuraComponent> rites, EntityUid user, EntityUid target)
+    {
+        if (rites.Comp.ExtractDoAfterId.HasValue)
+            return false;
+
+        var ev = new BloodRitesExtractDoAfterEvent();
+        var doAfterArgs = new DoAfterArgs(EntityManager, user, rites.Comp.BloodExtractionTime, ev, rites, target)
+        {
+            BreakOnMove = true,
+            BreakOnDamage = true
+        };
+
+        if (!_doAfter.TryStartDoAfter(doAfterArgs, out var doAfterId))
+            return false;
+
+        rites.Comp.ExtractDoAfterId = doAfterId;
+        return true;
+    }
+
+    private void TryConsumePuddlesAtCoordinates(EntityCoordinates coordinates, Entity<BloodRitesAuraComponent> rites)
+    {
+        var lookup = _lookup.GetEntitiesInRange<PuddleComponent>(
+            coordinates,
+            rites.Comp.PuddleConsumeRadius,
+            LookupFlags.Uncontained);
+
+        if (lookup.Count == 0)
+            return;
+
+        foreach (var puddle in lookup)
+            ConsumePuddles(puddle, rites);
+
+        _audio.PlayPvs(rites.Comp.BloodRitesAudio, rites);
     }
 
     private void BeforeUiOpen(Entity<BloodRitesAuraComponent> rites, ref BeforeActivatableUIOpenEvent args)

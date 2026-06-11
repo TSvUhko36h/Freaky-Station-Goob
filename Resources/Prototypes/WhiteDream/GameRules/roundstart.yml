@@ -26,5 +26,5 @@
             type: RadialSelectorMenuBUI
           enum.ListViewSelectorUiKey.Key:
             type: ListViewSelectorBUI
-      mindComponents:
-      - type: BloodCultistRole
+      mindRoles:
+      - MindRoleBloodCultist

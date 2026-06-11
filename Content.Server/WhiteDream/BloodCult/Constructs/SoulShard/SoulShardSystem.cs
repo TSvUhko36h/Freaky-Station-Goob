@@ -1,4 +1,5 @@
 ﻿using Content.Goobstation.Shared.Bible;
+using Content.Server._EinsteinEngines.Language;
 using Content.Server.Mind;
 using Content.Server.Popups;
 using Content.Server.Roles;
@@ -20,6 +21,7 @@ public sealed class SoulShardSystem : EntitySystem
     [Dependency] private readonly SharedPointLightSystem _lightSystem = default!;
     [Dependency] private readonly TransformSystem _transform = default!;
     [Dependency] private readonly MindSystem _mind = default!;
+    [Dependency] private readonly LanguageSystem _language = default!;
     [Dependency] private readonly SharedRoleSystem _roleSystem = default!;
     [Dependency] private readonly PopupSystem _popup = default!;
 
@@ -83,6 +85,7 @@ public sealed class SoulShardSystem : EntitySystem
             return;
 
         _roleSystem.MindRemoveRole<TraitorRoleComponent>(mindContainer.Mind.Value);
+        _language.UpdateEntityLanguages(shard.Owner);
         UpdateGlowVisuals(shard, true);
     }
 

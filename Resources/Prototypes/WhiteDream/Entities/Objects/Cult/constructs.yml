@@ -79,6 +79,7 @@
   - type: Internals
   - type: Examiner
   - type: Speech
+  - type: LanguageSpeaker
   - type: TypingIndicator
     proto: guardian
   - type: Puller

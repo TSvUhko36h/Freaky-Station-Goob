@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Content.Shared.Bible.Components;
+using Content.Server._EinsteinEngines.Language;
 using Content.Server.Body.Systems;
 using Content.Server.Cuffs;
 using Content.Server.Mind;
@@ -19,6 +20,7 @@ namespace Content.Server.WhiteDream.BloodCult.Runes.Offering;
 public sealed class CultRuneOfferingSystem : EntitySystem
 {
     [Dependency] private readonly BloodCultRuleSystem _bloodCultRule = default!;
+    [Dependency] private readonly LanguageSystem _language = default!;
     [Dependency] private readonly BodySystem _body = default!;
     [Dependency] private readonly CuffableSystem _cuffable = default!;
     [Dependency] private readonly CultRuneBaseSystem _cultRune = default!;
@@ -100,6 +102,7 @@ public sealed class CultRuneOfferingSystem : EntitySystem
             var shard = Spawn(rune.Comp.SoulShardProto, transform.Coordinates);
             _mind.TransferTo(mindId, shard);
             _mind.UnVisit(mindId);
+            _language.UpdateEntityLanguages(shard);
         }
 
         _body.GibBody(target);
