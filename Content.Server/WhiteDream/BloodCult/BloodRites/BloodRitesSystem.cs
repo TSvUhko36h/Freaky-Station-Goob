@@ -1,6 +1,5 @@
 ﻿using Content.Shared.Body.Components;
 using Content.Server.Body.Systems;
-using Content.Server.DoAfter;
 using Content.Server.Hands.Systems;
 using Content.Server.Popups;
 using Content.Shared.Chemistry.Components.SolutionManager;
@@ -62,9 +61,19 @@ public sealed class BloodRitesSystem : EntitySystem
 
     private void OnAfterInteract(Entity<BloodRitesAuraComponent> rites, ref AfterInteractEvent args)
     {
-        if (!args.Target.HasValue || args.Handled || args.Target == args.User ||
-            HasComp<BloodCultistComponent>(args.Target))
+        if (!args.Target.HasValue || args.Handled || args.Target == args.User)
             return;
+
+        if (HasComp<BloodCultistComponent>(args.Target) || HasComp<ConstructComponent>(args.Target))
+        {
+            if (TryHealCultist(rites, args.User, args.Target.Value))
+            {
+                _audio.PlayPvs(rites.Comp.BloodRitesAudio, rites);
+                args.Handled = true;
+            }
+
+            return;
+        }
 
         if (HasComp<BloodstreamComponent>(args.Target))
         {
@@ -89,27 +98,6 @@ public sealed class BloodRitesSystem : EntitySystem
         }
     }
 
-    private void OnDoAfter(Entity<BloodRitesAuraComponent> rites, ref BloodRitesExtractDoAfterEvent args)
-    {
-        rites.Comp.ExtractDoAfterId = null;
-        if (args.Cancelled || args.Handled || args.Target is not { } target ||
-            !TryComp(target, out BloodstreamComponent? bloodstream) || bloodstream.BloodSolution is not { } solution)
-            return;
-
-        var extracted = solution.Comp.Solution.RemoveReagent(
-            bloodstream.BloodReagent,
-            rites.Comp.BloodExtractionAmount,
-            ignoreReagentData: true);
-
-        if (extracted <= FixedPoint2.Zero)
-            return;
-
-        _solutionContainer.UpdateChemicals(solution);
-        rites.Comp.StoredBlood += extracted;
-        _audio.PlayPvs(rites.Comp.BloodRitesAudio, rites);
-        args.Handled = true;
-    }
-
     private void OnMeleeHit(Entity<BloodRitesAuraComponent> rites, ref MeleeHitEvent args)
     {
         if (!args.IsHit)
@@ -125,19 +113,13 @@ public sealed class BloodRitesSystem : EntitySystem
 
         foreach (var target in args.HitEntities)
         {
+            if (target == args.User)
+                continue;
+
             if (HasComp<BloodCultistComponent>(target) || HasComp<ConstructComponent>(target))
             {
-                if (TryComp(target, out BloodstreamComponent? bloodstream) &&
-                    RestoreBloodLevel(rites, args.User, (target, bloodstream)))
-                {
+                if (TryHealCultist(rites, args.User, target))
                     playSound = true;
-                }
-
-                if (TryComp(target, out DamageableComponent? damageable) &&
-                    Heal(rites, args.User, (target, damageable)))
-                {
-                    playSound = true;
-                }
 
                 continue;
             }
@@ -162,21 +144,38 @@ public sealed class BloodRitesSystem : EntitySystem
 
     private bool TryExtractBlood(Entity<BloodRitesAuraComponent> rites, EntityUid target)
     {
-        if (!TryComp(target, out BloodstreamComponent? bloodstream))
+        if (!TryComp(target, out BloodstreamComponent? bloodstream) ||
+            bloodstream.BloodSolution is not { } solution)
             return false;
 
-        if (!_solutionContainer.ResolveSolution(target, bloodstream.BloodSolutionName, ref bloodstream.BloodSolution,
-                out var bloodSolution))
-            return false;
+        var extracted = solution.Comp.Solution.RemoveReagent(
+            bloodstream.BloodReagent,
+            rites.Comp.BloodExtractionAmount,
+            ignoreReagentData: true);
 
-        var extracted = bloodSolution.RemoveReagent(bloodstream.BloodReagent, rites.Comp.BloodExtractionAmount);
         if (extracted <= FixedPoint2.Zero)
             return false;
 
-        _solutionContainer.UpdateChemicals(bloodstream.BloodSolution.Value);
+        _solutionContainer.UpdateChemicals(solution);
         rites.Comp.StoredBlood += extracted;
         Dirty(target, bloodstream);
         return true;
+    }
+
+    private bool TryHealCultist(Entity<BloodRitesAuraComponent> rites, EntityUid user, EntityUid target)
+    {
+        var healed = false;
+
+        if (TryComp(target, out BloodstreamComponent? bloodstream) &&
+            RestoreBloodLevel(rites, user, (target, bloodstream)))
+        {
+            healed = true;
+        }
+
+        if (TryComp(target, out DamageableComponent? damageable) && Heal(rites, user, (target, damageable)))
+            healed = true;
+
+        return healed;
     }
 
     private void TryConsumePuddlesAtCoordinates(EntityCoordinates coordinates, Entity<BloodRitesAuraComponent> rites)

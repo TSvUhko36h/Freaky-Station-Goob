@@ -116,6 +116,9 @@
         Blunt: 0
     heavyStaminaCost: 0
   - type: BloodRitesAura
+  - type: Tag
+    tags:
+    - BloodRitesAura
   - type: UserInterface
     interfaces:
       enum.BloodRitesUiKey.Key:

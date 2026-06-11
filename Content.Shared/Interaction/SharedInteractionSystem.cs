@@ -563,8 +563,12 @@ namespace Content.Shared.Interaction
 
             if (!altInteract && _combatQuery.TryComp(user, out var combatMode) && combatMode.IsInCombatMode)
             {
-                if (!CombatModeCanHandInteract(user, target))
+                if (!CombatModeCanHandInteract(user, target)
+                    && (!TryGetUsedEntity(user, out var heldItem, checkCanUse: false)
+                        || !_tagSystem.HasTag(heldItem.Value, "BloodRitesAura")))
+                {
                     return;
+                }
             }
 
             if (!ValidateInteractAndFace(user, coordinates))

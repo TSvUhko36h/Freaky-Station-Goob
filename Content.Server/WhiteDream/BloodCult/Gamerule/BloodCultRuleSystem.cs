@@ -375,7 +375,11 @@ public sealed class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleComponent>
         _faction.RemoveFaction(cultist, rule.Comp.NanoTrasenFaction);
         _faction.AddFaction(cultist, rule.Comp.BloodCultFaction);
 
-        _mind.TryAddObjective(mindId, mind, "KillTargetCultObjective");
+        if (rule.Comp.OfferingTarget is null)
+            SetRandomCultTarget(rule.Comp);
+
+        if (rule.Comp.OfferingTarget is { } target && target != cultist)
+            _mind.TryAddObjective(mindId, mind, "KillTargetCultObjective");
     }
 
     private void GetRandomRunePlacements(BloodCultRuleComponent component)
