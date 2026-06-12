@@ -1,18 +1,3 @@
-reagent-name-bz = bz
-reagent-desc-bz = A potent hallucinogenic that also puts slimes into stasis.
-
-reagent-name-pluoxium = pluoxium
-reagent-desc-pluoxium = A gas that could supply even more oxygen to the bloodstream when inhaled, without being an oxidizer.
-
-reagent-name-hydrogen = hydrogen
-reagent-desc-hydrogen = A light, flammable gas.
-
-reagent-name-nitrium = nitrium
-reagent-desc-nitrium = A gaseous stimulant that when inhaled can enhance speed and endurance.
-
-reagent-name-healium = healium
-reagent-desc-healium = Causes deep, regenerative sleep.
-
 reagent-name-hyper-nob = hyper-noblium
 reagent-desc-hyper-nob = The most noble gas of them all. High quantities of hyper-noblium actively prevents reactions from occuring.
 

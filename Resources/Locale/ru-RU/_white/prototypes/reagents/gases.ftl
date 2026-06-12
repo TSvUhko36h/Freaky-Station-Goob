@@ -1,18 +1,3 @@
-reagent-name-bz = бз
-reagent-desc-bz = Сильнодействующий галлюциноген, который также погружает слизней в стазис.
-
-reagent-name-pluoxium = плюоксиум
-reagent-desc-pluoxium = Газ, насыщающий кровь большим количеством кислорода, не будучи окислителем.
-
-reagent-name-hydrogen = водород
-reagent-desc-hydrogen = Легкий, легковоспламеняющийся газ.
-
-reagent-name-nitrium = нитриум
-reagent-desc-nitrium = Газообразный стимулятор, который при вдыхании может повысить скорость и выносливость.
-
-reagent-name-healium = хилиум
-reagent-desc-healium = Вызывает глубокий регенеративный сон.
-
 reagent-name-hyper-nob = гипер-ноблий
 reagent-desc-hyper-nob = Самый благородный газ из всех. Большое количество гипер-ноблия активно предотвращает возникновение реакций.
 
