@@ -176,7 +176,7 @@ namespace Content.IntegrationTests.Tests
             "/Maps/Shuttles/ShuttleEvent/instigator.yml", // Contains EXP-320g "Friendship"
             "/Maps/Shuttles/ShuttleEvent/syndie_evacpod.yml", // Contains syndicate rubber stamp
             // Goobstation maps/map versions; it's kinda a big TODO rn
-            "/Maps/_Goobstation/bagel.yml",
+            //"/Maps/_Goobstation/bagel.yml", corvaxgoob - вырезано
             "/Maps/_Goobstation/barratry.yml",
             "/Maps/_Goobstation/cluster.yml",
             "/Maps/_Goobstation/amber.yml",
@@ -253,13 +253,13 @@ namespace Content.IntegrationTests.Tests
             "CorvaxPearl",
             "CorvaxVoid",
             "CorvaxMaus",
-            // "CorvaxOmega",
-            // "CorvaxPacked",
+            "CorvaxOmega",
+            "CorvaxPacked",
             "CorvaxTushkan",
             "CorvaxAvrite",
             "CorvaxChloris",
-            // "CorvaxSilly",
-            // "CorvaxCluster",
+            "CorvaxSilly",
+            "CorvaxCluster",
             "CorvaxAvrite",
             "Box_CS",
             // Corvax-Goob-Maps-end
