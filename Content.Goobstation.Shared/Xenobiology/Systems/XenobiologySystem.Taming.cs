@@ -8,6 +8,7 @@
 
 using Content.Goobstation.Shared.Xenobiology.Components;
 using Content.Shared.Interaction.Events;
+using Robust.Shared.GameObjects;
 
 namespace Content.Goobstation.Shared.Xenobiology.Systems;
 
@@ -17,6 +18,25 @@ public partial class XenobiologySystem
     private void SubscribeTaming()
     {
         SubscribeLocalEvent<SlimeComponent, InteractionSuccessEvent>(OnInteractionSuccess);
+        SubscribeLocalEvent<EntityTerminatingEvent>(OnTamerTerminating);
+    }
+
+    private void OnTamerTerminating(ref EntityTerminatingEvent args)
+    {
+        if (_net.IsClient)
+            return;
+
+        var tamer = args.Entity;
+        var query = EntityQueryEnumerator<SlimeComponent>();
+
+        while (query.MoveNext(out var uid, out var slime))
+        {
+            if (slime.Tamer != tamer)
+                continue;
+
+            slime.Tamer = null;
+            Dirty(uid, slime);
+        }
     }
 
     private void OnInteractionSuccess(Entity<SlimeComponent> ent, ref InteractionSuccessEvent args)
