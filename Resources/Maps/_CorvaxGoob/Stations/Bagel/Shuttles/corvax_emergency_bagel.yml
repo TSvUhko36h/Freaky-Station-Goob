@@ -2536,8 +2536,7 @@ entities:
       pos: 11.5,-10.5
       parent: 1
     - type: DeviceNetwork
-      configurators:
-      - invalid
+      configurators: []
       deviceLists:
       - 7
       - 8
@@ -2564,8 +2563,7 @@ entities:
       pos: 9.5,-15.5
       parent: 1
     - type: DeviceNetwork
-      configurators:
-      - invalid
+      configurators: []
       deviceLists:
       - 8
   - uid: 364
@@ -3638,8 +3636,7 @@ entities:
       pos: 10.5,-11.5
       parent: 1
     - type: DeviceNetwork
-      configurators:
-      - invalid
+      configurators: []
       deviceLists:
       - 8
     - type: AtmosPipeColor
@@ -3858,8 +3855,7 @@ entities:
       pos: 10.5,-13.5
       parent: 1
     - type: DeviceNetwork
-      configurators:
-      - invalid
+      configurators: []
       deviceLists:
       - 8
     - type: AtmosPipeColor
