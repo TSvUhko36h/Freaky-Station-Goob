@@ -245,7 +245,7 @@ namespace Content.IntegrationTests.Tests
             "CorvaxGlacier",
             "CorvaxPilgrim",
             "CorvaxAmber",
-            //"CorvaxBagel", corvaxgoob - вырезано
+            "CorvaxBagel",
             "CorvaxMarathon",
             "CorvaxMascara",
             "CorvaxOutpost",
