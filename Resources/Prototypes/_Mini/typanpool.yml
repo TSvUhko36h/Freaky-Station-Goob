@@ -33,10 +33,10 @@
   maps:
     - Typan
 
-# - type: additionalMap
-#   id: MiniPacked
-#   maps:
-#     - Typan
+- type: additionalMap
+  id: MiniPacked
+  maps:
+    - Typan
 
 - type: additionalMap
   id: Lambda

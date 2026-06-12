@@ -267,7 +267,7 @@ namespace Content.IntegrationTests.Tests
             // Mini Station test maps start
             "MiniCluster",
             "MiniOmega",
-            // "MiniPacked",
+            "MiniPacked",
             "MiniSilly",
             "Typan",
             // Mini Station test maps end
