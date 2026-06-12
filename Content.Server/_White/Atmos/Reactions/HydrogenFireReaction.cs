@@ -20,7 +20,7 @@ public sealed partial class HydrogenFireReaction : IGasReactionEffect
         var oldHeatCapacity = atmosphereSystem.GetHeatCapacity(mixture, true);
         var temperature = mixture.Temperature;
         var location = holder as TileAtmosphere;
-        mixture.ReactionResults[GasReaction.Fire] = 0;
+        mixture.ReactionResults[(int)GasReaction.Fire] = 0f;
 
         var initialOxygen = mixture.GetMoles(Gas.Oxygen);
         var initialHydrogen = mixture.GetMoles(Gas.Hydrogen);
@@ -35,7 +35,7 @@ public sealed partial class HydrogenFireReaction : IGasReactionEffect
             mixture.AdjustMoles(Gas.Hydrogen, -burnedFuel);
             mixture.AdjustMoles(Gas.Oxygen, -burnedFuel * 0.5f);
 
-            mixture.ReactionResults[GasReaction.Fire] += burnedFuel;
+            mixture.ReactionResults[(int)GasReaction.Fire] += burnedFuel;
         }
 
         if (energyReleased > 0)
@@ -54,6 +54,6 @@ public sealed partial class HydrogenFireReaction : IGasReactionEffect
             }
         }
 
-        return mixture.ReactionResults[GasReaction.Fire] != 0 ? ReactionResult.Reacting : ReactionResult.NoReaction;
+        return mixture.ReactionResults[(int)GasReaction.Fire] != 0 ? ReactionResult.Reacting : ReactionResult.NoReaction;
     }
 }

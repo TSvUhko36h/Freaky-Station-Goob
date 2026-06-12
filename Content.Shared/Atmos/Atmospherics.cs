@@ -402,7 +402,6 @@ namespace Content.Shared.Atmos
         /// <summary>
         ///     The amount of energy 1 mole of BZ forming from N2O and plasma releases.
         /// </summary>
-        public const float BZFormationEnergy = 80e3f; // Assmos - /tg/ gases
 
         /// <summary>
         ///     The amount of energy 1 mol of Healium forming from BZ and frezon releases.
@@ -419,10 +418,6 @@ namespace Content.Shared.Atmos
         /// </summary>
         public const float PluoxiumProductionEnergy = 250; // Assmos - /tg/ gases
 
-        /// <summary>
-        ///     The amount of energy 1 mol of Nitrium decomposing into nitrogen and water vapor releases.
-        /// </summary>
-        public const float NitriumDecompositionEnergy = 30e3f; // Assmos - /tg/ gases
 
         /// <summary>
         ///     Determines at what pressure the ultra-high pressure red icon is displayed.
