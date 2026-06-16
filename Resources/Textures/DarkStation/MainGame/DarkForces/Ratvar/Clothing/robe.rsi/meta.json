@@ -19,6 +19,12 @@
             "directions": 4
         },
         {
+            "name": "clockwork_robe_overlay_1"
+        },
+        {
+            "name": "clockwork_robe_overlay_2"
+        },
+        {
             "name": "inhand-right",
             "directions": 4
         }
