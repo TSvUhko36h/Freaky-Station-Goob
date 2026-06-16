@@ -227,6 +227,7 @@
     - state: generic
     - state: icon-tools
   - type: ItemBorgModule
+    moduleId: Tools
     items:
     - RatvarSpear
   - type: Tag
