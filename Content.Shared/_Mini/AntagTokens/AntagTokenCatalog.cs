@@ -46,6 +46,7 @@ public static class AntagTokenCatalog
     public const string WraithRole = "wraith";
     public const string HasturRole = "hastur";
     public const string VoxRole = "vox";
+    public const string BorerRole = "borer";
 
 
 
