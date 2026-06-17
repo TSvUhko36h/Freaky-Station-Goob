@@ -8,7 +8,6 @@
     antagPrototype: Morph
     roleType: TeamAntagonist
     exclusiveAntag: true
-  - type: MorphRole
 
 # InteQ
 - type: entity
