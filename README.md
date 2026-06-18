@@ -1,4 +1,4 @@
-<p align="center"> <img alt="Space Station 14" width="880" height="300" src="https://raw.githubusercontent.com/space-wizards/asset-dump/de329a7898bb716b9d5ba9a0cd07f38e61f1ed05/github-logo.svg" /></p>
+<p align="center"> <img alt="Freaky Station 14" width="880" height="495" src="Resources/Textures/Logo/logo.png" /></p>
 
 Братаааан, да это же Freaky Station, который является форком Mini Station, который является форком CorvaxGoob, который является форком Goob Station, который является форком Space Station 14.
 
