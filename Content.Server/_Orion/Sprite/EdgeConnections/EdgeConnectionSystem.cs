@@ -86,18 +86,22 @@ public sealed class EdgeConnectionSystem : EntitySystem
             if ((worldAllowed & direction) == 0)
                 continue;
 
-            if (HasMatchingNeighbor(ent, gridUid, grid, tile + offset, ent.Comp.ConnectionKey, opposite))
+            if (HasMatchingNeighbor(ent, xform.LocalRotation, gridUid, grid, tile + offset, ent.Comp.ConnectionKey, opposite))
                 mask |= direction;
         }
 
         var localMask = RotateDirections(mask, xform.LocalRotation, clockwise: false);
+
+        if (GetQuarterTurns(xform.LocalRotation) % 2 != 0)
+            localMask = FlipEastWest(localMask);
+
         _appearance.SetData(ent, EdgeConnectionVisuals.ConnectionMask, localMask);
     }
 
-    private bool HasMatchingNeighbor(EntityUid self, EntityUid gridUid, MapGridComponent grid, Vector2i tile, string key, EdgeConnectionDirections requiredDirection)
+    private bool HasMatchingNeighbor(EntityUid self, Angle selfLocalRotation, EntityUid gridUid, MapGridComponent grid, Vector2i tile, string key, EdgeConnectionDirections requiredDirection)
     {
         var anchored = _map.GetAnchoredEntitiesEnumerator(gridUid, grid, tile);
-        var selfQuarterTurns = GetQuarterTurns(Transform(self).LocalRotation);
+        var selfQuarterTurns = GetQuarterTurns(selfLocalRotation);
 
         while (anchored.MoveNext(out var otherNullable))
         {
@@ -114,12 +118,13 @@ public sealed class EdgeConnectionSystem : EntitySystem
             if (!otherXform.Anchored)
                 continue;
 
+            var otherQuarterTurns = GetQuarterTurns(otherXform.LocalRotation);
+            if (selfQuarterTurns % 2 != otherQuarterTurns % 2)
+                continue;
+
             var otherAllowed = RotateDirections(edge.AllowedDirections, otherXform.LocalRotation, clockwise: true);
             if ((otherAllowed & requiredDirection) != 0)
-            {
-                if (selfQuarterTurns == GetQuarterTurns(otherXform.LocalRotation))
-                    return true;
-            }
+                return true;
         }
 
         return false;
@@ -211,5 +216,18 @@ public sealed class EdgeConnectionSystem : EntitySystem
     private static int GetQuarterTurns(Angle rotation)
     {
         return ((int) Math.Round(rotation.Degrees / 90.0) % 4 + 4) % 4;
+    }
+
+    private static EdgeConnectionDirections FlipEastWest(EdgeConnectionDirections flags)
+    {
+        var result = flags & ~(EdgeConnectionDirections.East | EdgeConnectionDirections.West);
+
+        if ((flags & EdgeConnectionDirections.East) != 0)
+            result |= EdgeConnectionDirections.West;
+
+        if ((flags & EdgeConnectionDirections.West) != 0)
+            result |= EdgeConnectionDirections.East;
+
+        return result;
     }
 }
