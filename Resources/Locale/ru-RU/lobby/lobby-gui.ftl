@@ -8,3 +8,5 @@ ui-lobby-online-players-block = Текущие игроки
 ui-lobby-server-info-block = Серверная информация
 ui-lobby-daily-rewards-button = Ежедневные награды
 ui-lobby-antag-token-button = Магазин антагонистов
+ui-lobby-open-vote = Голосование
+ui-lobby0changelog-button = Чейнджлог
