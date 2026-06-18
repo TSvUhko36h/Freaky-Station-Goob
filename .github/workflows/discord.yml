@@ -11,41 +11,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Send Discord notification
+      - name: Verify webhook exists
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          curl -H "Content-Type: application/json" \
-          -X POST \
-          -d '{
+          echo "Webhook length: ${#WEBHOOK}"
+
+      - name: Send Discord notification
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          cat > payload.json << EOF
+          {
             "username": "Freaky Station",
-            "embeds": [{
-              "title": "🚀 Pull Request Merged",
-              "description": "**${{ github.event.pull_request.title }}**",
-              "url": "${{ github.event.pull_request.html_url }}",
-              "color": 16716936,
-              "thumbnail": {
-                "url": "${{ github.event.pull_request.user.avatar_url }}"
-              },
-              "fields": [
-                {
-                  "name": "👤 Автор",
-                  "value": "${{ github.event.pull_request.user.login }}",
-                  "inline": true
+            "embeds": [
+              {
+                "title": "🚀 Pull Request Merged",
+                "description": "**${{ github.event.pull_request.title }}**",
+                "url": "${{ github.event.pull_request.html_url }}",
+                "color": 16716936,
+                "fields": [
+                  {
+                    "name": "👤 Автор",
+                    "value": "${{ github.event.pull_request.user.login }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "🔀 PR",
+                    "value": "#${{ github.event.pull_request.number }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "🌿 Ветка",
+                    "value": "${{ github.event.pull_request.head.ref }}",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "Freaky Station • GitHub"
                 },
-                {
-                  "name": "🔀 PR",
-                  "value": "#${{ github.event.pull_request.number }}",
-                  "inline": true
-                },
-                {
-                  "name": "🌿 Ветка",
-                  "value": "${{ github.event.pull_request.head.ref }}",
-                  "inline": true
-                }
-              ],
-              "footer": {
-                "text": "Freaky Station • GitHub"
-              },
-              "timestamp": "${{ github.event.pull_request.merged_at }}"
-            }]
-          }' \
-          "${{ secrets.DISCORD_WEBHOOK }}"
+                "timestamp": "${{ github.event.pull_request.merged_at }}"
+              }
+            ]
+          }
+          EOF
+
+          curl \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @payload.json \
+            "$WEBHOOK"
