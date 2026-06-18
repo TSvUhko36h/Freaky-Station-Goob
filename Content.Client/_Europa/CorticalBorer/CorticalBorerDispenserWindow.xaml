@@ -1,7 +1,9 @@
 <controls:FancyWindow
     xmlns="https://spacestation14.io"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:Content.Client.UserInterface.Controls"
     xmlns:ui="clr-namespace:Content.Client.Chemistry.UI"
+    x:Class="Content.Client._Orion.CorticalBorer.CorticalBorerDispenserWindow"
     Title="{Loc 'reagent-dispenser-bound-user-interface-title'}"
     MinSize="400 175"
     SetSize="600 300">
