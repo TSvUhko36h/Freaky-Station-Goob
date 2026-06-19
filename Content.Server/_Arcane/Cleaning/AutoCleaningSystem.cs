@@ -39,11 +39,14 @@ public sealed partial class AutoCleaningSystem : EntitySystem
     {
         _nextUpdate = _timing.CurTime + _updateInterval;
         _isActive = true;
+        _isWarned = false;
     }
 
     private void OnRoundEnded(RoundEndedEvent args)
     {
         _isActive = false;
+        _isWarned = false;
+        _nextUpdate = TimeSpan.MaxValue;
     }
 
     public override void Update(float frameTime)

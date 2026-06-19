@@ -26,7 +26,7 @@ public sealed partial class NpcSleepSystem : EntitySystem
 
     private void SetSleepRange(int range)
     {
-        _sleepRange = range;
+        _sleepRange = Math.Max(0, range);
     }
 
     public override void Update(float frameTime)
