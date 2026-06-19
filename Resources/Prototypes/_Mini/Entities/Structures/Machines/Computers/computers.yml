@@ -74,6 +74,14 @@
       board: !type:Container
       IdCardConsole-privilegedId: !type:ContainerSlot
       IdCardConsole-targetId: !type:ContainerSlot
+  - type: GenericVisualizer # Orion
+    visuals:
+      enum.EdgeConnectionVisuals.ConnectionMask:
+        computerLayerBody:
+          None: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East, West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
 
 - type: entity
   parent: BaseComputer
@@ -93,6 +101,14 @@
       state: comm_syndie
     - map: [ "enum.WiresVisualLayers.MaintenancePanel" ]
       state: generic_panel_open
+  - type: GenericVisualizer # Orion
+    visuals:
+      enum.EdgeConnectionVisuals.ConnectionMask:
+        computerLayerBody:
+          None: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East, West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
 
 - type: entity
   parent: [BaseComputer, BaseSyndicateContraband, StorePresetUplinkTypan,]
@@ -120,6 +136,14 @@
       Telecrystal: 0
   - type: Anchorable
     flags: None
+  - type: GenericVisualizer # Orion
+    visuals:
+      enum.EdgeConnectionVisuals.ConnectionMask:
+        computerLayerBody:
+          None: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East, West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
 
 - type: entity
   parent: ComputerResearchAndDevelopment
@@ -165,6 +189,14 @@
   - type: GuideHelp
     guides:
     - Science
+  - type: GenericVisualizer # Orion
+    visuals:
+      enum.EdgeConnectionVisuals.ConnectionMask:
+        computerLayerBody:
+          None: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East, West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
 
 - type: entity
   parent: ComputerAnalysisConsole
@@ -210,6 +242,14 @@
   - type: GuideHelp
     guides:
     - Xenoarchaeology
+  - type: GenericVisualizer # Orion
+    visuals:
+      enum.EdgeConnectionVisuals.ConnectionMask:
+        computerLayerBody:
+          None: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East, West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
 
 - type: entity
   parent: ComputerShuttleCargo
@@ -238,6 +278,14 @@
     color: "#43ccb5"
   - type: Computer
     board: CargoShuttleConsoleCircuitboard
+  - type: GenericVisualizer # Orion
+    visuals:
+      enum.EdgeConnectionVisuals.ConnectionMask:
+        computerLayerBody:
+          None: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East, West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
 
 - type: entity
   parent: BaseComputerAiAccess
@@ -289,3 +337,11 @@
   - type: ContainerContainer
     containers:
       board: !type:Container
+  - type: GenericVisualizer # Orion
+    visuals:
+      enum.EdgeConnectionVisuals.ConnectionMask:
+        computerLayerBody:
+          None: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }
+          East, West: { state: computer_uplink, sprite: _Mini/Structures/Machines/computers.rsi }

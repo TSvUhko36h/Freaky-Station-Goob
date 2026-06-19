@@ -28,6 +28,14 @@
     radius: 1.5
     energy: 1.6
     color: "#FC0097"
+  - type: GenericVisualizer # Orion
+    visuals:
+      enum.EdgeConnectionVisuals.ConnectionMask:
+        computerLayerBody:
+          None: { state: console, sprite: _Shitmed/Structures/Machines/abductor_console.rsi}
+          East: { state: console, sprite: _Shitmed/Structures/Machines/abductor_console.rsi }
+          West: { state: cconsole, sprite: _Shitmed/Structures/Machines/abductor_console.rsi }
+          East, West: { state: console, sprite: _Shitmed/Structures/Machines/abductor_console.rsi }
 
 - type: entity
   parent: ComputerComms
