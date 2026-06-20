@@ -24,7 +24,7 @@ chat-manager-entity-say-wrap-message = [BubbleHeader][bold][Name]{ $entityName }
 chat-manager-entity-say-bold-wrap-message = [BubbleHeader][bold][Name]{ $entityName }[/Name][/bold][/BubbleHeader] [icon src="{ $jobIcon }" tooltip="{ $jobName }"]  { $verb }, [font={ $fontType } size={ $fontSize }]"[BubbleContent][font="{ $fontType }" size={ $fontSize }][bold][color={ $color }]{ $message }[/color][/bold][/font][/BubbleContent]"[/font]
 chat-manager-entity-whisper-wrap-message = [font size=11][italic][BubbleHeader][Name]{ $entityName }[/Name][/BubbleHeader] [icon src="{ $jobIcon }" tooltip="{ $jobName }"]  шепчет, "[BubbleContent][color={ $color }][font="{ $fontType }"]{ $message }[/font][/color][/BubbleContent][font size=11]"[/italic][/font]
 chat-manager-entity-whisper-unknown-wrap-message = [font size=11][italic][BubbleHeader]Кто-то[/BubbleHeader] шепчет, "[BubbleContent][color={ $color }][font="{ $fontType }"]{ $message }[/color][/font][/BubbleContent][font size=11]"[/italic][/font]
-chat-manager-entity-me-wrap-message = [italic]{ CAPITALIZE($entityName) } [icon src="{ $jobIcon }" tooltip="{ $jobName }"] { $message }[/italic]
+chat-manager-entity-me-wrap-message = [italic]{ CAPITALIZE($entityName) } { $message }[/italic]
 chat-manager-entity-looc-wrap-message = LOOC: [bold]{ $entityName }:[/bold] { $message }
 chat-manager-send-ooc-wrap-message = OOC: [bold]{ $playerName }:[/bold] { $message }
 chat-manager-send-ooc-patron-wrap-message = OOC: [bold][color={ $patronColor }]{ $playerName }[/color]:[/bold] { $message }
