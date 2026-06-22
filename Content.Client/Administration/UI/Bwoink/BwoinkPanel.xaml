@@ -13,7 +13,9 @@ SPDX-License-Identifier: MIT
     xmlns:amour="clr-namespace:Content.Client._Amour.Stickers.UI"
     Orientation="Vertical"
     HorizontalExpand="True">
-    <OutputPanel Name="TextOutput" VerticalExpand="true" />
+    <ScrollContainer HScrollEnabled="False" VerticalExpand="True">
+        <BoxContainer Name="TextOutput" Orientation="Vertical" VerticalExpand="True" />
+    </ScrollContainer>
     <RichTextLabel Name="TypingIndicator" Access="Public" />
     <!-- Amour edit start -->
     <BoxContainer Orientation="Horizontal" HorizontalExpand="True" SeparationOverride="4">
