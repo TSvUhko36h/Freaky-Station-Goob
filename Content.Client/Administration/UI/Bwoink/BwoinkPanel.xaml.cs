@@ -1,18 +1,4 @@
 // SPDX-FileCopyrightText: 2022 E F R <602406+Efruit@users.noreply.github.com>
-// SPDX-FileCopyrightText: 2022 Jezithyr <Jezithyr.@gmail.com>
-// SPDX-FileCopyrightText: 2022 Jezithyr <Jezithyr@gmail.com>
-// SPDX-FileCopyrightText: 2022 Jezithyr <jmaster9999@gmail.com>
-// SPDX-FileCopyrightText: 2022 Moony <moonheart08@users.noreply.github.com>
-// SPDX-FileCopyrightText: 2022 Paul <ritter.paul1@googlemail.com>
-// SPDX-FileCopyrightText: 2022 Visne <39844191+Visne@users.noreply.github.com>
-// SPDX-FileCopyrightText: 2022 mirrorcult <lunarautomaton6@gmail.com>
-// SPDX-FileCopyrightText: 2022 wrexbe <81056464+wrexbe@users.noreply.github.com>
-// SPDX-FileCopyrightText: 2022 wrexbe <wrexbe@protonmail.com>
-// SPDX-FileCopyrightText: 2023 DrSmugleaf <DrSmugleaf@users.noreply.github.com>
-// SPDX-FileCopyrightText: 2023 Kara <lunarautomaton6@gmail.com>
-// SPDX-FileCopyrightText: 2024 Winkarst <74284083+Winkarst-cpu@users.noreply.github.com>
-// SPDX-FileCopyrightText: 2025 Aiden <28298836+Aidenkrz@users.noreply.github.com>
-//
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Content.Shared.Administration;
@@ -22,7 +8,12 @@ using Robust.Client.UserInterface.XAML;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
 using Content.Client._Amour.Stickers.UI;
-using Content.Shared.Administration;
+using Robust.Shared.IoC;
+using Robust.Client.Graphics;
+using Robust.Client.ResourceManagement;
+using System.Numerics;
+using System.Text.RegularExpressions;
+using Robust.Shared.Log;
 
 namespace Content.Client.Administration.UI.Bwoink
 {
@@ -55,11 +46,11 @@ namespace Content.Client.Administration.UI.Bwoink
             };
             SenderLineEdit.OnTextEntered += Input_OnTextEntered;
             SenderLineEdit.OnTextChanged += Input_OnTextChanged;
-            
+
             // Amour edit start
             StickerBtn.OnStickerSelected += sticker => StickerInputHelper.InsertSticker(SenderLineEdit, sticker);
             // Amour edit end
-            
+
             UpdateTypingIndicator();
         }
 
@@ -82,9 +73,80 @@ namespace Content.Client.Administration.UI.Bwoink
             if (!Visible)
                 Unread++;
 
-            var formatted = new FormattedMessage(1);
-            formatted.AddMarkupOrThrow($"[color=gray]{message.SentAt.ToShortTimeString()}[/color] {message.Text}");
-            TextOutput.AddMessage(formatted);
+            var regex = new System.Text.RegularExpressions.Regex(@"\[icon=(?<path>[^\]]+)\]");
+            var match = regex.Match(message.Text);
+
+            // Горизонтальная строка сообщения
+            var line = new BoxContainer
+            {
+                Orientation = BoxContainer.LayoutOrientation.Horizontal,
+                HorizontalAlignment = HAlignment.Left,
+                VerticalAlignment = VAlignment.Top,
+                Margin = new Thickness(0, 2),
+                MinHeight = 24
+            };
+
+            // Время (серое)
+            var timeLabel = new RichTextLabel();
+            var timeMsg = new FormattedMessage(1);
+            timeMsg.AddMarkupOrThrow($"[color=gray]{message.SentAt.ToShortTimeString()}[/color] ");
+            timeLabel.SetMessage(timeMsg);
+            line.AddChild(timeLabel);
+
+            if (match.Success)
+            {
+                var iconPath = match.Groups["path"].Value;
+                // Текст до маркера (должность)
+                var before = message.Text.Substring(0, match.Index);
+                if (!string.IsNullOrEmpty(before))
+                {
+                    var beforeLabel = new RichTextLabel();
+                    var beforeMsg = new FormattedMessage(1);
+                    beforeMsg.AddMarkupOrThrow(before);
+                    beforeLabel.SetMessage(beforeMsg);
+                    line.AddChild(beforeLabel);
+                }
+
+                try
+                {
+                    var resourceCache = IoCManager.Resolve<IResourceCache>();
+                    var texture = resourceCache.GetResource<TextureResource>(iconPath);
+                    var icon = new TextureRect
+                    {
+                        Texture = texture,
+                        Stretch = TextureRect.StretchMode.KeepAspectCentered,
+                        MinSize = new Vector2(20, 20),
+                        MaxSize = new Vector2(24, 24),
+                        Margin = new Thickness(4, 0, 4, 0),
+                        VerticalAlignment = VAlignment.Center
+                    };
+                    line.AddChild(icon);
+                }
+                catch { }
+
+                // Текст после маркера (имя и сообщение)
+                var after = message.Text.Substring(match.Index + match.Length);
+                if (!string.IsNullOrEmpty(after))
+                {
+                    var afterLabel = new RichTextLabel();
+                    var afterMsg = new FormattedMessage(1);
+                    afterMsg.AddMarkupOrThrow(after);
+                    afterLabel.SetMessage(afterMsg);
+                    line.AddChild(afterLabel);
+                }
+            }
+            else
+            {
+                // Без иконки – просто весь текст
+                var textLabel = new RichTextLabel();
+                var textMsg = new FormattedMessage(1);
+                textMsg.AddMarkupOrThrow(message.Text);
+                textLabel.SetMessage(textMsg);
+                line.AddChild(textLabel);
+            }
+
+            // Добавляем строку в вертикальный контейнер TextOutput
+            TextOutput.AddChild(line);
             LastMessage = message.SentAt;
         }
 
