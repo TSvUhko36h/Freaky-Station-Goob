@@ -1,8 +1,6 @@
-﻿- type: entity
+- type: entity
   id: MobMouseRatvar
   parent: SimpleMobBase
-  name: ent-MobMouseRatvar
-  description: ent-MobMouseRatvar.desc
   suffix: Ratvar
   components:
   - type: ZombieImmune

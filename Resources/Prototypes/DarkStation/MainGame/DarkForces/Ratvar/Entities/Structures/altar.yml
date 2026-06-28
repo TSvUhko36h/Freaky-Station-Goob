@@ -1,8 +1,6 @@
 - type: entity
   id: RatvarAltar
   parent: BaseRatvarStructure
-  name: ent-RatvarAltar
-  description: ent-RatvarAltar.desc
   suffix: Ratvar
   components:
   - type: Anchorable

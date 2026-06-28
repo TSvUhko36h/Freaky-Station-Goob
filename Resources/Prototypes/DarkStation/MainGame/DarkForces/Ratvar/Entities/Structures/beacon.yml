@@ -1,7 +1,6 @@
 - type: entity
   id: RatvarBeacon
   parent: BaseRatvarStructure
-  name: ent-RatvarBeacon
   suffix: Ratvar
   components:
   - type: Sprite

@@ -1,7 +1,5 @@
-﻿- type: entity
+- type: entity
   id: MobRatvarMarauder
-  name: ent-MobRatvarMarauder
-  description: ent-MobRatvarMarauder.desc
   suffix: Ratvar
   components:
   - type: Actions
