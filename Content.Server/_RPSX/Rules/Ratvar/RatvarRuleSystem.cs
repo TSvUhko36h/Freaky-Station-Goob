@@ -9,6 +9,8 @@ using Content.Server.Chat.Systems;
 using Content.Server.GameTicking.Rules;
 using Content.Server.RoundEnd;
 using Content.Shared.GameTicking.Components;
+using Content.Shared.RPSX.DarkForces.Ratvar.Righteous.Roles;
+using Content.Server.RPSX.DarkForces.Ratvar.Righteous.Structures.Beacon;
 using Robust.Shared.GameObjects;
 using Robust.Shared.IoC;
 using Robust.Shared.Maths;
@@ -62,6 +64,30 @@ public sealed class RatvarRuleSystem : GameRuleSystem<RatvarRuleComponent>
         }
     }
 
+    protected override void AppendRoundEndText(EntityUid uid, RatvarRuleComponent component,
+        GameRuleComponent gameRule, ref RoundEndTextAppendEvent args)
+    {
+        base.AppendRoundEndText(uid, component, gameRule, ref args);
+
+        var righteousCount = EntityQuery<RatvarRighteousComponent>().Count();
+        var beaconCount = EntityQuery<RatvarBeaconComponent>().Count();
+        var power = _progressSystem.GetCurrentPower();
+        var winState = component.WinState;
+
+        if (winState == WinState.RighteousWon)
+        {
+            args.AddLine(Loc.GetString("ratvar-roundend-win"));
+        }
+        else
+        {
+            args.AddLine(Loc.GetString("ratvar-roundend-loss"));
+        }
+
+        args.AddLine(Loc.GetString("ratvar-roundend-stats",
+            ("righteousCount", righteousCount),
+            ("beaconCount", beaconCount),
+            ("power", power)));
+    }
     private void OnRatvarSpawnedEvent(ref RatvarSpawnedEvent ev)
     {
         var rule = EntityQuery<RatvarRuleComponent>().FirstOrDefault();

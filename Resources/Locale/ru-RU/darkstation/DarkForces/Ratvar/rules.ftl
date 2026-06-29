@@ -1,4 +1,4 @@
-ratvar-spawn-start =
+﻿ratvar-spawn-start =
     Праведники Ратвара вот-вот освободят его из заточения
     Недопустите этого любой ценой!
     Судя по данным это происходит по координатам { $position }
@@ -18,3 +18,10 @@ tool-quality-ratvar-screwing-name = Прикручивание Ратвара
 tool-quality-ratvar-screwing-tool-name = Инструмент прикручивания Ратвара
 tool-quality-ratvar-anchoring-name = Закрепление Ратвара
 tool-quality-ratvar-anchoring-tool-name = Инструмент закрепления Ратвара
+
+ratvar-roundend-win = Культ Ратвара одержал победу! Ратвар восстаёт из глубин!
+ratvar-roundend-loss = Культ Ратвара потерпел неудачу. Тьма отступает.
+ratvar-roundend-stats =
+    Культистов: {}
+    Маяков установлено: {}
+    Энергии накоплено: {}
