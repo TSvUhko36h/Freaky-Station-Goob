@@ -9,6 +9,8 @@ using Robust.Client.UserInterface;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
+using System.Linq;
+using Content.Client.Construction;
 
 namespace Content.Client.RPSX.DarkForces.Ratvar.Construction;
 
