@@ -20,5 +20,6 @@ public sealed partial class HighlightedContainer : PanelContainer
     public HighlightedContainer()
     {
         RobustXamlLoader.Load(this);
+        PanelOverride = LobbyUiStyles.GlassPanelBox();
     }
 }

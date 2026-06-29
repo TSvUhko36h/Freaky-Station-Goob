@@ -46,15 +46,11 @@ namespace Content.Client.Lobby.UI
             RobustXamlLoader.Load(this);
             IoCManager.InjectDependencies(this);
 
-            var panelTex = _resourceCache.GetTexture("/Textures/Interface/Nano/button.svg.96dpi.png");
-            var back = new StyleBoxTexture
+            BackgroundPanel.PanelOverride = new StyleBoxFlat
             {
-                Texture = panelTex,
-                Modulate = new Color(37, 37, 42)
+                BackgroundColor = LobbyUiStyles.GlassSetupBackground,
+                BorderThickness = new Thickness(0),
             };
-            back.SetPatchMargin(StyleBox.Margin.All, 10);
-
-            BackgroundPanel.PanelOverride = back;
 
             _createNewCharacterButton = new Button
             {
