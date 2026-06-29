@@ -84,10 +84,9 @@ public sealed class RatvarRuleSystem : GameRuleSystem<RatvarRuleComponent>
             args.AddLine(Loc.GetString("ratvar-roundend-loss"));
         }
 
-        args.AddLine(Loc.GetString("ratvar-roundend-stats",
-            ("righteousCount", righteousCount),
-            ("beaconCount", beaconCount),
-            ("power", power)));
+        args.AddLine(Loc.GetString("ratvar-roundend-stats-1", ("righteousCount", righteousCount)));
+        args.AddLine(Loc.GetString("ratvar-roundend-stats-2", ("beaconCount", beaconCount)));
+        args.AddLine(Loc.GetString("ratvar-roundend-stats-3", ("power", power)));
     }
     private void OnRatvarSpawnedEvent(ref RatvarSpawnedEvent ev)
     {
