@@ -11,35 +11,35 @@ using Robust.Shared.Utility;
 namespace Content.Client.Lobby.UI.Roles;
 
 /// <summary>
-/// Locked-role marker: 32×32 padlock with requirements tooltip on hover.
+/// Locked-role marker: padlock with requirements tooltip on hover.
 /// </summary>
 public sealed class RoleLockIcon : Control
 {
     public const string TexturePath = "/Textures/_Mini/Interface/lock.png";
-    private const float LockSize = 32f;
+    private const float DefaultLockSize = 32f;
 
     [Dependency] private readonly IResourceCache _cache = default!;
 
-    public RoleLockIcon()
+    public RoleLockIcon(float size = DefaultLockSize)
     {
         IoCManager.InjectDependencies(this);
 
         MouseFilter = MouseFilterMode.Stop;
         VerticalAlignment = VAlignment.Center;
-        MinSize = new Vector2(LockSize, LockSize);
-        MaxSize = new Vector2(LockSize, LockSize);
+        MinSize = new Vector2(size, size);
+        MaxSize = new Vector2(size, size);
 
         var center = new CenterContainer
         {
-            MinSize = new Vector2(LockSize, LockSize),
-            MaxSize = new Vector2(LockSize, LockSize),
+            MinSize = MinSize,
+            MaxSize = MaxSize,
         };
 
         center.AddChild(new TextureRect
         {
             Texture = _cache.GetTexture(TexturePath),
-            MinSize = new Vector2(LockSize, LockSize),
-            MaxSize = new Vector2(LockSize, LockSize),
+            MinSize = MinSize,
+            MaxSize = MaxSize,
             Stretch = TextureRect.StretchMode.KeepAspectCentered,
         });
 

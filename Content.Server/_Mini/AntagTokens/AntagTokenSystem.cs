@@ -284,7 +284,7 @@ public sealed class AntagTokenSystem : EntitySystem
         return new HashSet<ProtoId<JobPrototype>>();
     }
 
-    public bool TryUnlockJob(NetUserId userId, JobUnlockListingEntry listing, out string? error)
+    public bool TryUnlockJob(NetUserId userId, ProtoId<JobPrototype> jobId, int cost, out string? error)
     {
         error = null;
 
@@ -295,20 +295,20 @@ public sealed class AntagTokenSystem : EntitySystem
             return false;
         }
 
-        if (state.JobUnlocks.Contains(listing.JobId))
+        if (state.JobUnlocks.Contains(jobId))
         {
             error = Loc.GetString("job-unlock-error-already-unlocked");
             return false;
         }
 
-        if (!TrySpendBalance(userId, listing.Cost, out error))
+        if (!TrySpendBalance(userId, cost, out error))
             return false;
 
         state = EnsureStateExists(userId);
         if (state == null)
             return false;
 
-        state.JobUnlocks.Add(listing.JobId);
+        state.JobUnlocks.Add(jobId);
         PersistState(userId, state);
         EntityManager.System<JobUnlockSystem>().SendJobUnlocksIfOnline(userId);
         return true;
@@ -327,7 +327,7 @@ public sealed class AntagTokenSystem : EntitySystem
         return new HashSet<ProtoId<AntagPrototype>>();
     }
 
-    public bool TryUnlockAntag(NetUserId userId, AntagUnlockListingEntry listing, out string? error)
+    public bool TryUnlockAntag(NetUserId userId, ProtoId<AntagPrototype> antagId, int cost, out string? error)
     {
         error = null;
 
@@ -338,20 +338,20 @@ public sealed class AntagTokenSystem : EntitySystem
             return false;
         }
 
-        if (state.AntagUnlocks.Contains(listing.AntagId))
+        if (state.AntagUnlocks.Contains(antagId))
         {
             error = Loc.GetString("antag-unlock-error-already-unlocked");
             return false;
         }
 
-        if (!TrySpendBalance(userId, listing.Cost, out error))
+        if (!TrySpendBalance(userId, cost, out error))
             return false;
 
         state = EnsureStateExists(userId);
         if (state == null)
             return false;
 
-        state.AntagUnlocks.Add(listing.AntagId);
+        state.AntagUnlocks.Add(antagId);
         PersistState(userId, state);
         EntityManager.System<AntagUnlockSystem>().SendAntagUnlocksIfOnline(userId);
         return true;

@@ -3,9 +3,13 @@
 
 using Content.Server._Mini.AntagTokens;
 using Content.Server.GameTicking.Events;
+using Content.Server.Players.PlayTimeTracking;
 using Content.Server.Popups;
+using Content.Server.Preferences.Managers;
 using Content.Shared._Mini.JobUnlock;
+using Content.Shared._Mini.RoleUnlock;
 using Content.Shared.Players.PlayTimeTracking;
+using Content.Shared.Preferences;
 using Content.Shared.Roles;
 using Robust.Server.Player;
 using Robust.Shared.Network;
@@ -19,9 +23,12 @@ public sealed class JobUnlockSystem : EntitySystem
     [Dependency] private readonly IPrototypeManager _prototypes = default!;
     [Dependency] private readonly AntagTokenSystem _antagTokens = default!;
     [Dependency] private readonly JobUnlockListingSystem _listings = default!;
+    [Dependency] private readonly RoleUnlockCostSystem _costs = default!;
+    [Dependency] private readonly PlayTimeTrackingManager _tracking = default!;
     [Dependency] private readonly IPlayerManager _playerManager = default!;
     [Dependency] private readonly IServerNetManager _net = default!;
     [Dependency] private readonly PopupSystem _popup = default!;
+    [Dependency] private readonly IServerPreferencesManager _preferences = default!;
 
     public override void Initialize()
     {
@@ -37,26 +44,36 @@ public sealed class JobUnlockSystem : EntitySystem
         if (args.SenderSession is not { } session)
             return;
 
-        if (!_listings.TryGetListing(msg.JobId, out var listing))
+        if (!_listings.TryGetListing(msg.JobId, out _))
         {
             ShowPopup(session, Loc.GetString("job-unlock-error-unavailable"));
             return;
         }
 
-        if (_antagTokens.HasJobUnlock(session.UserId, listing.JobId))
+        if (_antagTokens.HasJobUnlock(session.UserId, msg.JobId))
         {
             ShowPopup(session, Loc.GetString("job-unlock-error-already-unlocked"));
             return;
         }
 
-        if (!_antagTokens.TryUnlockJob(session.UserId, listing, out var error))
+        if (!_tracking.TryGetTrackerTimes(session, out var playTimes))
+            playTimes = new Dictionary<string, TimeSpan>();
+
+        var profile = (HumanoidCharacterProfile?) _preferences.GetPreferences(session.UserId).SelectedCharacter;
+        if (!_costs.TryGetJobUnlockCost(msg.JobId, playTimes, profile, out var cost))
+        {
+            ShowPopup(session, Loc.GetString("job-unlock-error-unavailable"));
+            return;
+        }
+
+        if (!_antagTokens.TryUnlockJob(session.UserId, msg.JobId, cost, out var error))
         {
             ShowPopup(session, error ?? Loc.GetString("job-unlock-error-failed"));
             return;
         }
 
         ShowPopup(session, Loc.GetString("job-unlock-popup-success",
-            ("job", Loc.GetString(_prototypes.Index(listing.JobId).Name))));
+            ("job", Loc.GetString(_prototypes.Index(msg.JobId).Name))));
         SendJobUnlocks(session);
     }
 

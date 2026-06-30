@@ -16,6 +16,7 @@ public sealed class AntagUnlockListingSystem : EntitySystem
     [Dependency] private readonly AntagTokenListingSystem _tokenListings = default!;
 
     private readonly Dictionary<ProtoId<AntagPrototype>, AntagUnlockListingEntry> _byAntag = new();
+    private readonly Dictionary<ProtoId<AntagPrototype>, int> _shopCostByAntag = new();
 
     public override void Initialize()
     {
@@ -37,23 +38,19 @@ public sealed class AntagUnlockListingSystem : EntitySystem
     private void RebuildCache()
     {
         _byAntag.Clear();
+        _shopCostByAntag.Clear();
 
-        var overrides = new Dictionary<ProtoId<AntagPrototype>, int>();
-        if (_proto.TryIndex<AntagUnlockCatalogPrototype>(AntagUnlockCatalogPrototype.DefaultId, out var catalog))
-        {
-            foreach (var entry in catalog.Listings)
-                overrides[entry.AntagId] = entry.Cost;
-        }
+        if (!_proto.HasIndex<AntagUnlockCatalogPrototype>(AntagUnlockCatalogPrototype.DefaultId))
+            return;
 
-        var shopCostByAntag = new Dictionary<ProtoId<AntagPrototype>, int>();
         foreach (var listing in _tokenListings.ListingsOrdered)
         {
             if (string.IsNullOrWhiteSpace(listing.AntagId))
                 continue;
 
             var antagId = new ProtoId<AntagPrototype>(listing.AntagId);
-            if (!shopCostByAntag.TryGetValue(antagId, out var existing) || listing.Cost < existing)
-                shopCostByAntag[antagId] = listing.Cost;
+            if (!_shopCostByAntag.TryGetValue(antagId, out var existing) || listing.Cost < existing)
+                _shopCostByAntag[antagId] = listing.Cost;
         }
 
         foreach (var antag in _proto.EnumeratePrototypes<AntagPrototype>())
@@ -61,15 +58,9 @@ public sealed class AntagUnlockListingSystem : EntitySystem
             if (!antag.SetPreference)
                 continue;
 
-            shopCostByAntag.TryGetValue(antag.ID, out var shopCost);
-            var cost = overrides.TryGetValue(antag.ID, out var overrideCost)
-                ? overrideCost
-                : AntagUnlockPricing.ResolveCost(antag, shopCost > 0 ? shopCost : null);
-
             _byAntag[antag.ID] = new AntagUnlockListingEntry
             {
                 AntagId = antag.ID,
-                Cost = cost,
             };
         }
     }
@@ -77,5 +68,10 @@ public sealed class AntagUnlockListingSystem : EntitySystem
     public bool TryGetListing(ProtoId<AntagPrototype> antagId, [NotNullWhen(true)] out AntagUnlockListingEntry? entry)
     {
         return _byAntag.TryGetValue(antagId, out entry);
+    }
+
+    public bool TryGetShopTokenCost(ProtoId<AntagPrototype> antagId, out int cost)
+    {
+        return _shopCostByAntag.TryGetValue(antagId, out cost);
     }
 }

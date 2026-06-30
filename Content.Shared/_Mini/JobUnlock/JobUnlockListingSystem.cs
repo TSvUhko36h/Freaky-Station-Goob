@@ -32,25 +32,27 @@ public sealed class JobUnlockListingSystem : EntitySystem
     {
         _byJob.Clear();
 
-        var overrides = new Dictionary<ProtoId<JobPrototype>, int>();
-        if (_proto.TryIndex<JobUnlockCatalogPrototype>(JobUnlockCatalogPrototype.DefaultId, out var catalog))
+        if (!_proto.TryIndex<JobUnlockCatalogPrototype>(JobUnlockCatalogPrototype.DefaultId, out var catalog))
+            return;
+
+        var catalogJobs = new HashSet<ProtoId<JobPrototype>>();
+        foreach (var tier in catalog.Tiers)
         {
-            foreach (var entry in catalog.Listings)
-                overrides[entry.JobId] = entry.Cost;
+            if (tier.Jobs == null)
+                continue;
+
+            foreach (var jobId in tier.Jobs)
+                catalogJobs.Add(jobId);
         }
 
         foreach (var job in _proto.EnumeratePrototypes<JobPrototype>())
         {
-            if (!JobUnlockPricing.TryGetDefaultCost(job, out var cost))
+            if (!job.SetPreference && !catalogJobs.Contains(job.ID))
                 continue;
-
-            if (overrides.TryGetValue(job.ID, out var overrideCost))
-                cost = overrideCost;
 
             _byJob[job.ID] = new JobUnlockListingEntry
             {
                 JobId = job.ID,
-                Cost = cost,
             };
         }
     }

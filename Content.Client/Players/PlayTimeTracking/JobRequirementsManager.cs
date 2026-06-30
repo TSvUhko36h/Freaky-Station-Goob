@@ -85,7 +85,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Content.Shared._Mini.AntagUnlock;
 using Content.Shared._Mini.JobUnlock;
+using Content.Shared._Mini.RoleUnlock;
 using Content.Shared.CCVar;
+using Content.Shared.Humanoid;
 using Content.Shared.Players;
 using Content.Shared.Players.JobWhitelist;
 using Content.Shared.Players.PlayTimeTracking;
@@ -169,15 +171,21 @@ public sealed class JobRequirementsManager : ISharedPlaytimeManager
 
     public bool HasAntagUnlock(ProtoId<AntagPrototype> antagId) => _antagUnlocks.Contains(antagId);
 
-    public bool TryGetAntagUnlockCost(ProtoId<AntagPrototype> antagId, out int cost)
+    public bool TryGetAntagUnlockCost(ProtoId<AntagPrototype> antagId, HumanoidCharacterProfile? profile, out int cost)
     {
         cost = 0;
 
-        if (!_entManager.System<AntagUnlockListingSystem>().TryGetListing(antagId, out var entry))
+        var listings = _entManager.System<AntagUnlockListingSystem>();
+        if (!listings.TryGetListing(antagId, out _))
             return false;
 
-        cost = entry.Cost;
-        return true;
+        listings.TryGetShopTokenCost(antagId, out var shopCost);
+        return _entManager.System<RoleUnlockCostSystem>().TryGetAntagUnlockCost(
+            antagId,
+            _roles,
+            profile,
+            shopCost,
+            out cost);
     }
 
     private void RxJobUnlocks(MsgJobUnlocks message)
@@ -189,15 +197,14 @@ public sealed class JobRequirementsManager : ISharedPlaytimeManager
 
     public bool HasJobUnlock(ProtoId<JobPrototype> jobId) => _jobUnlocks.Contains(jobId);
 
-    public bool TryGetJobUnlockCost(ProtoId<JobPrototype> jobId, out int cost)
+    public bool TryGetJobUnlockCost(ProtoId<JobPrototype> jobId, HumanoidCharacterProfile? profile, out int cost)
     {
         cost = 0;
 
-        if (!_entManager.System<JobUnlockListingSystem>().TryGetListing(jobId, out var entry))
+        if (!_entManager.System<JobUnlockListingSystem>().TryGetListing(jobId, out _))
             return false;
 
-        cost = entry.Cost;
-        return true;
+        return _entManager.System<RoleUnlockCostSystem>().TryGetJobUnlockCost(jobId, _roles, profile, out cost);
     }
 
     private void RxRoleBans(MsgRoleBans message)

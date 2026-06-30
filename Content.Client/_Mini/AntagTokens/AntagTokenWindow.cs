@@ -54,7 +54,6 @@ public sealed class AntagTokenWindow : DefaultWindow
     private const string CoinIconPath = "/Textures/_Mini/Interface/Coin.png";
 
     public event Action<string>? OnPurchasePressed;
-    public event Action<ProtoId<AntagPrototype>>? OnUnlockPressed;
     public event Action? OnClearPressed;
 
     [Dependency] private readonly IEntitySystemManager _entitySystems = default!;
@@ -473,6 +472,7 @@ public sealed class AntagTokenWindow : DefaultWindow
         root.AddChild(imageBox);
 
         var playtimeBlocked = false;
+        FormattedMessage? playtimeReason = null;
         ProtoId<AntagPrototype>? linkedAntagId = null;
         var profile = _preferencesManager.Preferences?.SelectedCharacter as HumanoidCharacterProfile;
 
@@ -480,21 +480,10 @@ public sealed class AntagTokenWindow : DefaultWindow
             _prototypeManager.TryIndex<AntagPrototype>(roleDef.AntagId, out var antagProto))
         {
             linkedAntagId = antagProto.ID;
-            if (!_requirements.IsAllowed(antagProto, profile, out var playtimeReason))
+            if (!_requirements.IsAllowed(antagProto, profile, out playtimeReason))
             {
                 playtimeBlocked = true;
                 _playtimeBlockedByRole[entry.RoleId] = true;
-
-                var lockRow = new BoxContainer
-                {
-                    Orientation = LayoutOrientation.Horizontal,
-                    HorizontalAlignment = HAlignment.Center,
-                    SeparationOverride = 6,
-                };
-                var lockIcon = new RoleLockIcon();
-                lockIcon.SetRequirements(playtimeReason);
-                lockRow.AddChild(lockIcon);
-                imageBox.AddChild(lockRow);
             }
         }
 
@@ -535,11 +524,15 @@ public sealed class AntagTokenWindow : DefaultWindow
             });
         }
 
-        if (entry.StatusLocKey != null)
+        var statusLocKey = playtimeBlocked
+            ? "antag-store-status-not-enough-playtime"
+            : entry.StatusLocKey;
+
+        if (statusLocKey != null)
         {
             root.AddChild(new Label
             {
-                Text = Loc.GetString(entry.StatusLocKey),
+                Text = Loc.GetString(statusLocKey),
                 Modulate = entry.Purchased ? PurchasedBorderColor : Color.FromHex("#e5534b"),
                 HorizontalAlignment = HAlignment.Center,
                 MaxWidth = 268
@@ -548,51 +541,12 @@ public sealed class AntagTokenWindow : DefaultWindow
 
         root.AddChild(new Control { VerticalExpand = true });
 
-        if (playtimeBlocked &&
-            linkedAntagId is { } antagId &&
-            !_requirements.HasAntagUnlock(antagId) &&
-            _requirements.TryGetAntagUnlockCost(antagId, out var unlockCost))
-        {
-            var unlockButton = new Button
-            {
-                MinSize = new Vector2(268, 36),
-                MaxSize = new Vector2(268, 36),
-                HorizontalAlignment = HAlignment.Center,
-            };
-            var capturedAntagId = antagId;
-            unlockButton.OnPressed += _ => OnUnlockPressed?.Invoke(capturedAntagId);
-
-            var unlockContent = new BoxContainer
-            {
-                Orientation = LayoutOrientation.Horizontal,
-                SeparationOverride = 4,
-                HorizontalAlignment = HAlignment.Center,
-                VerticalAlignment = VAlignment.Center,
-            };
-            unlockContent.AddChild(new Label
-            {
-                Text = Loc.GetString("antag-unlock-button-prefix"),
-                StyleClasses = { StyleNano.StyleClassLabelSubText },
-                VerticalAlignment = VAlignment.Center,
-            });
-            unlockContent.AddChild(new Label
-            {
-                Text = unlockCost.ToString(),
-                StyleClasses = { StyleNano.StyleClassLabelBig },
-                Modulate = Color.White,
-                VerticalAlignment = VAlignment.Center,
-            });
-            unlockContent.AddChild(MiniCoinUi.CreateCoinIcon(_resourceCache));
-            unlockButton.AddChild(unlockContent);
-            root.AddChild(unlockButton);
-        }
-
         var buyButton = new Button
         {
             MinSize = new Vector2(268, 40),
             MaxSize = new Vector2(268, 40),
             Disabled = IsButtonDisabled(entry, null),
-            ToolTip = GetButtonTooltip(entry)
+            ToolTip = GetButtonTooltip(entry, playtimeReason)
         };
 
         var roleId = entry.RoleId;
@@ -606,7 +560,14 @@ public sealed class AntagTokenWindow : DefaultWindow
             VerticalAlignment = VAlignment.Center
         };
 
-        if (entry.Purchased)
+        if (playtimeBlocked && playtimeReason != null)
+        {
+            var lockIcon = new RoleLockIcon(24f);
+            lockIcon.SetRequirements(playtimeReason);
+            buttonContent.AddChild(lockIcon);
+            buyButton.Disabled = true;
+        }
+        else if (entry.Purchased)
         {
             buttonContent.AddChild(new Label
             {
@@ -690,8 +651,11 @@ public sealed class AntagTokenWindow : DefaultWindow
         return entry.Mode == AntagPurchaseMode.LobbyDeposit && entry.Saturated;
     }
 
-    private static string GetButtonTooltip(AntagTokenRoleEntry entry)
+    private static string GetButtonTooltip(AntagTokenRoleEntry entry, FormattedMessage? playtimeReason = null)
     {
+        if (playtimeReason != null)
+            return playtimeReason.ToMarkup();
+
         if (entry.StatusLocKey != null)
             return Loc.GetString(entry.StatusLocKey);
 

@@ -31,12 +31,12 @@ public sealed class AntagPreferenceCard : PanelContainer
 
     private const float CardIconSize = 52f;
     private const float CardMinWidth = 96f;
+    private const float TitleMaxHeight = 28f;
 
     private readonly RichTextLabel _title;
     private readonly PixelAntagToggle _toggle;
     private readonly RoleLockIcon _lockIcon;
     private readonly Button _unlockButton;
-    private readonly Label _unlockCostLabel;
     private readonly TextureButton _help;
     private readonly Button _loadoutButton;
     private readonly Control _imageSlot;
@@ -54,7 +54,6 @@ public sealed class AntagPreferenceCard : PanelContainer
     public AntagPreferenceCard()
     {
         IoCManager.InjectDependencies(this);
-        var cache = IoCManager.Resolve<IResourceCache>();
 
         HorizontalExpand = true;
         VerticalExpand = true;
@@ -124,19 +123,27 @@ public sealed class AntagPreferenceCard : PanelContainer
         {
             HorizontalAlignment = HAlignment.Center,
             HorizontalExpand = true,
-            MaxWidth = 140,
-            MinHeight = 20,
+            MaxHeight = TitleMaxHeight,
+            RectClipContent = true,
+            StyleClasses = { StyleNano.StyleClassLabelSubText },
         };
         root.AddChild(_title);
 
-        root.AddChild(new Control { VerticalExpand = true, MinHeight = 4 });
+        var actions = new BoxContainer
+        {
+            Orientation = LayoutOrientation.Vertical,
+            SeparationOverride = 4,
+            HorizontalAlignment = HAlignment.Center,
+            MinSize = new Vector2(0, 64),
+        };
+        root.AddChild(actions);
 
         var toggleHost = new CenterContainer
         {
             MinSize = new Vector2(0, 28),
             HorizontalAlignment = HAlignment.Center,
         };
-        root.AddChild(toggleHost);
+        actions.AddChild(toggleHost);
 
         _toggle = new PixelAntagToggle();
         _toggle.OnSelected += value => OnSelected?.Invoke(value);
@@ -152,33 +159,9 @@ public sealed class AntagPreferenceCard : PanelContainer
         {
             Visible = false,
             HorizontalAlignment = HAlignment.Center,
-            Margin = new Thickness(0, 2, 0, 0),
         };
         _unlockButton.OnPressed += _ => _onUnlock?.Invoke();
-
-        var unlockContent = new BoxContainer
-        {
-            Orientation = LayoutOrientation.Horizontal,
-            SeparationOverride = 4,
-            HorizontalAlignment = HAlignment.Center,
-            VerticalAlignment = VAlignment.Center,
-        };
-        unlockContent.AddChild(new Label
-        {
-            Text = Loc.GetString("antag-unlock-button-prefix"),
-            StyleClasses = { StyleNano.StyleClassLabelSubText },
-            VerticalAlignment = VAlignment.Center,
-        });
-        _unlockCostLabel = new Label
-        {
-            StyleClasses = { StyleNano.StyleClassLabelBig },
-            FontColorOverride = LobbyUiStyles.HeaderText,
-            VerticalAlignment = VAlignment.Center,
-        };
-        unlockContent.AddChild(_unlockCostLabel);
-        unlockContent.AddChild(MiniCoinUi.CreateCoinIcon(cache));
-        _unlockButton.AddChild(unlockContent);
-        root.AddChild(_unlockButton);
+        actions.AddChild(_unlockButton);
 
         _loadoutButton = new Button
         {
@@ -199,8 +182,8 @@ public sealed class AntagPreferenceCard : PanelContainer
         Action? onLoadout = null,
         bool loadoutAvailable = false)
     {
-        _title.SetMessage(FormattedMessage.FromMarkupOrThrow(
-            $"[color=#E8E6F0]{FormattedMessage.EscapeText(title)}[/color]"));
+        _title.SetMessage(title, defaultColor: LobbyUiStyles.HeaderText);
+        _title.ToolTip = title;
         ToolTip = description;
         _guides = guides;
         _help.Visible = guides != null;
@@ -232,7 +215,11 @@ public sealed class AntagPreferenceCard : PanelContainer
     public void ShowUnlock(int cost, Action onUnlock)
     {
         _onUnlock = onUnlock;
-        _unlockCostLabel.Text = cost.ToString();
+        _unlockButton.RemoveAllChildren();
+        _unlockButton.AddChild(MiniCoinUi.CreateUnlockPriceRow(
+            IoCManager.Resolve<IResourceCache>(),
+            cost,
+            "antag-unlock-button-prefix"));
         _unlockButton.Visible = true;
     }
 

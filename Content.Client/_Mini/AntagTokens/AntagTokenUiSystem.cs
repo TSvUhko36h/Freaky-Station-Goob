@@ -2,7 +2,6 @@
 // Мини-станция/Freaky-station, Licensed under custom terms with restrictions on public hosting and commercial use, full text: https://raw.githubusercontent.com/ministation/mini-station-goob/master/LICENSE.TXT
 using System;
 using System.Collections.Generic;
-using Content.Client._Mini.AntagUnlock;
 using Content.Client.Players.PlayTimeTracking;
 using Content.Client.UserInterface.Systems.Ghost.Controls.Roles;
 using Content.Shared._Mini.AntagTokens;
@@ -138,7 +137,6 @@ public sealed class AntagTokenUiSystem : EntitySystem
         _window = new AntagTokenWindow();
         _window.Title = Loc.GetString("antag-token-window-title");
         _window.OnPurchasePressed += OnPurchasePressed;
-        _window.OnUnlockPressed += OnUnlockPressed;
         _window.OnClearPressed += OnClearPressed;
         _window.OnClose += OnClosed;
         _window.OpenCentered();
@@ -169,11 +167,6 @@ public sealed class AntagTokenUiSystem : EntitySystem
         }
 
         RaiseNetworkEvent(new AntagTokenPurchaseRequestEvent(roleId));
-    }
-
-    private void OnUnlockPressed(ProtoId<AntagPrototype> antagId)
-    {
-        EntityManager.System<AntagUnlockClientSystem>().RequestUnlock(antagId);
     }
 
     private void CloseRulesConfirmWindow()
@@ -210,7 +203,6 @@ public sealed class AntagTokenUiSystem : EntitySystem
         _lastAppliedElapsedSeconds = -1;
 
         _window.OnPurchasePressed -= OnPurchasePressed;
-        _window.OnUnlockPressed -= OnUnlockPressed;
         _window.OnClearPressed -= OnClearPressed;
         _window.OnClose -= OnClosed;
 

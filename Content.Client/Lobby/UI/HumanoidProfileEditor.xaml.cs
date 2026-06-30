@@ -165,6 +165,7 @@ using Content.Client.Message;
 using Content.Client.Players.PlayTimeTracking;
 using Content.Client.Sprite;
 using Content.Client.Stylesheets;
+using Content.Client.UserInterface;
 using Content.Client.UserInterface.Systems.Guidebook;
 using Content.Shared._CorvaxGoob.CCCVars;
 using Content.Corvax.Interfaces.Shared;
@@ -268,6 +269,7 @@ namespace Content.Client.Lobby.UI
         private Direction _previewRotation = Direction.North;
 
         private ColorSelectorSliders _rgbSkinColorSelector;
+        private PixelRangeSlider _pixelSkinSlider = null!;
 
         private bool _isDirty;
 
@@ -444,10 +446,21 @@ namespace Content.Client.Lobby.UI
 
             #region Skin
 
-            Skin.OnValueChanged += _ =>
+            Skin.Visible = false;
+            _pixelSkinSlider = new PixelRangeSlider
             {
-                OnSkinColorOnValueChanged();
+                HorizontalExpand = true,
+                MinValue = Skin.MinValue,
+                MaxValue = Skin.MaxValue,
+                Value = Skin.Value,
             };
+            if (Skin.Parent is BoxContainer skinBox)
+            {
+                skinBox.AddChild(_pixelSkinSlider);
+                skinBox.RemoveChild(Skin);
+            }
+
+            _pixelSkinSlider.OnValueChanged += _ => OnSkinColorOnValueChanged();
 
             RgbSkinColorContainer.AddChild(_rgbSkinColorSelector = new ColorSelectorSliders());
             _rgbSkinColorSelector.SelectorType = ColorSelectorSliders.ColorSelectorType.Hsv; // defaults color selector to HSV
@@ -1011,7 +1024,10 @@ namespace Content.Client.Lobby.UI
                     SetDirty();
 
                     if (!_requirements.HasAntagUnlock(antag.ID) &&
-                        _requirements.TryGetAntagUnlockCost(antag.ID, out var antagUnlockCost))
+                        _requirements.TryGetAntagUnlockCost(
+                            antag.ID,
+                            (HumanoidCharacterProfile?) _preferencesManager.Preferences?.SelectedCharacter,
+                            out var antagUnlockCost))
                     {
                         card.ShowUnlock(antagUnlockCost, () =>
                             _entManager.System<AntagUnlockClientSystem>().RequestUnlock(antag.ID));
@@ -1248,7 +1264,10 @@ namespace Content.Client.Lobby.UI
                         selector.LockRequirements(reason);
 
                         if (!_requirements.HasJobUnlock(job.ID) &&
-                            _requirements.TryGetJobUnlockCost(job.ID, out var unlockCost))
+                            _requirements.TryGetJobUnlockCost(
+                                job.ID,
+                                (HumanoidCharacterProfile?) _preferencesManager.Preferences?.SelectedCharacter,
+                                out var unlockCost))
                         {
                             selector.ShowUnlock(unlockCost, () =>
                                 _entManager.System<JobUnlockClientSystem>().RequestUnlock(job.ID));
@@ -1395,13 +1414,13 @@ namespace Content.Client.Lobby.UI
             {
                 case HumanoidSkinColor.HumanToned:
                     {
-                        if (!Skin.Visible)
+                        if (!_pixelSkinSlider.Visible)
                         {
-                            Skin.Visible = true;
+                            _pixelSkinSlider.Visible = true;
                             RgbSkinColorContainer.Visible = false;
                         }
 
-                        var color = SkinColor.HumanSkinTone((int) Skin.Value);
+                        var color = SkinColor.HumanSkinTone((int) _pixelSkinSlider.Value);
 
                         Markings.CurrentSkinColor = color;
                         Profile = Profile.WithCharacterAppearance(Profile.Appearance.WithSkinColor(color));//
@@ -1411,7 +1430,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 
@@ -1423,7 +1442,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 
@@ -1437,7 +1456,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 
@@ -1451,7 +1470,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 
@@ -1466,7 +1485,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 
@@ -1700,13 +1719,13 @@ namespace Content.Client.Lobby.UI
             {
                 case HumanoidSkinColor.HumanToned:
                     {
-                        if (!Skin.Visible)
+                        if (!_pixelSkinSlider.Visible)
                         {
-                            Skin.Visible = true;
+                            _pixelSkinSlider.Visible = true;
                             RgbSkinColorContainer.Visible = false;
                         }
 
-                        Skin.Value = SkinColor.HumanSkinToneFromColor(Profile.Appearance.SkinColor);
+                        _pixelSkinSlider.Value = SkinColor.HumanSkinToneFromColor(Profile.Appearance.SkinColor);
 
                         break;
                     }
@@ -1714,7 +1733,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 
@@ -1726,7 +1745,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 
@@ -1738,7 +1757,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 
@@ -1750,7 +1769,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 
@@ -1763,7 +1782,7 @@ namespace Content.Client.Lobby.UI
                     {
                         if (!RgbSkinColorContainer.Visible)
                         {
-                            Skin.Visible = false;
+                            _pixelSkinSlider.Visible = false;
                             RgbSkinColorContainer.Visible = true;
                         }
 

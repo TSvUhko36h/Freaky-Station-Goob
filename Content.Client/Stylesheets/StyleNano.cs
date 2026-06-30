@@ -1757,9 +1757,15 @@ namespace Content.Client.Stylesheets
 
                 new StyleRule(SelectorElement.Type(typeof(ColorableSlider)), new []
                 {
+                    new StyleProperty(Slider.StylePropertyBackground, sliderBackBox),
+                    new StyleProperty(Slider.StylePropertyForeground, sliderForeBox),
+                    new StyleProperty(Slider.StylePropertyGrabber, sliderGrabBox),
                     new StyleProperty(ColorableSlider.StylePropertyFillWhite, sliderFillWhite),
                     new StyleProperty(ColorableSlider.StylePropertyBackgroundWhite, sliderFillWhite),
                 }),
+
+                Element<ColorableSlider>()
+                    .Prop(nameof(Control.MinHeight), MiniSliderStyles.UiControlMinHeight),
 
                 new StyleRule(new SelectorElement(typeof(Slider), new []{StyleClassSliderRed}, null, null), new []
                 {
