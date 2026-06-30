@@ -215,6 +215,20 @@ namespace Content.Client.Lobby.UI
 
         private readonly SpriteSystem _sprite;
 
+        private static readonly Dictionary<int, Color> JobPriorityButtonColors = new()
+        {
+            [(int) JobPriority.Never] = Color.FromHex("#d34141c2"),
+            [(int) JobPriority.Low] = Color.FromHex("#e48a36e3"),
+            [(int) JobPriority.Medium] = Color.FromHex("#e6c351e7"),
+            [(int) JobPriority.High] = Color.FromHex("#4bb15acf"),
+        };
+
+        private static readonly Dictionary<int, Color> AntagPreferenceButtonColors = new()
+        {
+            [0] = Color.FromHex("#4bb15acf"),
+            [1] = Color.FromHex("#d34141c2"),
+        };
+
         // CCvar.
         private int _maxNameLength;
         private bool _allowFlavorText;
@@ -922,7 +936,19 @@ namespace Content.Client.Lobby.UI
                 ("humanoid-profile-editor-antag-preference-no-button", 1)
             };
 
-            AntagList.AddChild(new Label { Text = Loc.GetString("humanoid-profile-editor-antag-roll-before-jobs") }); // Goobstation
+            AntagList.AddChild(new PanelContainer
+            {
+                Margin = new Thickness(0, 0, 0, 6),
+                PanelOverride = LobbyUiStyles.SectionHeader(),
+                Children =
+                {
+                    new Label
+                    {
+                        Text = Loc.GetString("humanoid-profile-editor-antag-roll-before-jobs"),
+                        StyleClasses = { StyleBase.StyleClassLabelSubText },
+                    }
+                }
+            });
 
             foreach (var antag in _prototypeManager.EnumeratePrototypes<AntagPrototype>().OrderBy(a => Loc.GetString(a.Name)))
             {
@@ -942,7 +968,7 @@ namespace Content.Client.Lobby.UI
 
                 var title = Loc.GetString(antag.Name);
                 var description = Loc.GetString(antag.Objective);
-                selector.Setup(items, title, 250, description, guides: antag.Guides);
+                selector.Setup(items, title, 250, description, guides: antag.Guides, buttonColors: AntagPreferenceButtonColors);
                 selector.Select(Profile?.AntagPreferences.Contains(antag.ID) == true ? 0 : 1);
 
                 if (!_requirements.IsAllowed(
@@ -1195,14 +1221,14 @@ namespace Content.Client.Lobby.UI
 
                     category.AddChild(new PanelContainer
                     {
-                        PanelOverride = new StyleBoxFlat { BackgroundColor = Color.FromHex("#464966") },
+                        PanelOverride = LobbyUiStyles.SectionHeader(),
                         Children =
                         {
                             new Label
                             {
                                 Text = Loc.GetString("humanoid-profile-editor-department-jobs-label",
                                     ("departmentName", departmentName)),
-                                Margin = new Thickness(5f, 0, 0, 0)
+                                StyleClasses = { StyleBase.StyleClassLabelSubText },
                             }
                         }
                     });
@@ -1237,7 +1263,7 @@ namespace Content.Client.Lobby.UI
                     };
                     var jobIcon = _prototypeManager.Index(job.Icon);
                     icon.Texture = _sprite.Frame0(jobIcon.Icon);
-                    selector.Setup(items, job.LocalizedName, 200, job.LocalizedDescription, icon, job.Guides);
+                    selector.Setup(items, job.LocalizedName, 200, job.LocalizedDescription, icon, job.Guides, JobPriorityButtonColors);
 
                     if (!_requirements.IsAllowed(job, (HumanoidCharacterProfile?) _preferencesManager.Preferences?.SelectedCharacter, out var reason))
                     {

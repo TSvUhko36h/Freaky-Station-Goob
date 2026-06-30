@@ -278,6 +278,11 @@ namespace Content.Client.Stylesheets
         public static readonly Color ButtonColorGoodHovered = Color.FromHex("#31843E");
         public static readonly Color ButtonColorGoodDisabled = Color.FromHex("#164420");
 
+        public static readonly Color ButtonColorDefaultOrange = Color.FromHex("#E08B2D");
+        public static readonly Color ButtonColorHoveredOrange = Color.FromHex("#F0A850");
+        public static readonly Color ButtonColorPressedOrange = Color.FromHex("#C9772B");
+        public static readonly Color ButtonColorDisabledOrange = Color.FromHex("#805A2A");
+
         //NavMap
         public static readonly Color PointRed = Color.FromHex("#B02E26");
         public static readonly Color PointGreen = Color.FromHex("#38b026");
@@ -317,6 +322,7 @@ namespace Content.Client.Stylesheets
         public const string StyleClassCrossButtonRed = "CrossButtonRed";
         public const string StyleClassButtonColorRed = "ButtonColorRed";
         public const string StyleClassButtonColorGreen = "ButtonColorGreen";
+        public const string StyleClassButtonColorOrange = "ButtonColorOrange";
 
         public static readonly Color ChatBackgroundColor = Color.FromHex("#25252ADD");
 
@@ -2063,6 +2069,23 @@ namespace Content.Client.Stylesheets
 
                 Element<Button>().Class("ButtonColorGreen").Pseudo(ContainerButton.StylePseudoClassHover)
                     .Prop(Control.StylePropertyModulateSelf, ButtonColorGoodHovered),
+
+                // Orange Button ---
+                Element<Button>().Class(StyleClassButtonColorOrange)
+                    .Prop(Control.StylePropertyModulateSelf, ButtonColorDefaultOrange),
+
+                Element<Button>().Class(StyleClassButtonColorOrange).Pseudo(ContainerButton.StylePseudoClassNormal)
+                    .Prop(Control.StylePropertyModulateSelf, ButtonColorDefaultOrange),
+
+                Element<Button>().Class(StyleClassButtonColorOrange).Pseudo(ContainerButton.StylePseudoClassHover)
+                    .Prop(Control.StylePropertyModulateSelf, ButtonColorHoveredOrange),
+
+                Element<Button>().Class(StyleClassButtonColorOrange).Pseudo(ContainerButton.StylePseudoClassPressed)
+                    .Prop(Control.StylePropertyModulateSelf, ButtonColorPressedOrange),
+
+                Element<Button>().Class(StyleClassButtonColorOrange).Pseudo(ContainerButton.StylePseudoClassDisabled)
+                    .Prop(Control.StylePropertyModulateSelf, ButtonColorDisabledOrange),
+                // ---
 
                 // Accept button (merge with green button?) ---
                 Element<Button>().Class("ButtonAccept")

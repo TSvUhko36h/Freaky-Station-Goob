@@ -21,13 +21,6 @@ ratvar-righteous-briefing =
     Чтобы вселить в сознание понимание того, кто именно самый прекрасный бог, потребуется праведник (Вы) и алтарь.
     Только так вы обеспечите победу!
 ratvar-righteous-message = Добро пожаловать к праведникам Ратвара! Помните, ваш культ является мирным и не устраивает резню!
-chat-radio-ratvar = Ратвар
-tool-quality-ratvar-screwing-name = Прикручивание Ратвара
-tool-quality-ratvar-screwing-tool-name = Инструмент прикручивания Ратвара
-tool-quality-ratvar-anchoring-name = Закрепление Ратвара
-tool-quality-ratvar-anchoring-tool-name = Инструмент закрепления Ратвара
-fibers-brass = латунное волокно
-objective-issuer-ratvar = Ратвар
 
 ratvar-roundend-win = Культ Ратвара одержал победу! Ратвар восстаёт из глубин!
 ratvar-roundend-loss = Культ Ратвара потерпел неудачу. Тьма отступает.
