@@ -156,6 +156,8 @@
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using Content.Client._Mini.AntagUnlock;
+using Content.Client._Mini.JobUnlock;
 using Content.Client.Humanoid;
 using Content.Client.Lobby.UI.Loadouts;
 using Content.Client.Lobby.UI.Roles;
@@ -1007,6 +1009,13 @@ namespace Content.Client.Lobby.UI
                     card.LockRequirements(reason);
                     Profile = Profile?.WithAntagPreference(antag.ID, false);
                     SetDirty();
+
+                    if (!_requirements.HasAntagUnlock(antag.ID) &&
+                        _requirements.TryGetAntagUnlockCost(antag.ID, out var antagUnlockCost))
+                    {
+                        card.ShowUnlock(antagUnlockCost, () =>
+                            _entManager.System<AntagUnlockClientSystem>().RequestUnlock(antag.ID));
+                    }
                 }
                 else
                 {
@@ -1237,6 +1246,13 @@ namespace Content.Client.Lobby.UI
                     if (!_requirements.IsAllowed(job, (HumanoidCharacterProfile?) _preferencesManager.Preferences?.SelectedCharacter, out var reason))
                     {
                         selector.LockRequirements(reason);
+
+                        if (!_requirements.HasJobUnlock(job.ID) &&
+                            _requirements.TryGetJobUnlockCost(job.ID, out var unlockCost))
+                        {
+                            selector.ShowUnlock(unlockCost, () =>
+                                _entManager.System<JobUnlockClientSystem>().RequestUnlock(job.ID));
+                        }
                     }
                     else
                     {

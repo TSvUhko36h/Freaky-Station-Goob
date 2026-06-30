@@ -2,9 +2,13 @@
 // Мини-станция/Freaky-station, Licensed under custom terms with restrictions on public hosting and commercial use, full text: https://raw.githubusercontent.com/ministation/mini-station-goob/master/LICENSE.TXT
 using System;
 using System.Collections.Generic;
+using Content.Client._Mini.AntagUnlock;
+using Content.Client.Players.PlayTimeTracking;
 using Content.Client.UserInterface.Systems.Ghost.Controls.Roles;
 using Content.Shared._Mini.AntagTokens;
+using Content.Shared.Roles;
 using Robust.Shared.Localization;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 
 namespace Content.Client._Mini.AntagTokens;
@@ -13,6 +17,7 @@ public sealed class AntagTokenUiSystem : EntitySystem
 {
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly AntagTokenListingSystem _listings = default!;
+    [Dependency] private readonly JobRequirementsManager _requirements = default!;
 
     private AntagTokenWindow? _window;
     private GhostRoleRulesWindow? _rulesConfirmWindow;
@@ -26,6 +31,22 @@ public sealed class AntagTokenUiSystem : EntitySystem
     {
         base.Initialize();
         SubscribeNetworkEvent<AntagTokenStateEvent>(OnState);
+        _requirements.Updated += OnRequirementsUpdated;
+    }
+
+    public override void Shutdown()
+    {
+        _requirements.Updated -= OnRequirementsUpdated;
+        _cachedState = null;
+        CleanupWindow();
+        _awaitingOpen = false;
+        base.Shutdown();
+    }
+
+    private void OnRequirementsUpdated()
+    {
+        if (_cachedState != null && _window != null && !_window.Disposed)
+            _window.UpdateState(_cachedState);
     }
 
     public void RequestOpen()
@@ -117,6 +138,7 @@ public sealed class AntagTokenUiSystem : EntitySystem
         _window = new AntagTokenWindow();
         _window.Title = Loc.GetString("antag-token-window-title");
         _window.OnPurchasePressed += OnPurchasePressed;
+        _window.OnUnlockPressed += OnUnlockPressed;
         _window.OnClearPressed += OnClearPressed;
         _window.OnClose += OnClosed;
         _window.OpenCentered();
@@ -149,6 +171,11 @@ public sealed class AntagTokenUiSystem : EntitySystem
         RaiseNetworkEvent(new AntagTokenPurchaseRequestEvent(roleId));
     }
 
+    private void OnUnlockPressed(ProtoId<AntagPrototype> antagId)
+    {
+        EntityManager.System<AntagUnlockClientSystem>().RequestUnlock(antagId);
+    }
+
     private void CloseRulesConfirmWindow()
     {
         if (_rulesConfirmWindow == null || _rulesConfirmWindow.Disposed)
@@ -172,14 +199,6 @@ public sealed class AntagTokenUiSystem : EntitySystem
         _awaitingOpen = false;
     }
 
-    public override void Shutdown()
-    {
-        base.Shutdown();
-        _cachedState = null;
-        CleanupWindow();
-        _awaitingOpen = false;
-    }
-
     private void CleanupWindow()
     {
         CloseRulesConfirmWindow();
@@ -191,6 +210,7 @@ public sealed class AntagTokenUiSystem : EntitySystem
         _lastAppliedElapsedSeconds = -1;
 
         _window.OnPurchasePressed -= OnPurchasePressed;
+        _window.OnUnlockPressed -= OnUnlockPressed;
         _window.OnClearPressed -= OnClearPressed;
         _window.OnClose -= OnClosed;
 

@@ -83,6 +83,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.Diagnostics.CodeAnalysis;
+using Content.Shared._Mini.AntagUnlock;
+using Content.Shared._Mini.JobUnlock;
 using Content.Shared.CCVar;
 using Content.Shared.Players;
 using Content.Shared.Players.JobWhitelist;
@@ -112,6 +114,9 @@ public sealed class JobRequirementsManager : ISharedPlaytimeManager
     private readonly List<ProtoId<JobPrototype>> _jobBans = new();
     private readonly List<ProtoId<AntagPrototype>> _antagBans = new();
     private readonly List<string> _jobWhitelists = new();
+    private readonly HashSet<ProtoId<JobPrototype>> _jobUnlocks = new();
+    private readonly HashSet<ProtoId<AntagPrototype>> _antagUnlocks = new();
+    private int _donateSponsorLevel;
 
     private ISawmill _sawmill = default!;
 
@@ -125,6 +130,9 @@ public sealed class JobRequirementsManager : ISharedPlaytimeManager
         _net.RegisterNetMessage<MsgRoleBans>(RxRoleBans);
         _net.RegisterNetMessage<MsgPlayTime>(RxPlayTime);
         _net.RegisterNetMessage<MsgJobWhitelist>(RxJobWhitelist);
+        _net.RegisterNetMessage<MsgJobUnlocks>(RxJobUnlocks);
+        _net.RegisterNetMessage<MsgAntagUnlocks>(RxAntagUnlocks);
+        _net.RegisterNetMessage<MsgDonateSponsorLevel>(RxDonateSponsorLevel);
 
         _client.RunLevelChanged += ClientOnRunLevelChanged;
     }
@@ -138,7 +146,58 @@ public sealed class JobRequirementsManager : ISharedPlaytimeManager
             _jobWhitelists.Clear();
             _jobBans.Clear();
             _antagBans.Clear();
+            _jobUnlocks.Clear();
+            _antagUnlocks.Clear();
+            _donateSponsorLevel = 0;
         }
+    }
+
+    private void RxAntagUnlocks(MsgAntagUnlocks message)
+    {
+        _antagUnlocks.Clear();
+        _antagUnlocks.UnionWith(message.UnlockedAntags);
+        Updated?.Invoke();
+    }
+
+    private void RxDonateSponsorLevel(MsgDonateSponsorLevel message)
+    {
+        _donateSponsorLevel = message.Level;
+        Updated?.Invoke();
+    }
+
+    public bool HasDonateSponsorBypass() => _donateSponsorLevel > 0;
+
+    public bool HasAntagUnlock(ProtoId<AntagPrototype> antagId) => _antagUnlocks.Contains(antagId);
+
+    public bool TryGetAntagUnlockCost(ProtoId<AntagPrototype> antagId, out int cost)
+    {
+        cost = 0;
+
+        if (!_entManager.System<AntagUnlockListingSystem>().TryGetListing(antagId, out var entry))
+            return false;
+
+        cost = entry.Cost;
+        return true;
+    }
+
+    private void RxJobUnlocks(MsgJobUnlocks message)
+    {
+        _jobUnlocks.Clear();
+        _jobUnlocks.UnionWith(message.UnlockedJobs);
+        Updated?.Invoke();
+    }
+
+    public bool HasJobUnlock(ProtoId<JobPrototype> jobId) => _jobUnlocks.Contains(jobId);
+
+    public bool TryGetJobUnlockCost(ProtoId<JobPrototype> jobId, out int cost)
+    {
+        cost = 0;
+
+        if (!_entManager.System<JobUnlockListingSystem>().TryGetListing(jobId, out var entry))
+            return false;
+
+        cost = entry.Cost;
+        return true;
     }
 
     private void RxRoleBans(MsgRoleBans message)
@@ -231,6 +290,12 @@ public sealed class JobRequirementsManager : ISharedPlaytimeManager
         if (!CheckWhitelist(job, out reason))
             return false;
 
+        if (HasDonateSponsorBypass())
+            return true;
+
+        if (_jobUnlocks.Contains(job.ID))
+            return true;
+
         // Check other role requirements
         var reqs = _entManager.System<SharedRoleSystem>().GetRoleRequirements(job);
         if (!CheckRoleRequirements(reqs, profile, out reason))
@@ -257,6 +322,12 @@ public sealed class JobRequirementsManager : ISharedPlaytimeManager
         // Check whitelist requirements
         if (!CheckWhitelist(antag, out reason))
             return false;
+
+        if (HasDonateSponsorBypass())
+            return true;
+
+        if (_antagUnlocks.Contains(antag.ID))
+            return true;
 
         // Check other role requirements
         var reqs = _entManager.System<SharedRoleSystem>().GetRoleRequirements(antag);

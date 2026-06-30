@@ -3,9 +3,17 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Content.Client.Lobby;
+using Content.Client.Lobby.UI;
+using Content.Client.Lobby.UI.Roles;
+using Content.Client.Players.PlayTimeTracking;
 using Content.Client.Resources;
+using Content.Client.Stylesheets;
 using Content.Shared._Mini.AntagTokens;
+using Content.Shared.Preferences;
+using Content.Shared.Roles;
 using Robust.Client.Graphics;
+using Robust.Client.Player;
 using Robust.Client.ResourceManagement;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
@@ -14,8 +22,10 @@ using Robust.Shared.GameObjects;
 using Robust.Shared.IoC;
 using Robust.Shared.Localization;
 using Robust.Shared.Maths;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
 using static Robust.Client.UserInterface.Controls.BoxContainer;
+using static Robust.Client.UserInterface.Controls.LayoutContainer;
 
 namespace Content.Client._Mini.AntagTokens;
 
@@ -44,9 +54,14 @@ public sealed class AntagTokenWindow : DefaultWindow
     private const string CoinIconPath = "/Textures/_Mini/Interface/Coin.png";
 
     public event Action<string>? OnPurchasePressed;
+    public event Action<ProtoId<AntagPrototype>>? OnUnlockPressed;
     public event Action? OnClearPressed;
 
     [Dependency] private readonly IEntitySystemManager _entitySystems = default!;
+    [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+    [Dependency] private readonly IClientPreferencesManager _preferencesManager = default!;
+    [Dependency] private readonly IPlayerManager _playerManager = default!;
+    [Dependency] private readonly JobRequirementsManager _requirements = default!;
 
     private readonly IResourceCache _resourceCache;
     private readonly Texture _coinTexture;
@@ -60,6 +75,7 @@ public sealed class AntagTokenWindow : DefaultWindow
     private Control? _loadingOverlay;
     private readonly Dictionary<string, RoleBuyButton> _roleBuyButtons = new();
     private readonly Dictionary<string, int> _lastServerCooldownRemaining = new();
+    private readonly Dictionary<string, bool> _playtimeBlockedByRole = new();
 
     private sealed class RoleBuyButton
     {
@@ -230,6 +246,7 @@ public sealed class AntagTokenWindow : DefaultWindow
         _clearButton.Disabled = state.ActiveDepositRoleId == null;
 
         _roleBuyButtons.Clear();
+        _playtimeBlockedByRole.Clear();
         _roleGrid.RemoveAllChildren();
         foreach (var roleEntry in state.Roles)
         {
@@ -455,6 +472,32 @@ public sealed class AntagTokenWindow : DefaultWindow
         };
         root.AddChild(imageBox);
 
+        var playtimeBlocked = false;
+        ProtoId<AntagPrototype>? linkedAntagId = null;
+        var profile = _preferencesManager.Preferences?.SelectedCharacter as HumanoidCharacterProfile;
+
+        if (roleDef?.AntagId != null &&
+            _prototypeManager.TryIndex<AntagPrototype>(roleDef.AntagId, out var antagProto))
+        {
+            linkedAntagId = antagProto.ID;
+            if (!_requirements.IsAllowed(antagProto, profile, out var playtimeReason))
+            {
+                playtimeBlocked = true;
+                _playtimeBlockedByRole[entry.RoleId] = true;
+
+                var lockRow = new BoxContainer
+                {
+                    Orientation = LayoutOrientation.Horizontal,
+                    HorizontalAlignment = HAlignment.Center,
+                    SeparationOverride = 6,
+                };
+                var lockIcon = new RoleLockIcon();
+                lockIcon.SetRequirements(playtimeReason);
+                lockRow.AddChild(lockIcon);
+                imageBox.AddChild(lockRow);
+            }
+        }
+
         if (roleDef != null &&
             !string.IsNullOrWhiteSpace(roleDef.IconPath) &&
             _resourceCache.TryGetResource<TextureResource>(new ResPath(roleDef.IconPath), out var textureResource))
@@ -504,6 +547,45 @@ public sealed class AntagTokenWindow : DefaultWindow
         }
 
         root.AddChild(new Control { VerticalExpand = true });
+
+        if (playtimeBlocked &&
+            linkedAntagId is { } antagId &&
+            !_requirements.HasAntagUnlock(antagId) &&
+            _requirements.TryGetAntagUnlockCost(antagId, out var unlockCost))
+        {
+            var unlockButton = new Button
+            {
+                MinSize = new Vector2(268, 36),
+                MaxSize = new Vector2(268, 36),
+                HorizontalAlignment = HAlignment.Center,
+            };
+            var capturedAntagId = antagId;
+            unlockButton.OnPressed += _ => OnUnlockPressed?.Invoke(capturedAntagId);
+
+            var unlockContent = new BoxContainer
+            {
+                Orientation = LayoutOrientation.Horizontal,
+                SeparationOverride = 4,
+                HorizontalAlignment = HAlignment.Center,
+                VerticalAlignment = VAlignment.Center,
+            };
+            unlockContent.AddChild(new Label
+            {
+                Text = Loc.GetString("antag-unlock-button-prefix"),
+                StyleClasses = { StyleNano.StyleClassLabelSubText },
+                VerticalAlignment = VAlignment.Center,
+            });
+            unlockContent.AddChild(new Label
+            {
+                Text = unlockCost.ToString(),
+                StyleClasses = { StyleNano.StyleClassLabelBig },
+                Modulate = Color.White,
+                VerticalAlignment = VAlignment.Center,
+            });
+            unlockContent.AddChild(MiniCoinUi.CreateCoinIcon(_resourceCache));
+            unlockButton.AddChild(unlockContent);
+            root.AddChild(unlockButton);
+        }
 
         var buyButton = new Button
         {
@@ -597,6 +679,9 @@ public sealed class AntagTokenWindow : DefaultWindow
                 && entry.StatusLocKey == null);
 
         if (entry.Purchased || !effectiveAvailable || !entry.CanAfford)
+            return true;
+
+        if (_playtimeBlockedByRole.GetValueOrDefault(entry.RoleId))
             return true;
 
         if (entry.StatusLocKey == "antag-store-status-has-other-deposit")

@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Casha
+# Мини-станция/Freaky-station, Licensed under custom terms with restrictions on public hosting and commercial use, full text: https://raw.githubusercontent.com/ministation/mini-station-goob/master/LICENSE.TXT
+#
+# Optional per-job cost overrides. All SetPreference jobs get automatic pricing:
+# Captain 50, heads 40, BlueshieldOfficer 100, regular 10-20 by weight.
+
+- type: jobUnlockCatalog
+  id: Default
+  listings: []

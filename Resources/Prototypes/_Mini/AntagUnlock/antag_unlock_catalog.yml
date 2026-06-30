@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: 2026 Casha
+# Мини-станция/Freaky-station, Licensed under custom terms with restrictions on public hosting and commercial use, full text: https://raw.githubusercontent.com/ministation/mini-station-goob/master/LICENSE.TXT
+#
+# Optional per-antag unlock cost overrides. Defaults: shop token cost × 5, else 15.
+
+- type: antagUnlockCatalog
+  id: Default
+  listings: []

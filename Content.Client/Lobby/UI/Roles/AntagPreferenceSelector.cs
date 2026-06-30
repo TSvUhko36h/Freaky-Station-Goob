@@ -1,5 +1,6 @@
 using System.Numerics;
 using Content.Client.Lobby.UI;
+using Content.Client.Message;
 using Content.Client.Resources;
 using Content.Client.Stylesheets;
 using Content.Client.UserInterface;
@@ -29,15 +30,20 @@ public sealed class AntagPreferenceCard : PanelContainer
     private static readonly Color CardBackgroundColor = Color.FromHex("#1e1a26").WithAlpha(0.8f);
 
     private const float CardIconSize = 52f;
+    private const float CardMinWidth = 96f;
 
-    private readonly Label _title;
+    private readonly RichTextLabel _title;
     private readonly PixelAntagToggle _toggle;
     private readonly RoleLockIcon _lockIcon;
+    private readonly Button _unlockButton;
+    private readonly Label _unlockCostLabel;
     private readonly TextureButton _help;
     private readonly Button _loadoutButton;
+    private readonly Control _imageSlot;
 
     private List<ProtoId<GuideEntryPrototype>>? _guides;
     private Action? _onLoadout;
+    private Action? _onUnlock;
 
     public event Action<int>? OnSelected;
     public event Action<List<ProtoId<GuideEntryPrototype>>>? OnOpenGuidebook;
@@ -47,9 +53,12 @@ public sealed class AntagPreferenceCard : PanelContainer
 
     public AntagPreferenceCard()
     {
+        IoCManager.InjectDependencies(this);
+        var cache = IoCManager.Resolve<IResourceCache>();
+
         HorizontalExpand = true;
         VerticalExpand = true;
-        MinSize = new Vector2(0, 160);
+        MinSize = new Vector2(CardMinWidth, 160);
         PanelOverride = new StyleBoxFlat
         {
             BackgroundColor = CardBackgroundColor,
@@ -65,6 +74,7 @@ public sealed class AntagPreferenceCard : PanelContainer
             Orientation = LayoutOrientation.Vertical,
             SeparationOverride = 6,
             VerticalExpand = true,
+            HorizontalExpand = true,
         };
         AddChild(root);
 
@@ -110,13 +120,12 @@ public sealed class AntagPreferenceCard : PanelContainer
         };
         imageBox.AddChild(_imageSlot);
 
-        _title = new Label
+        _title = new RichTextLabel
         {
-            HorizontalExpand = true,
             HorizontalAlignment = HAlignment.Center,
-            StyleClasses = { StyleNano.StyleClassLabelBig },
-            FontColorOverride = LobbyUiStyles.HeaderText,
-            ClipText = true,
+            HorizontalExpand = true,
+            MaxWidth = 140,
+            MinHeight = 20,
         };
         root.AddChild(_title);
 
@@ -139,6 +148,38 @@ public sealed class AntagPreferenceCard : PanelContainer
         };
         toggleHost.AddChild(_lockIcon);
 
+        _unlockButton = new Button
+        {
+            Visible = false,
+            HorizontalAlignment = HAlignment.Center,
+            Margin = new Thickness(0, 2, 0, 0),
+        };
+        _unlockButton.OnPressed += _ => _onUnlock?.Invoke();
+
+        var unlockContent = new BoxContainer
+        {
+            Orientation = LayoutOrientation.Horizontal,
+            SeparationOverride = 4,
+            HorizontalAlignment = HAlignment.Center,
+            VerticalAlignment = VAlignment.Center,
+        };
+        unlockContent.AddChild(new Label
+        {
+            Text = Loc.GetString("antag-unlock-button-prefix"),
+            StyleClasses = { StyleNano.StyleClassLabelSubText },
+            VerticalAlignment = VAlignment.Center,
+        });
+        _unlockCostLabel = new Label
+        {
+            StyleClasses = { StyleNano.StyleClassLabelBig },
+            FontColorOverride = LobbyUiStyles.HeaderText,
+            VerticalAlignment = VAlignment.Center,
+        };
+        unlockContent.AddChild(_unlockCostLabel);
+        unlockContent.AddChild(MiniCoinUi.CreateCoinIcon(cache));
+        _unlockButton.AddChild(unlockContent);
+        root.AddChild(_unlockButton);
+
         _loadoutButton = new Button
         {
             Text = Loc.GetString("loadout-window"),
@@ -150,8 +191,6 @@ public sealed class AntagPreferenceCard : PanelContainer
         root.AddChild(_loadoutButton);
     }
 
-    private readonly Control _imageSlot;
-
     public void Setup(
         string title,
         string? description,
@@ -160,7 +199,8 @@ public sealed class AntagPreferenceCard : PanelContainer
         Action? onLoadout = null,
         bool loadoutAvailable = false)
     {
-        _title.Text = title;
+        _title.SetMessage(FormattedMessage.FromMarkupOrThrow(
+            $"[color=#E8E6F0]{FormattedMessage.EscapeText(title)}[/color]"));
         ToolTip = description;
         _guides = guides;
         _help.Visible = guides != null;
@@ -189,10 +229,24 @@ public sealed class AntagPreferenceCard : PanelContainer
         _toggle.Visible = false;
     }
 
+    public void ShowUnlock(int cost, Action onUnlock)
+    {
+        _onUnlock = onUnlock;
+        _unlockCostLabel.Text = cost.ToString();
+        _unlockButton.Visible = true;
+    }
+
+    public void HideUnlock()
+    {
+        _onUnlock = null;
+        _unlockButton.Visible = false;
+    }
+
     public void UnlockRequirements()
     {
         _lockIcon.Visible = false;
         _toggle.Visible = true;
+        HideUnlock();
     }
 
     /// <param name="id">0 = yes, 1 = no.</param>
