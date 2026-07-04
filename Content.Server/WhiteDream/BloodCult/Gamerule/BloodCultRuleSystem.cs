@@ -1,5 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Content.Server.Actions;
 using Content.Server.EUI;
 using Content.Server._Mini.BloodCult.UI;
 using Content.Server.Antag;

@@ -30,12 +30,12 @@
   - type: CultItem
   - type: UserInterface
     interfaces:
-      enum.RadialSelectorUiKey.Key:
-        type: RadialSelectorMenuBUI
+      enum.BloodCultConstructionUiKey.Key:
+        type: BloodCultConstructionMenuBoundUserInterface
   - type: ActivatableUI
     inHandsOnly: true
-    key: enum.RadialSelectorUiKey.Key
-  - type: ShortConstruction
+    key: enum.BloodCultConstructionUiKey.Key
+  - type: BloodCultConstruction
     entries:
     - prototype: CultPylon
     - prototype: CultFactoryArchives
