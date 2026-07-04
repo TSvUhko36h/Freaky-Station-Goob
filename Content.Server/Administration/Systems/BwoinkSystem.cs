@@ -216,6 +216,7 @@ namespace Content.Server.Administration.Systems
 
         private int _maxAdditionalChars;
         private readonly Dictionary<NetUserId, DateTime> _activeConversations = new();
+        private readonly HashSet<NetUserId> _introSent = new();
 
         public override void Initialize()
         {
@@ -243,7 +244,12 @@ namespace Content.Server.Administration.Systems
 
             SubscribeLocalEvent<GameRunLevelChangedEvent>(OnGameRunLevelChanged);
             SubscribeNetworkEvent<BwoinkClientTypingUpdated>(OnClientTypingUpdated);
-            SubscribeLocalEvent<RoundRestartCleanupEvent>(_ => _activeConversations.Clear());
+            SubscribeNetworkEvent<BwoinkAHelpOpenRequestEvent>(OnAHelpOpenRequest);
+            SubscribeLocalEvent<RoundRestartCleanupEvent>(_ =>
+            {
+                _activeConversations.Clear();
+                _introSent.Clear();
+            });
             _rankIcons = _prototypeManager.EnumeratePrototypes<AdminRankIconPrototype>()
             .ToDictionary(p => p.Rank, p => p.Icon);
         	_rateLimit.Register(
@@ -1006,17 +1012,74 @@ namespace Content.Server.Administration.Systems
         // End Frontier:
 
         /// <summary>
-        /// Relays a system message on a player's AHelp channel to the player and all ahelp admins.
+        /// Relays a system message on a player's AHelp channel to the player, ahelp admins, and Discord.
         /// </summary>
         public void SendPlayerChannelSystemMessage(NetUserId channelUserId, string text)
         {
             var msg = new BwoinkTextMessage(channelUserId, SystemUserId, text, playSound: false);
 
-            if (_playerManager.TryGetSessionById(channelUserId, out var session))
-                RaiseNetworkEvent(msg, session.Channel);
-
-            foreach (var channel in GetTargetAdmins())
+            var admins = GetTargetAdmins();
+            foreach (var channel in admins)
                 RaiseNetworkEvent(msg, channel);
+
+            if (_playerManager.TryGetSessionById(channelUserId, out var session)
+                && !admins.Contains(session.Channel))
+            {
+                RaiseNetworkEvent(msg, session.Channel);
+            }
+
+            EnqueueSystemWebhookMessage(channelUserId, text);
+        }
+
+        private void OnAHelpOpenRequest(BwoinkAHelpOpenRequestEvent ev, EntitySessionEventArgs args)
+        {
+            var userId = args.SenderSession.UserId;
+            if (!_introSent.Add(userId))
+                return;
+
+            _activeConversations[userId] = DateTime.Now;
+            SendPlayerChannelSystemMessage(userId, Loc.GetString("bwoink-system-introductory-message"));
+        }
+
+        private void EnqueueSystemWebhookMessage(NetUserId userId, string markupText)
+        {
+            if (_webhookUrl == string.Empty)
+                return;
+
+            var plainText = StripMarkupForWebhook(markupText);
+            var nonAfkAdmins = GetNonAfkAdmins();
+            var messageParams = new AHelpMessageParams(
+                Loc.GetString("bwoink-system-username"),
+                plainText,
+                isAdmin: false,
+                _gameTicker.RoundDuration().ToString("hh\\:mm\\:ss"),
+                _gameTicker.RunLevel,
+                playedSound: false,
+                noReceivers: nonAfkAdmins.Count == 0,
+                icon: ":information_source:");
+
+            _messageQueues.GetOrNew(userId).Enqueue(GenerateAHelpMessage(messageParams));
+        }
+
+        private string StripMarkupForWebhook(string markup)
+        {
+            var formatted = new FormattedMessage();
+            if (!formatted.TryAddMarkup(markup, out _))
+                return _stickerSanitizer.SanitizeMessageWithStickers(markup);
+
+            var sb = new StringBuilder();
+            foreach (var node in formatted)
+            {
+                if (node.Name != null)
+                    continue;
+
+                if (node.Value.StringValue != null)
+                    sb.Append(node.Value.StringValue);
+            }
+
+            return sb.Length == 0
+                ? _stickerSanitizer.SanitizeMessageWithStickers(markup)
+                : sb.ToString();
         }
 
         private IList<INetChannel> GetNonAfkAdmins()
