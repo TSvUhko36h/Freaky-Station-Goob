@@ -197,7 +197,7 @@ public sealed partial class RatvarProgressSystem : EntitySystem
         var targetTransform = Transform(objectiveComponent.Target.Value);
         var uidTransform = Transform(uid);
 
-        return uidTransform.Coordinates.InRange(EntityManager, targetTransform.Coordinates, 6f);
+        return uidTransform.Coordinates.InRange(EntityManager, targetTransform.Coordinates, objectiveComponent.SummonRange);
     }
 
     public bool IsPortalInProgress()

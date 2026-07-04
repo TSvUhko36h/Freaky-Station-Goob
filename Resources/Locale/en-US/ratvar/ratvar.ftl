@@ -4,13 +4,16 @@
 # SPDX-License-Identifier: MIT
 
 ratvar-has-risen = RATVAR HAS AWOKEN
-ratvar-has-risen-sender = ???
+ratvar-has-risen-sender = Central Command
 
 ratvar-spawn-start =
     Ratvar's righteous are about to free him from his prison!
     Do not allow this at any cost!
-    The coordinates are { $position }
-ratvar-spawn-end = Bring me Nar'Sie!
+    According to our readings, this is happening near { $location }
+ratvar-spawn-end =
+    Ratvar's righteous have freed him from his prison!
+    They have summoned him into this world, and now he shall rule it!
+    According to our readings, this happened near { $location }
 ratvar-name = Ratvar
 
 ratvar-winstate-idle = [color=green]The Ratvar righteous failed to free their master![/color]
@@ -179,7 +182,9 @@ action-desc-ratvar-clock-magic = Allows you to choose an enchantment for an item
 objective-description-RatvarConvertObjective = Use the Altar to convert a crew member.
 objective-description-RatvarBeaconsObjective = Build beacons to gain as much power as possible.
 objective-description-RatvarPowerObjective = Accumulate power so we have the strength to summon Ratvar!
+objective-title-RatvarSummonObjective = Summoning
 objective-description-RatvarSummonObjective = We are ready to summon Ratvar!
+ratvar-summon-objective-location = Anchor an altar near { $location } and use a shard on it to summon Ratvar.
 
 # Antags
 antag-name-RatvarRighteous = Ratvar Righteous

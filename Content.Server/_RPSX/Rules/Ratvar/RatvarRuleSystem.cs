@@ -8,6 +8,7 @@ using Content.Server.Antag;
 using Content.Server.Chat.Systems;
 using Content.Server.GameTicking.Rules;
 using Content.Server.GameTicking;
+using Content.Server.Pinpointer;
 using Content.Server.RoundEnd;
 using Content.Shared.GameTicking.Components;
 using Content.Shared.RPSX.DarkForces.Ratvar.Righteous.Roles;
@@ -17,6 +18,8 @@ using Robust.Shared.IoC;
 using Robust.Shared.Maths;
 using Robust.Shared.Timing;
 using Robust.Shared.Log;
+using Robust.Shared.Localization;
+using Robust.Shared.Utility;
 
 namespace Content.Server.RPSX.GameTicking.Rules.Ratvar;
 
@@ -26,6 +29,8 @@ public sealed class RatvarRuleSystem : GameRuleSystem<RatvarRuleComponent>
     [Dependency] private readonly ChatSystem _chatSystem = default!;
     [Dependency] private readonly AlertLevelSystem _alertLevel = default!;
     [Dependency] private readonly RoundEndSystem _roundEndSystem = default!;
+    [Dependency] private readonly NavMapSystem _navMap = default!;
+    [Dependency] private readonly SharedTransformSystem _transform = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
 
     public override void Initialize()
@@ -97,10 +102,10 @@ public sealed class RatvarRuleSystem : GameRuleSystem<RatvarRuleComponent>
 
         rule.WinState = WinState.RighteousWon;
 
-        var position = CoordinatesHelper.GetEntityMapPosition(EntityManager, ev.Ratvar);
+        var location = GetAnnouncementLocation(ev.Ratvar);
         _chatSystem.DispatchStationAnnouncement(
             ev.Ratvar,
-            Loc.GetString("ratvar-spawn-end", ("position", position)),
+            Loc.GetString("ratvar-spawn-end", ("location", location)),
             Loc.GetString("ratvar-name"),
             false,
             null,
@@ -125,7 +130,7 @@ public sealed class RatvarRuleSystem : GameRuleSystem<RatvarRuleComponent>
         if (rule == null)
             return;
 
-        var position = CoordinatesHelper.GetEntityMapPosition(EntityManager, ev.Portal);
+        var location = GetAnnouncementLocation(ev.Portal);
         var stationUid = StationUtils.GetStationByEntity(EntityManager, ev.Portal);
         if (stationUid != null)
         {
@@ -134,13 +139,27 @@ public sealed class RatvarRuleSystem : GameRuleSystem<RatvarRuleComponent>
 
         _chatSystem.DispatchStationAnnouncement(
             ev.Portal,
-            Loc.GetString("ratvar-spawn-start", ("position", position)),
-            Loc.GetString("station-helper-name"),
+            Loc.GetString("ratvar-spawn-start", ("location", location)),
+            Loc.GetString("ratvar-has-risen-sender"),
             false,
             null,
             Color.Yellow
         );
 
         rule.WinState = WinState.Summoning;
+    }
+
+    private string GetAnnouncementLocation(EntityUid uid)
+    {
+        var coordinates = _transform.GetMapCoordinates(uid);
+        var location = FormattedMessage.RemoveMarkupPermissive(_navMap.GetNearestBeaconString(coordinates, onlyName: true));
+
+        if (string.IsNullOrWhiteSpace(location) ||
+            location == Loc.GetString("nav-beacon-pos-no-beacons"))
+        {
+            return Loc.GetString("nav-beacon-pos-no-beacons");
+        }
+
+        return location;
     }
 }

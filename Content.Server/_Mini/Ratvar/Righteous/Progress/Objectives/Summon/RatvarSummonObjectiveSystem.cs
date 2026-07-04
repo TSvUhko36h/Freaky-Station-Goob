@@ -1,12 +1,16 @@
 ﻿using System.Collections.Generic;
-using Content.Shared.Warps;
+using Content.Server.Pinpointer;
+using Content.Server.Station.Components;
 using Content.Shared.Ninja.Components;
 using Content.Shared.Objectives.Components;
+using Content.Shared.Warps;
 using Robust.Shared.GameObjects;
 using Robust.Shared.IoC;
+using Robust.Shared.Localization;
+using Robust.Shared.Map;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
-using Content.Server.Station.Components;
+using Robust.Shared.Utility;
 using Content.Server.RPSX.DarkForces.Ratvar.Righteous.Progress.Events;
 
 namespace Content.Server.RPSX.DarkForces.Ratvar.Righteous.Progress.Objectives.Summon;
@@ -14,8 +18,10 @@ namespace Content.Server.RPSX.DarkForces.Ratvar.Righteous.Progress.Objectives.Su
 public sealed class RatvarSummonObjectiveSystem : EntitySystem
 {
     [Dependency] private readonly MetaDataSystem _metaData = default!;
+    [Dependency] private readonly NavMapSystem _navMap = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private readonly SharedTransformSystem _transform = default!;
 
     public override void Initialize()
     {
@@ -41,15 +47,7 @@ public sealed class RatvarSummonObjectiveSystem : EntitySystem
             if (component.UpdateCoordinatesTime > time)
                 continue;
 
-            var transform = Transform(component.Target.Value);
-            var title = $"Призовите Ратвара по координатам X: {transform.MapPosition.X}; Y: {transform.MapPosition.Y}";
-
-            if (TryComp<WarpPointComponent>(component.Target, out var warp) && warp.Location != null)
-            {
-                title += $"\nТочка также может быть известна, как - {warp.Location}";
-            }
-
-            _metaData.SetEntityName(uid, title, meta);
+            UpdateSummonObjectiveText(uid, component, meta);
             component.UpdateCoordinatesTime = time + component.UpdateCoordinatesPeriod;
         }
     }
@@ -76,6 +74,7 @@ public sealed class RatvarSummonObjectiveSystem : EntitySystem
             return;
 
         component.UpdateCoordinatesTime = _timing.CurTime;
+        UpdateSummonObjectiveText(uid, component, MetaData(uid));
     }
 
     private void OnAssigned(EntityUid uid, RatvarSummonObjectiveComponent component,
@@ -117,5 +116,33 @@ public sealed class RatvarSummonObjectiveSystem : EntitySystem
 
         if (warps.Count > 0)
             component.Target = _random.Pick(warps);
+    }
+
+    private void UpdateSummonObjectiveText(EntityUid uid, RatvarSummonObjectiveComponent component, MetaDataComponent meta)
+    {
+        if (component.Target == null)
+            return;
+
+        var location = GetSummonLocationName(component.Target.Value);
+        _metaData.SetEntityName(uid, Loc.GetString("objective-title-RatvarSummonObjective"), meta);
+        _metaData.SetEntityDescription(uid,
+            Loc.GetString("ratvar-summon-objective-location", ("location", location)),
+            meta);
+    }
+
+    private string GetSummonLocationName(EntityUid target)
+    {
+        var coordinates = _transform.GetMapCoordinates(target);
+        var beaconName = FormattedMessage.RemoveMarkupPermissive(_navMap.GetNearestBeaconString(coordinates, onlyName: true));
+        if (!string.IsNullOrWhiteSpace(beaconName) &&
+            beaconName != Loc.GetString("nav-beacon-pos-no-beacons"))
+        {
+            return beaconName;
+        }
+
+        if (TryComp<WarpPointComponent>(target, out var warp) && !string.IsNullOrWhiteSpace(warp.Location))
+            return warp.Location;
+
+        return Loc.GetString("nav-beacon-pos-no-beacons");
     }
 }
