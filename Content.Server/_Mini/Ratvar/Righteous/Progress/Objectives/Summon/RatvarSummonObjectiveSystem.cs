@@ -7,7 +7,6 @@ using Robust.Shared.IoC;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
 using Content.Server.Station.Components;
-using Content.Shared.Tag;
 using Content.Server.RPSX.DarkForces.Ratvar.Righteous.Progress.Events;
 
 namespace Content.Server.RPSX.DarkForces.Ratvar.Righteous.Progress.Objectives.Summon;
@@ -17,8 +16,6 @@ public sealed class RatvarSummonObjectiveSystem : EntitySystem
     [Dependency] private readonly MetaDataSystem _metaData = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
-
-    [Dependency] private readonly TagSystem _tag = default!;
 
     public override void Initialize()
     {
@@ -84,6 +81,17 @@ public sealed class RatvarSummonObjectiveSystem : EntitySystem
     private void OnAssigned(EntityUid uid, RatvarSummonObjectiveComponent component,
         ref ObjectiveAssignedEvent args)
     {
+        TryAssignTarget(uid, component);
+    }
+
+    public void TryAssignTarget(EntityUid uid, RatvarSummonObjectiveComponent? component = null)
+    {
+        if (!Resolve(uid, ref component))
+            return;
+
+        if (component.Target != null)
+            return;
+
         var warps = new List<EntityUid>();
         var query = EntityQueryEnumerator<BombingTargetComponent, WarpPointComponent>();
         while (query.MoveNext(out var warpUid, out _, out _))
@@ -101,16 +109,13 @@ public sealed class RatvarSummonObjectiveSystem : EntitySystem
         var queryWarps = EntityQueryEnumerator<WarpPointComponent>();
         while (queryWarps.MoveNext(out var warpUid, out _))
         {
-            if (!HasComp<BecomesStationComponent>(Transform(warpUid).GridUid) || _tag.HasTag(warpUid, "RatvarSpawnWhitelist"))
+            if (!HasComp<BecomesStationComponent>(Transform(warpUid).GridUid))
                 continue;
 
             warps.Add(warpUid);
         }
 
         if (warps.Count > 0)
-        {
             component.Target = _random.Pick(warps);
-            return;
-        }
     }
 }

@@ -149,7 +149,7 @@ public sealed class UiFontStackManager : IUiFontStackManager
             return BuildDefaultStack(cache, primary, variation, size);
 
         if (!ActiveStyle.NotoFallback)
-            return cache.GetFont(primary, size);
+            return MaybeFilterCozetteControls(primary, cache.GetFont(primary, size));
 
         return BuildStack(cache, primary, variation, size);
     }
@@ -179,7 +179,7 @@ public sealed class UiFontStackManager : IUiFontStackManager
     private Font BuildStack(IResourceCache cache, string primary, string variation, int size)
     {
         if (!ActiveStyle.NotoFallback)
-            return cache.GetFont(primary, size);
+            return MaybeFilterCozetteControls(primary, cache.GetFont(primary, size));
 
         var fallback = variation switch
         {
@@ -193,7 +193,23 @@ public sealed class UiFontStackManager : IUiFontStackManager
         var paths = new string[fallback.Length + 1];
         paths[0] = primary;
         fallback.CopyTo(paths, 1);
-        return cache.GetFont(paths, size);
+        return MaybeFilterCozetteControls(primary, cache.GetFont(paths, size));
+    }
+
+    private static Font MaybeFilterCozetteControls(string primaryPath, Font font)
+    {
+        if (!primaryPath.Contains("Cozette", StringComparison.OrdinalIgnoreCase))
+            return font;
+
+        if (font is not StackedFont stacked || stacked.Stack.Length == 0)
+            return new C0ControlFilteredFont(font);
+
+        var filtered = new Font[stacked.Stack.Length];
+        filtered[0] = new C0ControlFilteredFont(stacked.Stack[0]);
+        for (var i = 1; i < stacked.Stack.Length; i++)
+            filtered[i] = stacked.Stack[i];
+
+        return new StackedFont(filtered);
     }
 
     private static Font BuildDefaultStack(IResourceCache cache, string primary, string variation, int size)

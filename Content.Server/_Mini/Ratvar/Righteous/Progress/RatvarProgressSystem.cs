@@ -19,6 +19,7 @@ public sealed partial class RatvarProgressSystem : EntitySystem
 {
     [Dependency] private readonly MindSystem _mindSystem = default!;
     [Dependency] private readonly ObjectivesSystem _objectivesSystem = default!;
+    [Dependency] private readonly RatvarSummonObjectiveSystem _summonObjectiveSystem = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
 
     [ValidatePrototypeId<EntityPrototype>]
@@ -105,6 +106,8 @@ public sealed partial class RatvarProgressSystem : EntitySystem
             return;
 
         CreateObjective(RatvarSummonObjectivePrototype, ref comp.RatvarSummonObjective);
+        if (comp.RatvarSummonObjective != EntityUid.Invalid)
+            _summonObjectiveSystem.TryAssignTarget(comp.RatvarSummonObjective);
         AddObjectivesToRighteouses(comp.RatvarSummonObjective);
     }
 
