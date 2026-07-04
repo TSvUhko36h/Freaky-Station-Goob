@@ -1,5 +1,6 @@
 using System;
 using Content.Client.Resources;
+using Content.Client.UserInterface.RichText;
 using Robust.Client.Graphics;
 using Robust.Client.ResourceManagement;
 using Robust.Client.UserInterface.RichText;

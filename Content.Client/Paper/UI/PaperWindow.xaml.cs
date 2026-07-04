@@ -130,12 +130,12 @@ namespace Content.Client.Paper.UI
         private Thickness _originalContentMargin; // Starlight-edit
 
         private readonly Type[] _allowedTags = new Type[] {
-            typeof(BoldItalicTag),
-            typeof(BoldTag),
+            typeof(UiBoldItalicTag),
+            typeof(UiBoldTag),
             typeof(BulletTag),
             typeof(ColorTag),
             typeof(HeadingTag),
-            typeof(ItalicTag),
+            typeof(UiItalicTag),
             typeof(MonoTag),
             // Starlight paperwork edit
             typeof(FormTagHandler), //
