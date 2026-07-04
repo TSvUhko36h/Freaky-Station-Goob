@@ -8,39 +8,39 @@
 
 - type: font
   id: Default
-  path: /Fonts/_Mini/Cozette/CozetteVector.ttf
+  path: /Fonts/NotoSans/NotoSans-Regular.ttf
 
 - type: font
   id: DefaultItalic
-  path: /Fonts/_Mini/Cozette/CozetteVector.ttf
+  path: /Fonts/NotoSans/NotoSans-Italic.ttf
 
 - type: font
   id: DefaultBold
-  path: /Fonts/_Mini/Cozette/CozetteVectorBold.ttf
+  path: /Fonts/NotoSans/NotoSans-Bold.ttf
 
 - type: font
   id: DefaultBoldItalic
-  path: /Fonts/_Mini/Cozette/CozetteVectorBold.ttf
+  path: /Fonts/NotoSans/NotoSans-BoldItalic.ttf
 
 - type: font
   id: NotoSansDisplay
-  path: /Fonts/_Mini/Cozette/CozetteVector.ttf
+  path: /Fonts/NotoSansDisplay/NotoSansDisplay-Regular.ttf
 
 - type: font
   id: NotoSansDisplayItalic
-  path: /Fonts/_Mini/Cozette/CozetteVector.ttf
+  path: /Fonts/NotoSansDisplay/NotoSansDisplay-Italic.ttf
 
 - type: font
   id: NotoSansDisplayBold
-  path: /Fonts/_Mini/Cozette/CozetteVectorBold.ttf
+  path: /Fonts/NotoSansDisplay/NotoSansDisplay-Bold.ttf
 
 - type: font
   id: NotoSansDisplayBoldItalic
-  path: /Fonts/_Mini/Cozette/CozetteVectorBold.ttf
+  path: /Fonts/NotoSansDisplay/NotoSansDisplay-BoldItalic.ttf
 
 - type: font
   id: BoxRound
-  path: /Fonts/_Mini/Cozette/CozetteVector.ttf
+  path: /Fonts/Boxfont-round/Boxfont Round.ttf
 
 - type: font
   id: AnimalSilence
@@ -48,7 +48,7 @@
 
 - type: font
   id: Monospace
-  path: /Fonts/_Mini/Cozette/CozetteVector.ttf
+  path: /EngineFonts/NotoSans/NotoSansMono-Regular.ttf
 
 - type: font
   id: Emoji

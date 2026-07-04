@@ -24,6 +24,8 @@ public sealed class UiMarkupFontResolver : IMarkupFontResolver
         };
 
         var display = fontId.Contains("Display", StringComparison.Ordinal);
+
+        // Markup tags inherit their pixel size from the current font stack; do not apply SizeOffset again.
         return _fonts.GetChatStack(_cache, variation, size, display);
     }
 }

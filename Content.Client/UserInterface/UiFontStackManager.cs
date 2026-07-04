@@ -23,6 +23,8 @@ public interface IUiFontStackManager
 
     int GetChatFontSize(int baseSize = 12);
 
+    bool UsesPrimaryChatFontOverride { get; }
+
     Font GetStackWithPrimary(IResourceCache cache, string path, int size = 10);
 }
 
@@ -107,9 +109,15 @@ public sealed class UiFontStackManager : IUiFontStackManager
     public int GetChatFontSize(int baseSize = 12)
     {
         EnsureInitialized();
-        var offset = ActiveStyle?.ChatSizeOffset ?? 0;
-        return offset == 0 ? baseSize : baseSize + offset;
+
+        if (ActiveStyle?.ID == DefaultStyleId)
+            return 13;
+
+        return baseSize + (ActiveStyle?.ChatSizeOffset ?? 0);
     }
+
+    public bool UsesPrimaryChatFontOverride =>
+        ActiveStyle?.ID != DefaultStyleId;
 
     public Font GetStackWithPrimary(IResourceCache cache, string path, int size = 10)
     {

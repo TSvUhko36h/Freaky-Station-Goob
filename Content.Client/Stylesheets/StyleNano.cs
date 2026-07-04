@@ -324,7 +324,10 @@ namespace Content.Client.Stylesheets
             var notoSans10 = resCache.NotoStack(size: 10);
             var notoSansItalic10 = resCache.NotoStack(variation: "Italic", size: 10);
             var notoSans12 = resCache.NotoStack(size: 12);
-            var chatFont = resCache.GetChatStack(size: IoCManager.Resolve<IUiFontStackManager>().GetChatFontSize(UiChatFonts.BaseSize));
+            var uiFontStack = IoCManager.Resolve<IUiFontStackManager>();
+            var chatFont = uiFontStack.UsesPrimaryChatFontOverride
+                ? resCache.GetChatStack(size: uiFontStack.GetChatFontSize(UiChatFonts.BaseSize))
+                : resCache.NotoStack(size: uiFontStack.GetChatFontSize(UiChatFonts.BaseSize));
             var notoSansItalic12 = resCache.NotoStack(variation: "Italic", size: 12);
             var notoSansBold12 = resCache.NotoStack(variation: "Bold", size: 12);
             var notoSansBoldItalic12 = resCache.NotoStack(variation: "BoldItalic", size: 12);

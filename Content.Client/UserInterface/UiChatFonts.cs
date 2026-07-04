@@ -25,18 +25,18 @@ public static class UiChatFonts
     public static void ApplyToOutput(Control output, IResourceCache? cache = null)
     {
         cache ??= IoCManager.Resolve<IResourceCache>();
-        var font = Get(cache);
 
         switch (output)
         {
             case CustomOutputPanel custom:
-                custom.FontOverride = font;
+                custom.FontOverride = Get(cache);
                 custom.LineHeightScale = LineHeightScale;
                 custom.InvalidateStyleSheet();
                 custom.InvalidateLayout();
                 break;
             case OutputPanel panel:
                 panel.InvalidateStyleSheet();
+                panel.InvalidateMeasure();
                 break;
         }
     }

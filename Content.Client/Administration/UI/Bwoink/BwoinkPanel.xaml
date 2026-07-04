@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
     xmlns="https://spacestation14.io"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:amour="clr-namespace:Content.Client._Amour.Stickers.UI"
+    xmlns:goobcontrols="clr-namespace:Content.Goobstation.UIKit.UserInterface.Controls;assembly=Content.Goobstation.UIKit"
     Orientation="Vertical"
     HorizontalExpand="True"
     VerticalExpand="True"
@@ -24,7 +25,7 @@ SPDX-License-Identifier: MIT
             SeparationOverride="4"
             HorizontalExpand="True"
             VerticalExpand="True">
-            <OutputPanel
+            <goobcontrols:CustomOutputPanel
                 Name="TextOutput"
                 StyleClasses="StyleNano.StyleClassChatOutput"
                 HorizontalExpand="True"
