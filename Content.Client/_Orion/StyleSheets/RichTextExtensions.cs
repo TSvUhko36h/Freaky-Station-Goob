@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Text.RegularExpressions;
 using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.RichText;
@@ -18,14 +17,14 @@ public static class RichTextExtensions
 {
     private static readonly Regex TagRegex = new(@"\[/?(?<tag>[a-zA-Z]+)(?:=[^\\\]]+)?\]", RegexOptions.Compiled);
 
-    private static readonly Type[] AllowedTags = new[]
-    {
-        typeof(BoldItalicTag), // [bolditalic]
-        typeof(BoldTag), // [bold]
-        typeof(ColorTag), // [color=Red] / [color=#FF0000]
-        typeof(ItalicTag), // [italic]
-        typeof(Content.Goobstation.UIKit.UserInterface.RichText.TextureTag), // [tex]
-    };
+    private static readonly string[] AllowedTagNames =
+    [
+        "bold",
+        "italic",
+        "bolditalic",
+        "color",
+        "tex",
+    ];
 
     /// <summary>
     /// Sanitizes the input string by removing unsupported BBCode tags (e.g. [font=...]), keeping only whitelisted ones.
@@ -42,8 +41,19 @@ public static class RichTextExtensions
             match =>
         {
             var tag = match.Groups["tag"].Value;
-            return AllowedTags.Any(t => t.Name.Replace("Tag", "").Equals(tag, StringComparison.OrdinalIgnoreCase)) ? match.Value : "";
+            return IsAllowedTag(tag) ? match.Value : "";
         });
+    }
+
+    private static bool IsAllowedTag(string tag)
+    {
+        foreach (var allowed in AllowedTagNames)
+        {
+            if (string.Equals(allowed, tag, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>

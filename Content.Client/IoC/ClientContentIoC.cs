@@ -145,6 +145,7 @@ using Content.Client.Replay;
 using Content.Client.Screenshot;
 using Content.Client.Stylesheets;
 using Content.Client.UserInterface;
+using Content.Client.UserInterface.RichText;
 using Robust.Client.UserInterface.RichText;
 using Content.Client.Viewport;
 using Content.Client.Voting;
