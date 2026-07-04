@@ -4,6 +4,7 @@
   components:
   - type: GameRule
     minPlayers: 15
+    chaosScore: 1000
   - type: RatvarRule
   - type: AntagSelection
     selectionTime: IntraPlayerSpawn

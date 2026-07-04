@@ -9,18 +9,19 @@ namespace Content.Client.UserInterface;
 
 /// <summary>
 /// Single-line label that scrolls horizontally when text overflows its bounds.
+/// Uses duplicated text for a seamless loop (end flows into start).
 /// </summary>
 public sealed class MarqueeLabel : Control
 {
-    private const float ScrollSpeed = 32f;
-    private const float LoopGap = 24f;
+    private const float ScrollSpeed = 28f;
 
     private readonly BoxContainer _scrollRow;
     private readonly Label _labelA;
     private readonly Label _labelB;
-    private readonly Control _loopGap;
     private float _scrollPos;
     private float _loopLength;
+    private float _clipWidth;
+    private float _textWidth;
     private bool _scrolling;
     private string _text = string.Empty;
 
@@ -37,6 +38,7 @@ public sealed class MarqueeLabel : Control
             _labelB.Text = value;
             ResetScroll();
             InvalidateMeasure();
+            InvalidateArrange();
         }
     }
 
@@ -64,15 +66,9 @@ public sealed class MarqueeLabel : Control
         };
 
         _labelA = CreateLabel();
-        _loopGap = new Control
-        {
-            MinSize = new Vector2(LoopGap, 0),
-            MouseFilter = MouseFilterMode.Ignore,
-        };
         _labelB = CreateLabel();
 
         _scrollRow.AddChild(_labelA);
-        _scrollRow.AddChild(_loopGap);
         _scrollRow.AddChild(_labelB);
         AddChild(_scrollRow);
     }
@@ -84,6 +80,7 @@ public sealed class MarqueeLabel : Control
         _labelB.StyleClasses.Clear();
         _labelB.StyleClasses.Add(styleClass);
         InvalidateMeasure();
+        InvalidateArrange();
     }
 
     private static Label CreateLabel()
@@ -100,8 +97,8 @@ public sealed class MarqueeLabel : Control
     {
         _scrollPos = 0f;
         _loopLength = 0f;
+        _textWidth = 0f;
         _scrolling = false;
-        _scrollRow.Margin = default;
         _labelB.Visible = false;
     }
 
@@ -111,48 +108,65 @@ public sealed class MarqueeLabel : Control
         var labelSize = _labelA.DesiredSize;
         var height = Math.Max(MinSize.Y, labelSize.Y);
 
-        // Expanding siblings in a horizontal box must not consume width during measure.
         if (HorizontalExpand)
             return new Vector2(0, height);
 
-        var width = availableSize.X > 0 ? availableSize.X : labelSize.X;
+        var width = availableSize.X > 0 && !float.IsPositiveInfinity(availableSize.X)
+            ? availableSize.X
+            : labelSize.X;
         return new Vector2(width, height);
+    }
+
+    protected override Vector2 ArrangeOverride(Vector2 finalSize)
+    {
+        _clipWidth = finalSize.X;
+        RefreshScrollState(finalSize.Y);
+        ApplyScrollPosition(finalSize.Y);
+        return finalSize;
     }
 
     protected override void FrameUpdate(FrameEventArgs args)
     {
         base.FrameUpdate(args);
 
-        if (!IsInsideTree)
+        if (!IsInsideTree || !_scrolling || _loopLength <= 0f)
             return;
-
-        var avail = PixelWidth;
-        if (avail <= 0)
-            avail = (int) MathF.Ceiling(Width);
-        if (avail <= 0)
-            return;
-
-        _labelA.Measure(new Vector2(float.PositiveInfinity, float.PositiveInfinity));
-        var textWidth = _labelA.DesiredPixelSize.X;
-        var overflow = textWidth - avail;
-
-        if (overflow <= 0)
-        {
-            ResetScroll();
-            return;
-        }
-
-        if (!_scrolling)
-        {
-            _scrolling = true;
-            _labelB.Visible = true;
-            _loopLength = textWidth + LoopGap;
-        }
 
         _scrollPos += ScrollSpeed * args.DeltaSeconds;
         if (_scrollPos >= _loopLength)
             _scrollPos -= _loopLength;
 
-        _scrollRow.Margin = new Thickness(-_scrollPos, 0, 0, 0);
+        ApplyScrollPosition(PixelHeight);
+    }
+
+    private void RefreshScrollState(float height)
+    {
+        if (_clipWidth <= 1f)
+            return;
+
+        _labelA.Measure(new Vector2(float.PositiveInfinity, height));
+        var measuredWidth = _labelA.DesiredPixelSize.X;
+
+        if (measuredWidth - _clipWidth > 1f)
+        {
+            if (!_scrolling || MathF.Abs(measuredWidth - _textWidth) > 1f)
+            {
+                _textWidth = measuredWidth;
+                _loopLength = _textWidth;
+                _scrolling = true;
+                _labelB.Visible = true;
+            }
+        }
+        else if (_scrolling)
+        {
+            ResetScroll();
+        }
+    }
+
+    private void ApplyScrollPosition(float height)
+    {
+        _scrollRow.Measure(new Vector2(float.PositiveInfinity, Math.Max(height, MinSize.Y)));
+        var rowSize = _scrollRow.DesiredSize;
+        _scrollRow.Arrange(UIBox2.FromDimensions(new Vector2(-_scrollPos, 0), rowSize));
     }
 }

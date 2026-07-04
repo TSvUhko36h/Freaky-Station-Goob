@@ -24,8 +24,6 @@ public interface IUiFontStackManager
     /// </summary>
     Font GetChatStack(IResourceCache cache, string variation = "Regular", int size = 12, bool display = false);
 
-    int GetChatFontSize(int baseSize = 12);
-
     bool UsesPrimaryChatFontOverride { get; }
 
     Font GetStackWithPrimary(IResourceCache cache, string path, int size = 10);
@@ -37,6 +35,7 @@ public sealed class UiFontStackManager : IUiFontStackManager
     [Dependency] private readonly IConfigurationManager _configurationManager = default!;
 
     private const string DefaultStyleId = "Default";
+    private const float AlternateFontSizeScale = 0.85f;
 
     private static readonly string[] NotoRegularFallback =
     [
@@ -116,23 +115,15 @@ public sealed class UiFontStackManager : IUiFontStackManager
         return BuildStackInternal(cache, variation, size, display, applyUiOffset: false);
     }
 
-    public int GetChatFontSize(int baseSize = 12)
-    {
-        EnsureInitialized();
-        return baseSize switch
-        {
-            12 => 13,
-            _ => baseSize,
-        };
-    }
-
     public bool UsesPrimaryChatFontOverride =>
         ActiveStyle?.ID != DefaultStyleId;
 
     public Font GetStackWithPrimary(IResourceCache cache, string path, int size = 10)
     {
         EnsureInitialized();
-        size = NormalizeToNotoLineHeight(cache, path, ApplySizeOffset(size));
+        size = ApplySizeOffset(size);
+        if (ActiveStyle.ID != DefaultStyleId)
+            size = NormalizeToNotoPixelSize(cache, path, size);
 
         if (ActiveStyle.ID == DefaultStyleId && !ActiveStyle.NotoFallback)
             return cache.GetFont(NotoStackWithPrimary(path), size);
@@ -151,9 +142,8 @@ public sealed class UiFontStackManager : IUiFontStackManager
             size = ApplySizeOffset(size);
 
         var primary = ResolvePrimaryPath(variation, display);
-        size = applyUiOffset
-            ? NormalizeToNotoLineHeight(cache, primary, size)
-            : NormalizeChatSize(cache, primary, size);
+        if (ActiveStyle.ID != DefaultStyleId)
+            size = NormalizeToNotoPixelSize(cache, primary, size);
 
         if (ActiveStyle.ID == DefaultStyleId && !ActiveStyle.NotoFallback)
             return BuildDefaultStack(cache, primary, variation, size);
@@ -226,47 +216,14 @@ public sealed class UiFontStackManager : IUiFontStackManager
     }
 
     /// <summary>
-    /// Scales non-Noto fonts so their line height matches Noto Sans at the requested pixel size.
+    /// Scales alternate fonts toward Noto Sans height, then applies <see cref="AlternateFontSizeScale"/>.
     /// </summary>
-    private int NormalizeToNotoLineHeight(IResourceCache cache, string primaryPath, int size)
+    private int NormalizeToNotoPixelSize(IResourceCache cache, string primaryPath, int size)
     {
-        if (ActiveStyle.ID == DefaultStyleId || size <= 0)
+        if (size <= 0)
             return size;
 
         var cacheKey = (primaryPath, size);
-        if (_normalizedSizeCache.TryGetValue(cacheKey, out var cached))
-            return cached;
-
-        var normalized = size;
-        try
-        {
-            var notoFont = cache.GetFont(NotoRegularFallback[0], size);
-            var notoLineHeight = notoFont.GetLineHeight(1f);
-            if (notoLineHeight > 0)
-            {
-                var styleFont = cache.GetFont(primaryPath, size);
-                var styleLineHeight = styleFont.GetLineHeight(1f);
-                if (styleLineHeight > 0)
-                {
-                    normalized = Math.Max(1, (int)Math.Round(size * (notoLineHeight / (float)styleLineHeight)));
-                }
-            }
-        }
-        catch (Exception)
-        {
-            normalized = size;
-        }
-
-        _normalizedSizeCache[cacheKey] = normalized;
-        return normalized;
-    }
-
-    private int NormalizeChatSize(IResourceCache cache, string primaryPath, int size)
-    {
-        if (ActiveStyle.ID == DefaultStyleId || size <= 0)
-            return size;
-
-        var cacheKey = ($"chat:{primaryPath}", size);
         if (_normalizedSizeCache.TryGetValue(cacheKey, out var cached))
             return cached;
 
@@ -279,23 +236,17 @@ public sealed class UiFontStackManager : IUiFontStackManager
             {
                 var styleFont = cache.GetFont(primaryPath, size);
                 var styleHeight = styleFont.GetHeight(1f);
-                if (styleHeight > 0)
+                if (styleHeight > 0 && !MathHelper.CloseToPercent(styleHeight, notoHeight))
                 {
-                    // Only shrink — pixel fonts must never be enlarged to match metrics.
-                    if (styleHeight > notoHeight)
-                    {
-                        normalized = Math.Max(1, (int)Math.Round(size * (notoHeight / (float)styleHeight)));
-                    }
+                    normalized = Math.Max(1, (int)Math.Round(size * (notoHeight / (float)styleHeight)));
                 }
             }
 
-            var scale = ActiveStyle.ChatSizeScale;
-            if (scale > 0f && !MathHelper.CloseToPercent(scale, 1f))
-                normalized = Math.Max(1, (int)Math.Round(normalized * scale));
+            normalized = Math.Max(1, (int)Math.Round(normalized * AlternateFontSizeScale));
         }
         catch (Exception)
         {
-            normalized = size;
+            normalized = Math.Max(1, (int)Math.Round(size * AlternateFontSizeScale));
         }
 
         _normalizedSizeCache[cacheKey] = normalized;

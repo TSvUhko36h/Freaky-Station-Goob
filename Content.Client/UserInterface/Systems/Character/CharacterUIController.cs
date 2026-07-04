@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Content.Client._Mini.DailyQuests;
+using Content.Client._Mini.Objectives;
 using Content.Client.CharacterInfo;
 using Content.Shared._Mini.DailyQuests;
 using Content.Client.Gameplay;
@@ -35,10 +36,10 @@ using Content.Client.Stylesheets;
 using Content.Client.UserInterface.Controls;
 using Content.Client.UserInterface.Systems.Character.Controls;
 using Content.Client.UserInterface.Systems.Character.Windows;
-using Content.Client.UserInterface.Systems.Objectives.Controls;
 using Content.Shared.Input;
 using Content.Shared.Mind;
 using Content.Shared.Mind.Components;
+using Content.Shared.Objectives;
 using Content.Shared.Roles;
 using JetBrains.Annotations;
 using Robust.Client.GameObjects;
@@ -47,7 +48,9 @@ using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controllers;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Input.Binding;
+using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
+using Robust.Shared.Timing;
 using Robust.Shared.Utility;
 using static Content.Client.CharacterInfo.CharacterInfoSystem;
 using static Robust.Client.UserInterface.Controls.BaseButton;
@@ -77,6 +80,20 @@ public sealed class CharacterUIController : UIController, IOnStateEntered<Gamepl
     private readonly List<PanelContainer> _dailyQuestSlots = new();
     private readonly List<DailyQuestCardControl> _dailyQuestCards = new();
     private readonly List<DailyQuestEntry> _dailyQuestLayoutCache = new();
+    private readonly List<PanelContainer> _objectiveSlots = new();
+    private readonly List<AntagObjectiveCardControl> _objectiveCards = new();
+    private readonly List<ObjectiveInfo> _objectiveLayoutCache = new();
+    private AntagObjectiveCardControl? _rewardCard;
+    private AntagObjectiveCardControl? _briefingCard;
+    private string? _briefingCache;
+    private bool _rewardAllCompleteCache;
+    private bool _rewardGrantedCache;
+    private readonly List<Control> _characterInfoControls = new();
+    private EntityUid _characterInfoEntity;
+    private int _characterInfoControlCount = -1;
+    private CharacterData? _cachedCharacterData;
+    private float _objectiveRefreshAccumulator;
+    private const float ObjectiveRefreshInterval = 1f;
 
     public void OnStateEntered(GameplayState state)
     {
@@ -171,78 +188,280 @@ public sealed class CharacterUIController : UIController, IOnStateEntered<Gamepl
     private void CharacterUpdated(CharacterData data)
     {
         if (_window == null)
+            return;
+
+        var preserveScroll = _window.IsOpen;
+        var scrollPos = preserveScroll ? _window.ContentScroll.VScroll : 0f;
+
+        if (_cachedCharacterData is { } cached && IsProgressOnlyUpdate(cached, data))
+        {
+            ApplyObjectiveProgressUpdate(data);
+            _cachedCharacterData = data;
+            if (preserveScroll)
+                RestoreScroll(scrollPos);
+            return;
+        }
+
+        var (entity, job, objectives, briefing, entityName, antagAllComplete, antagCoinGranted) = data;
+
+        _window.SpriteView.SetEntity(entity);
+        UpdateRoleType();
+
+        if (_window.NameLabel.Text != entityName)
+            _window.NameLabel.Text = entityName;
+
+        if (_window.SubText.Text != job)
+            _window.SubText.Text = job;
+
+        _window.ObjectivesLabel.Visible = objectives.Any();
+
+        RefreshAntagObjectives(objectives, antagAllComplete, antagCoinGranted, briefing);
+        RefreshCharacterInfoControls(entity);
+
+        _window.RolePlaceholder.Visible = briefing == null
+            && _characterInfoControls.Count == 0
+            && !objectives.Any()
+            && !_dailyQuests.Quests.Any();
+
+        _cachedCharacterData = data;
+        if (preserveScroll)
+            RestoreScroll(scrollPos);
+    }
+
+    private void ApplyObjectiveProgressUpdate(CharacterData data)
+    {
+        if (_window == null)
+            return;
+
+        var flatObjectives = data.Objectives.SelectMany(pair => pair.Value).ToList();
+
+        for (var i = 0; i < flatObjectives.Count && i < _objectiveCards.Count; i++)
+            _objectiveCards[i].UpdateObjectiveProgress(flatObjectives[i]);
+
+        if (_rewardCard != null
+            && (_rewardAllCompleteCache != data.AntagAllObjectivesComplete
+                || _rewardGrantedCache != data.AntagObjectiveCoinRewardGranted))
+        {
+            _rewardCard.UpdateRewardFooter(data.AntagAllObjectivesComplete, data.AntagObjectiveCoinRewardGranted);
+            _rewardAllCompleteCache = data.AntagAllObjectivesComplete;
+            _rewardGrantedCache = data.AntagObjectiveCoinRewardGranted;
+        }
+
+        for (var i = 0; i < flatObjectives.Count; i++)
+        {
+            if (i < _objectiveLayoutCache.Count)
+                _objectiveLayoutCache[i] = flatObjectives[i];
+        }
+    }
+
+    private static bool IsProgressOnlyUpdate(CharacterData prev, CharacterData next)
+    {
+        if (prev.Entity != next.Entity)
+            return false;
+
+        if (prev.Job != next.Job || prev.EntityName != next.EntityName)
+            return false;
+
+        if (prev.Briefing != next.Briefing)
+            return false;
+
+        var prevFlat = prev.Objectives.SelectMany(pair => pair.Value).ToList();
+        var nextFlat = next.Objectives.SelectMany(pair => pair.Value).ToList();
+
+        if (prevFlat.Count != nextFlat.Count)
+            return false;
+
+        for (var i = 0; i < prevFlat.Count; i++)
+        {
+            var a = prevFlat[i];
+            var b = nextFlat[i];
+            if (a.Title != b.Title
+                || a.Description != b.Description)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void RestoreScroll(float scrollPos)
+    {
+        if (_window == null || !_window.IsOpen)
+            return;
+
+        if (MathF.Abs(_window.ContentScroll.VScroll - scrollPos) > 0.01f)
+            _window.ContentScroll.VScroll = scrollPos;
+    }
+
+    private void RefreshCharacterInfoControls(EntityUid entity)
+    {
+        if (_window == null)
+            return;
+
+        var controls = _characterInfo.GetCharacterInfoControls(entity);
+        if (_characterInfoEntity == entity
+            && _characterInfoControlCount == controls.Count
+            && _characterInfoControls.Count == controls.Count)
         {
             return;
         }
 
-        var (entity, job, objectives, briefing, entityName) = data;
+        foreach (var control in _characterInfoControls)
+            control.Orphan();
 
-        _window.SpriteView.SetEntity(entity);
+        _characterInfoControls.Clear();
+        _window.CharacterExtras.RemoveAllChildren();
 
-        UpdateRoleType();
-
-        _window.NameLabel.Text = entityName;
-        _window.SubText.Text = job;
-        _window.Objectives.RemoveAllChildren();
-        _window.ObjectivesLabel.Visible = objectives.Any();
-
-        foreach (var (groupId, conditions) in objectives)
-        {
-            var objectiveControl = new CharacterObjectiveControl
-            {
-                Orientation = BoxContainer.LayoutOrientation.Vertical,
-                Modulate = Color.Gray
-            };
-
-
-            var objectiveText = new FormattedMessage();
-            objectiveText.TryAddMarkup(groupId, out _);
-
-            var objectiveLabel = new RichTextLabel
-            {
-                StyleClasses = { StyleNano.StyleClassTooltipActionTitle }
-            };
-            objectiveLabel.SetMessage(objectiveText);
-
-            objectiveControl.AddChild(objectiveLabel);
-
-            foreach (var condition in conditions)
-            {
-                var conditionControl = new ObjectiveConditionsControl();
-                conditionControl.ProgressTexture.Texture = _sprite.Frame0(condition.Icon);
-                conditionControl.ProgressTexture.Progress = condition.Progress;
-                var titleMessage = new FormattedMessage();
-                var descriptionMessage = new FormattedMessage();
-                titleMessage.AddText(condition.Title);
-                descriptionMessage.AddText(condition.Description);
-
-                conditionControl.Title.SetMessage(titleMessage);
-                conditionControl.Description.SetMessage(descriptionMessage);
-
-                objectiveControl.AddChild(conditionControl);
-            }
-
-            _window.Objectives.AddChild(objectiveControl);
-        }
-
-        if (briefing != null)
-        {
-            var briefingControl = new ObjectiveBriefingControl();
-            var text = new FormattedMessage();
-            text.PushColor(Color.Yellow);
-            text.AddText(briefing);
-            briefingControl.Label.SetMessage(text);
-            _window.Objectives.AddChild(briefingControl);
-        }
-
-        var controls = _characterInfo.GetCharacterInfoControls(entity);
         foreach (var control in controls)
         {
-            _window.Objectives.AddChild(control);
+            _window.CharacterExtras.AddChild(control);
+            _characterInfoControls.Add(control);
         }
 
-        _window.RolePlaceholder.Visible = briefing == null && !controls.Any() && !objectives.Any() && !_dailyQuests.Quests.Any();
-        RefreshDailyQuests(_dailyQuests.Quests, _dailyQuests.TimeInterpSeconds);
+        _characterInfoEntity = entity;
+        _characterInfoControlCount = controls.Count;
+    }
+
+    private void RefreshAntagObjectives(
+        Dictionary<string, List<ObjectiveInfo>> objectives,
+        bool antagAllComplete,
+        bool antagCoinGranted,
+        string? briefing)
+    {
+        if (_window == null)
+            return;
+
+        var flatObjectives = objectives.SelectMany(pair => pair.Value).ToList();
+        var rebuildLayout = NeedsObjectiveLayoutRebuild(flatObjectives, briefing);
+
+        if (rebuildLayout)
+        {
+            _window.Objectives.RemoveAllChildren();
+            _objectiveSlots.Clear();
+            _objectiveCards.Clear();
+            _objectiveLayoutCache.Clear();
+            _characterInfoControls.Clear();
+            _rewardCard = null;
+            _briefingCard = null;
+            _briefingCache = null;
+
+            var groupIndex = 0;
+            foreach (var (groupId, conditions) in objectives)
+            {
+                if (objectives.Count > 1)
+                {
+                    var groupMessage = new FormattedMessage();
+                    groupMessage.TryAddMarkup(groupId, out _);
+
+                    var groupLabel = new RichTextLabel
+                    {
+                        StyleClasses = { StyleNano.StyleClassTooltipActionTitle },
+                        HorizontalAlignment = Control.HAlignment.Center,
+                        Margin = new Thickness(0, groupIndex == 0 ? 0 : 4, 0, 2),
+                    };
+                    groupLabel.SetMessage(groupMessage);
+                    _window.Objectives.AddChild(groupLabel);
+                }
+
+                foreach (var condition in conditions)
+                {
+                    var slot = CreateObjectiveSlot();
+                    var card = new AntagObjectiveCardControl
+                    {
+                        HorizontalExpand = true,
+                        VerticalExpand = false,
+                    };
+                    card.SetObjective(condition, _sprite.Frame0(condition.Icon));
+                    slot.AddChild(card);
+                    _window.Objectives.AddChild(slot);
+                    _objectiveSlots.Add(slot);
+                    _objectiveCards.Add(card);
+                }
+
+                groupIndex++;
+            }
+
+            if (flatObjectives.Count > 0)
+            {
+                var rewardSlot = CreateObjectiveSlot();
+                _rewardCard = new AntagObjectiveCardControl
+                {
+                    HorizontalExpand = true,
+                    VerticalExpand = false,
+                };
+                _rewardCard.SetRewardFooter(antagAllComplete, antagCoinGranted);
+                rewardSlot.AddChild(_rewardCard);
+                _window.Objectives.AddChild(rewardSlot);
+            }
+
+            if (briefing != null)
+            {
+                var briefingSlot = CreateObjectiveSlot();
+                _briefingCard = new AntagObjectiveCardControl
+                {
+                    HorizontalExpand = true,
+                    VerticalExpand = false,
+                };
+                _briefingCard.SetBriefing(briefing);
+                briefingSlot.AddChild(_briefingCard);
+                _window.Objectives.AddChild(briefingSlot);
+            }
+
+            _objectiveLayoutCache.Clear();
+            _objectiveLayoutCache.AddRange(flatObjectives);
+            _briefingCache = briefing;
+            _rewardAllCompleteCache = antagAllComplete;
+            _rewardGrantedCache = antagCoinGranted;
+            return;
+        }
+
+        var cardIndex = 0;
+        foreach (var condition in flatObjectives)
+        {
+            _objectiveCards[cardIndex].UpdateObjectiveProgress(condition);
+            cardIndex++;
+        }
+
+        if (_rewardCard != null
+            && (_rewardAllCompleteCache != antagAllComplete || _rewardGrantedCache != antagCoinGranted))
+        {
+            _rewardCard.UpdateRewardFooter(antagAllComplete, antagCoinGranted);
+            _rewardAllCompleteCache = antagAllComplete;
+            _rewardGrantedCache = antagCoinGranted;
+        }
+
+        for (var i = 0; i < flatObjectives.Count; i++)
+            _objectiveLayoutCache[i] = flatObjectives[i];
+    }
+
+    private static PanelContainer CreateObjectiveSlot()
+    {
+        return new PanelContainer
+        {
+            HorizontalExpand = true,
+            VerticalExpand = false,
+            RectClipContent = false,
+        };
+    }
+
+    private bool NeedsObjectiveLayoutRebuild(IReadOnlyList<ObjectiveInfo> objectives, string? briefing)
+    {
+        if (_objectiveLayoutCache.Count != objectives.Count || _briefingCache != briefing)
+            return true;
+
+        for (var i = 0; i < objectives.Count; i++)
+        {
+            var cached = _objectiveLayoutCache[i];
+            var current = objectives[i];
+            if (cached.Title != current.Title
+                || cached.Description != current.Description)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void OnDailyQuestsUpdated(IReadOnlyList<DailyQuestEntry> quests, float smoothTimeExtra)
@@ -379,6 +598,21 @@ public sealed class CharacterUIController : UIController, IOnStateEntered<Gamepl
         _window?.Close();
     }
 
+    public override void FrameUpdate(FrameEventArgs args)
+    {
+        base.FrameUpdate(args);
+
+        if (_window?.IsOpen != true)
+            return;
+
+        _objectiveRefreshAccumulator += args.DeltaSeconds;
+        if (_objectiveRefreshAccumulator < ObjectiveRefreshInterval)
+            return;
+
+        _objectiveRefreshAccumulator = 0f;
+        _characterInfo.RequestCharacterInfo();
+    }
+
     private void ToggleWindow()
     {
         if (_window == null)
@@ -392,6 +626,7 @@ public sealed class CharacterUIController : UIController, IOnStateEntered<Gamepl
         }
         else
         {
+            _objectiveRefreshAccumulator = 0f;
             _characterInfo.RequestCharacterInfo();
             _window.Open();
         }

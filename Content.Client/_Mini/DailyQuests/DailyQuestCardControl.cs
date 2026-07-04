@@ -2,6 +2,7 @@
 // Мини-станция/Freaky-station, Licensed under custom terms with restrictions on public hosting and commercial use, full text: https://raw.githubusercontent.com/ministation/mini-station-goob/master/LICENSE.TXT
 using System;
 using System.Numerics;
+using Content.Client._Mini.UserInterface;
 using Content.Client.Resources;
 using Content.Client.UserInterface;
 using Content.Shared._Mini.AntagTokens;
@@ -22,8 +23,8 @@ namespace Content.Client._Mini.DailyQuests;
 
 public sealed class DailyQuestCardControl : BoxContainer
 {
-    public const float RewardQuestCardHeight = 304f;
-    public const float CompactQuestCardHeight = 108f;
+    public const float RewardQuestCardHeight = 252f;
+    public const float CompactQuestCardHeight = CharacterMenuCardStyle.CompactCardHeight;
 
     private static readonly Color AccentColor = Color.FromHex("#9a8fb5");
     private static readonly Color ClaimReadyColor = Color.FromHex("#6b9e7a");
@@ -65,7 +66,7 @@ public sealed class DailyQuestCardControl : BoxContainer
         HorizontalExpand = true;
 
         _progressBar = new PixelTiledProgressBar();
-        _progressLabel = new Label { Modulate = Color.FromHex("#d7e2f4"), HorizontalAlignment = HAlignment.Right };
+        _progressLabel = new Label { Modulate = CharacterMenuCardStyle.ProgressTextColor, HorizontalAlignment = HAlignment.Right };
         _statusLabel = new Label { HorizontalAlignment = HAlignment.Center, Modulate = Color.FromHex("#e8eef8") };
     }
 
@@ -139,12 +140,14 @@ public sealed class DailyQuestCardControl : BoxContainer
             _cardStyle = new StyleBoxFlat
             {
                 BackgroundColor = isClaimed ? PurchasedCardColor : CurrentCardColor,
-                BorderColor = isComplete || isClaimed ? ClaimReadyColor.WithAlpha(0.5f) : AccentColor.WithAlpha(0.35f),
+                BorderColor = isComplete || isClaimed
+                    ? ClaimReadyColor.WithAlpha(0.5f)
+                    : AccentColor.WithAlpha(0.35f),
                 BorderThickness = new Thickness(1),
-                ContentMarginLeftOverride = 12,
-                ContentMarginTopOverride = 8,
-                ContentMarginRightOverride = 12,
-                ContentMarginBottomOverride = 8
+                ContentMarginLeftOverride = 10,
+                ContentMarginTopOverride = 6,
+                ContentMarginRightOverride = 10,
+                ContentMarginBottomOverride = 6
             };
 
             _cardPanel = new PanelContainer
@@ -159,7 +162,7 @@ public sealed class DailyQuestCardControl : BoxContainer
             var column = new BoxContainer
             {
                 Orientation = LayoutOrientation.Vertical,
-                SeparationOverride = 4,
+                SeparationOverride = 3,
                 HorizontalExpand = true,
                 VerticalExpand = true,
             };
@@ -176,16 +179,7 @@ public sealed class DailyQuestCardControl : BoxContainer
             RectClipContent = true,
             MinSize = new Vector2(0, CompactQuestCardHeight),
             Margin = new Thickness(0, 0, 0, 0),
-            PanelOverride = new StyleBoxFlat
-            {
-                BackgroundColor = CardBackgroundColor.WithAlpha(0.55f),
-                BorderColor = isComplete || isClaimed ? ClaimReadyColor.WithAlpha(0.4f) : Color.FromHex("#455674").WithAlpha(0.35f),
-                BorderThickness = new Thickness(1),
-                ContentMarginLeftOverride = 8,
-                ContentMarginTopOverride = 6,
-                ContentMarginRightOverride = 8,
-                ContentMarginBottomOverride = 6
-            }
+            PanelOverride = CharacterMenuCardStyle.CreateCompactPanelStyle(isComplete || isClaimed),
         };
 
         var compactColumn = new BoxContainer
@@ -229,11 +223,14 @@ public sealed class DailyQuestCardControl : BoxContainer
                 Text = quest.Title,
                 Modulate = Color.White,
                 HorizontalExpand = true,
-                MinSize = new Vector2(0, 20),
+                MinSize = new Vector2(0, 18),
                 VerticalAlignment = VAlignment.Center,
             };
             title.SetStyleClass("LabelHeading");
             topRow.AddChild(title);
+
+            var rarityLabel = CreateRarityLabel(quest);
+            topRow.AddChild(rarityLabel);
 
             var rewardRow = new BoxContainer
             {
@@ -262,7 +259,7 @@ public sealed class DailyQuestCardControl : BoxContainer
                 Text = quest.Description,
                 Modulate = Color.FromHex("#c5d3ed"),
                 HorizontalExpand = true,
-                MinSize = new Vector2(0, 18),
+                MinSize = new Vector2(0, 16),
             });
 
             if (!string.IsNullOrWhiteSpace(quest.RoleHint))
@@ -272,7 +269,7 @@ public sealed class DailyQuestCardControl : BoxContainer
                     Text = Loc.GetString("daily-quest-role-hint", ("role", quest.RoleHint)),
                     Modulate = Color.FromHex("#9fb4d8"),
                     HorizontalExpand = true,
-                    MinSize = new Vector2(0, 18),
+                    MinSize = new Vector2(0, 16),
                 });
             }
         }
@@ -292,24 +289,17 @@ public sealed class DailyQuestCardControl : BoxContainer
                 header.AddChild(new TextureRect
                 {
                     Texture = questIcon,
-                    MinSize = new Vector2(20, 20),
+                    MinSize = new Vector2(CharacterMenuCardStyle.IconSize, CharacterMenuCardStyle.IconSize),
                     TextureScale = new Vector2(1f),
                     Stretch = TextureRect.StretchMode.KeepAspectCentered,
                     VerticalAlignment = VAlignment.Center
                 });
             }
 
-            var titleMarquee = new MarqueeLabel
-            {
-                Text = quest.Title,
-                Modulate = Color.White,
-                MinSize = new Vector2(0, 18),
-                VerticalAlignment = VAlignment.Center,
-            };
-            titleMarquee.SetStyleClass("LabelSubText");
-            header.AddChild(WrapMarquee(titleMarquee));
+            header.AddChild(CharacterMenuCardStyle.CreateTitleMarqueeHost(quest.Title));
+            header.AddChild(CreateRarityLabel(quest));
 
-            column.AddChild(CreateMarqueeHost(quest.Description, Color.FromHex("#c5d3ed"), 16));
+            column.AddChild(CharacterMenuCardStyle.CreateBodyMarqueeHost(quest.Description));
         }
 
         UpdateProgressDisplay(quest, 0f);
@@ -329,12 +319,12 @@ public sealed class DailyQuestCardControl : BoxContainer
                     Orientation = LayoutOrientation.Horizontal,
                     HorizontalExpand = true,
                     HorizontalAlignment = HAlignment.Center,
-                    Margin = new Thickness(0, 4, 0, 0),
+                    Margin = new Thickness(0, 2, 0, 0),
                 };
                 _replaceButton = new Button
                 {
                     Text = Loc.GetString("daily-quest-replace"),
-                    MinSize = new Vector2(168, 32),
+                    MinSize = new Vector2(168, 28),
                     HorizontalAlignment = HAlignment.Center,
                 };
                 _replaceButton.MouseFilter = MouseFilterMode.Stop;
@@ -343,6 +333,19 @@ public sealed class DailyQuestCardControl : BoxContainer
                 column.AddChild(replaceRow);
             }
         }
+    }
+
+    private static Label CreateRarityLabel(DailyQuestEntry quest)
+    {
+        var label = new Label
+        {
+            Text = Loc.GetString(quest.Rarity.GetLocId()),
+            Modulate = quest.Rarity.GetColor(),
+            VerticalAlignment = VAlignment.Center,
+            HorizontalAlignment = HAlignment.Right,
+        };
+        label.StyleClasses.Add("LabelSmall");
+        return label;
     }
 
     private void DetachReusedControls()
@@ -355,37 +358,6 @@ public sealed class DailyQuestCardControl : BoxContainer
     private static bool CanShowReplace(DailyQuestEntry quest)
     {
         return quest.CanReplace;
-    }
-
-    private static PanelContainer WrapMarquee(MarqueeLabel marquee)
-    {
-        var host = new PanelContainer
-        {
-            HorizontalExpand = true,
-            RectClipContent = true,
-            MinSize = marquee.MinSize,
-        };
-        host.AddChild(marquee);
-        return host;
-    }
-
-    private static PanelContainer CreateMarqueeHost(string text, Color color, float height)
-    {
-        var host = new PanelContainer
-        {
-            HorizontalExpand = true,
-            RectClipContent = true,
-            MinSize = new Vector2(0, height),
-        };
-
-        host.AddChild(new MarqueeLabel
-        {
-            Text = text,
-            Modulate = color,
-            MinSize = new Vector2(0, height),
-        });
-
-        return host;
     }
 
     private void UpdateStatusLabel(DailyQuestEntry quest)

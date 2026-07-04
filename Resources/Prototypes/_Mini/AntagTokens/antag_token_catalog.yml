@@ -234,6 +234,21 @@
       freeMinimumSponsorLevel: 3
       jobBlacklist: [Chaplain]
 
+    - id: blood_cult
+      nameLocKey: antag-store-role-blood-cult-name
+      descriptionLocKey: antag-store-role-blood-cult-description
+      cost: 6
+      iconPath: /Textures/WhiteDream/BloodCult/cult_hud.rsi
+      mode: LobbyDeposit
+      antagId: BloodCultist
+      gameRuleId: BloodCult
+      requiresPresetGameRuleId: BloodCult
+      tagLocKey: antag-token-window-tag-queue
+      minimumPlayers: 20
+      requiresPreRoundLobby: true
+      freeMinimumSponsorLevel: 3
+      jobBlacklist: [Chaplain]
+
     - id: slasher
       nameLocKey: antag-store-role-slasher-name
       descriptionLocKey: antag-store-role-slasher-description

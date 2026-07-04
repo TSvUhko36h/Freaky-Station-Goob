@@ -85,13 +85,13 @@ public sealed class DailyRewardWindow : DefaultWindow
             : _resourceCache.GetTexture(CoinIconPath);
 
         Title = Loc.GetString("daily-reward-window-title");
-        MinSize = new Vector2(1080, 900);
-        SetSize = new Vector2(1120, 920);
+        MinSize = new Vector2(1080, 860);
+        SetSize = new Vector2(1120, 880);
 
         var root = new BoxContainer
         {
             Orientation = LayoutOrientation.Vertical,
-            SeparationOverride = 10,
+            SeparationOverride = 6,
             Margin = new Thickness(14),
             VerticalExpand = true,
             HorizontalExpand = true,
@@ -112,7 +112,7 @@ public sealed class DailyRewardWindow : DefaultWindow
         {
             Text = Loc.GetString("daily-quest-section-title"),
             StyleClasses = { "LabelHeading" },
-            Margin = new Thickness(2, 2, 0, 0)
+            Margin = new Thickness(2, 0, 0, 0)
         };
         root.AddChild(_questSectionLabel);
 
@@ -125,10 +125,10 @@ public sealed class DailyRewardWindow : DefaultWindow
                 BackgroundColor = Color.FromHex("#141820").WithAlpha(0.9f),
                 BorderColor = Color.FromHex("#31415f"),
                 BorderThickness = new Thickness(1),
-                ContentMarginLeftOverride = 10,
-                ContentMarginTopOverride = 10,
-                ContentMarginRightOverride = 10,
-                ContentMarginBottomOverride = 10,
+                ContentMarginLeftOverride = 8,
+                ContentMarginTopOverride = 8,
+                ContentMarginRightOverride = 8,
+                ContentMarginBottomOverride = 8,
             }
         };
         _questTrack = new GridContainer
@@ -136,7 +136,7 @@ public sealed class DailyRewardWindow : DefaultWindow
             Columns = 2,
             HorizontalExpand = true,
             VerticalExpand = false,
-            MinSize = new Vector2(0, DailyQuestCardControl.RewardQuestCardHeight + 8),
+            MinSize = new Vector2(0, DailyQuestCardControl.RewardQuestCardHeight + 4),
         };
         questPanel.AddChild(_questTrack);
         root.AddChild(questPanel);
@@ -145,24 +145,24 @@ public sealed class DailyRewardWindow : DefaultWindow
         {
             Text = Loc.GetString("daily-reward-window-road-title"),
             StyleClasses = { "LabelHeading" },
-            Margin = new Thickness(2, 6, 0, 0)
+            Margin = new Thickness(2, 0, 0, 0)
         });
 
         var rewardsPanel = new PanelContainer
         {
             VerticalExpand = true,
             HorizontalExpand = true,
-            MinSize = new Vector2(0, 210),
-            MaxSize = new Vector2(float.PositiveInfinity, 250),
+            MinSize = new Vector2(0, 200),
+            MaxSize = new Vector2(float.PositiveInfinity, 240),
             PanelOverride = new StyleBoxFlat
             {
                 BackgroundColor = Color.FromHex("#0f1623"),
                 BorderColor = Color.FromHex("#31415f"),
                 BorderThickness = new Thickness(2),
                 ContentMarginLeftOverride = 12,
-                ContentMarginTopOverride = 10,
+                ContentMarginTopOverride = 8,
                 ContentMarginRightOverride = 12,
-                ContentMarginBottomOverride = 10
+                ContentMarginBottomOverride = 8
             }
         };
         root.AddChild(rewardsPanel);
@@ -173,8 +173,8 @@ public sealed class DailyRewardWindow : DefaultWindow
             VerticalExpand = true,
             HScrollEnabled = true,
             VScrollEnabled = false,
-            MinSize = new Vector2(0, 180),
-            MaxSize = new Vector2(float.PositiveInfinity, 230),
+            MinSize = new Vector2(0, 170),
+            MaxSize = new Vector2(float.PositiveInfinity, 220),
         };
         rewardsPanel.AddChild(scroll);
 

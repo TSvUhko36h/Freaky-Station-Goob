@@ -38,7 +38,10 @@ public sealed partial class DailyQuestPrototype : IPrototype
     public int TargetCount = 1;
 
     [DataField]
-    public int RewardCoins = 1;
+    public int RewardCoins = 0;
+
+    [DataField]
+    public DailyQuestRarity Rarity = DailyQuestRarity.Rare;
 
     /// <summary>
     /// Minimum active playtime required for round-based passive quests.
@@ -46,6 +49,13 @@ public sealed partial class DailyQuestPrototype : IPrototype
     [DataField]
     public TimeSpan MinRoundPlaytime = TimeSpan.FromMinutes(15);
 
+    /// <summary>
+    /// Spawn weight override. Negative values use <see cref="Rarity"/> drop weight.
+    /// </summary>
     [DataField]
-    public float Weight = 1f;
+    public float Weight = -1f;
+
+    public float GetDropWeight() => Weight >= 0f ? Weight : Rarity.GetDropWeight();
+
+    public int GetRewardCoins() => RewardCoins > 0 ? RewardCoins : Rarity.GetDefaultReward();
 }

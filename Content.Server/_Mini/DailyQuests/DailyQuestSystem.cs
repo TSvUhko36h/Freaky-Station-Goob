@@ -17,7 +17,8 @@ using Content.Server.Players.PlayTimeTracking;
 using Content.Server.Popups;
 using Content.Server.Preferences.Managers;
 using Content.Server.Research.Components;
-using Content.Server.Salvage.Magnet;
+using Content.Server.Shuttles.Systems;
+using Content.Server.Station.Systems;
 using Content.Server._Mini.AntagTokens;
 using Content.Server._Mini.DailyRewards;
 using Content.Shared._DV.Salvage;
@@ -25,7 +26,7 @@ using Content.Shared._DV.Salvage.Components;
 using Content.Shared._DV.Salvage.Systems;
 using Content.Shared._Mini.DailyQuests;
 using Content.Shared._Mini.DailyRewards;
-using Content.Shared.Cargo;
+using Content.Shared.Cargo.Components;
 using Content.Shared.Cargo.Components;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Chemistry.EntitySystems.Hypospray;
@@ -83,6 +84,7 @@ public sealed class DailyQuestSystem : EntitySystem
     [Dependency] private readonly PopupSystem _popup = default!;
     [Dependency] private readonly PlayTimeTrackingSystem _playTime = default!;
     [Dependency] private readonly IServerPreferencesManager _preferences = default!;
+    [Dependency] private readonly StationSystem _station = default!;
 
     private readonly Dictionary<NetUserId, PlayerDailyQuestState> _states = new();
 
@@ -119,6 +121,7 @@ public sealed class DailyQuestSystem : EntitySystem
         SubscribeLocalEvent<CargoBountyLabelPrintedEvent>(OnCargoBountyLabelPrinted);
         SubscribeLocalEvent<StructureWeldedEvent>(OnStructureWelded);
         SubscribeLocalEvent<MiningPointsClaimedEvent>(OnMiningPointsClaimed);
+        SubscribeLocalEvent<BankBalanceUpdatedEvent>(OnBankBalanceUpdated);
 
         _userDb.AddOnLoadPlayer(LoadPlayerData);
         _userDb.AddOnFinishLoad(OnPlayerDataLoaded);
@@ -212,13 +215,17 @@ public sealed class DailyQuestSystem : EntitySystem
             && !state.DailyReplaceUsed
             && CanReplaceSlot(state, slot, proto);
 
+        var description = isTimeBased
+            ? Loc.GetString(proto.Description, ("minutes", (int)proto.MinRoundPlaytime.TotalMinutes))
+            : Loc.GetString(proto.Description, ("count", proto.TargetCount));
+
         return new DailyQuestEntry(
             slot.QuestId,
             Loc.GetString(proto.Name),
-            Loc.GetString(proto.Description, ("count", proto.TargetCount)),
+            description,
             currentProgress,
             targetProgress,
-            proto.RewardCoins,
+            proto.GetRewardCoins(),
             preview ? false : slot.Status >= DailyQuestStatus.Completed,
             preview ? false : slot.Status == DailyQuestStatus.Claimed,
             roleHint,
@@ -226,7 +233,8 @@ public sealed class DailyQuestSystem : EntitySystem
             iconSprite,
             iconState,
             isTimeBased,
-            canReplace);
+            canReplace,
+            proto.Rarity);
     }
 
     public void TryReplaceQuest(ICommonSession session, string questId, int slotIndex = -1)
@@ -423,7 +431,7 @@ public sealed class DailyQuestSystem : EntitySystem
             return;
 
         slot.Progress = proto.TargetCount;
-        _antagTokens.AddBalance(session.UserId, proto.RewardCoins, out var granted, out var note);
+        _antagTokens.AddBalance(session.UserId, proto.GetRewardCoins(), out var granted, out var note);
         slot.Status = DailyQuestStatus.Claimed;
         Persist(session.UserId);
         EntityManager.System<DailyRewardSystem>().RefreshUi(session.UserId);
@@ -473,6 +481,13 @@ public sealed class DailyQuestSystem : EntitySystem
             }
         }
 
+        if (proto.QuestType == DailyQuestType.HealOthers)
+        {
+            iconSprite = "/Textures/Interface/Misc/health_icons.rsi";
+            iconState = "Fine";
+            return;
+        }
+
         if (proto.RequiredJob != null && _prototypes.TryIndex(proto.RequiredJob.Value, out JobPrototype? job))
         {
             iconId = job.Icon.ToString();
@@ -491,7 +506,6 @@ public sealed class DailyQuestSystem : EntitySystem
             DailyQuestType.NoDamageTaken => "JobIconMedicalDoctor",
             DailyQuestType.SurviveRound => "JobIconCaptain",
             DailyQuestType.PerformEmotes => "JobIconMime",
-            DailyQuestType.HealOthers => "JobIconMedicalDoctor",
             DailyQuestType.StampDocuments => "JobIconHeadOfPersonnel",
             DailyQuestType.EarnMiningPoints => "JobIconQuarterMaster",
             DailyQuestType.CuffPlayers => "JobIconSecurityOfficer",
@@ -507,6 +521,7 @@ public sealed class DailyQuestSystem : EntitySystem
             DailyQuestType.LatheProduce => "JobIconScientist",
             DailyQuestType.KillHostiles => "JobIconSecurityOfficer",
             DailyQuestType.RepairStructures => "JobIconStationEngineer",
+            DailyQuestType.EarnStationBankBalance => "JobIconQuarterMaster",
             _ => "JobIconUnknown",
         };
     }
@@ -648,6 +663,43 @@ public sealed class DailyQuestSystem : EntitySystem
         TryIncrement(args.Actor, DailyQuestType.FulfillCargoBounty);
     }
 
+    private void OnBankBalanceUpdated(ref BankBalanceUpdatedEvent ev)
+    {
+        var totalBalance = 0;
+        foreach (var balance in ev.Balance.Values)
+            totalBalance += balance;
+
+        foreach (var session in _playerManager.Sessions)
+        {
+            if (session.Status == SessionStatus.Disconnected)
+                continue;
+
+            if (!_states.TryGetValue(session.UserId, out var state))
+                continue;
+
+            foreach (var slot in state.Slots)
+            {
+                if (slot.Status != DailyQuestStatus.Active)
+                    continue;
+
+                if (!_prototypes.TryIndex(slot.QuestId, out DailyQuestPrototype? proto))
+                    continue;
+
+                if (proto.QuestType != DailyQuestType.EarnStationBankBalance)
+                    continue;
+
+                if (!JobMatches(session, proto.RequiredJob))
+                    continue;
+
+                slot.Progress = Math.Min(totalBalance, proto.TargetCount);
+                if (slot.Progress >= proto.TargetCount)
+                    CompleteSlot(session, slot, proto);
+
+                Persist(session.UserId);
+            }
+        }
+    }
+
     private void OnMiningPointsClaimed(ref MiningPointsClaimedEvent args)
     {
         if (!TryGetSession(args.Actor, out var session) ||
@@ -728,6 +780,9 @@ public sealed class DailyQuestSystem : EntitySystem
                 case DailyQuestType.EarnMiningPoints:
                     UpdateMiningProgress(session, state, slot, proto);
                     break;
+                case DailyQuestType.EarnStationBankBalance:
+                    UpdateStationBankProgress(session, state, slot, proto);
+                    break;
             }
         }
     }
@@ -746,6 +801,24 @@ public sealed class DailyQuestSystem : EntitySystem
             : 0;
 
         slot.Progress = (int)Math.Min(earned, proto.TargetCount);
+        if (slot.Progress >= proto.TargetCount)
+            CompleteSlot(session, slot, proto);
+    }
+
+    private void UpdateStationBankProgress(ICommonSession session, PlayerDailyQuestState state, DailyQuestSlot slot, DailyQuestPrototype proto)
+    {
+        if (state.Round.ActiveEntity is not { Valid: true } uid)
+            return;
+
+        var station = _station.GetOwningStation(uid);
+        if (station is not { } stationId || !TryComp<StationBankAccountComponent>(stationId, out var bank))
+            return;
+
+        var totalBalance = 0;
+        foreach (var balance in bank.Accounts.Values)
+            totalBalance += balance;
+
+        slot.Progress = Math.Min(totalBalance, proto.TargetCount);
         if (slot.Progress >= proto.TargetCount)
             CompleteSlot(session, slot, proto);
     }
@@ -845,6 +918,15 @@ public sealed class DailyQuestSystem : EntitySystem
             {
                 var before = slot.Progress;
                 UpdateMiningProgress(session, state, slot, proto);
+                if (slot.Progress != before || slot.Status != DailyQuestStatus.Active)
+                    changed = true;
+                continue;
+            }
+
+            if (proto.QuestType == DailyQuestType.EarnStationBankBalance)
+            {
+                var before = slot.Progress;
+                UpdateStationBankProgress(session, state, slot, proto);
                 if (slot.Progress != before || slot.Status != DailyQuestStatus.Active)
                     changed = true;
             }
@@ -1044,13 +1126,13 @@ public sealed class DailyQuestSystem : EntitySystem
             return null;
 
         var rng = new Random(HashCode.Combine(session.UserId.UserId.GetHashCode(), date.Date.Ticks, exclude.Count, 17));
-        var totalWeight = fallbackPool.Sum(p => p.Weight);
+        var totalWeight = fallbackPool.Sum(p => p.GetDropWeight());
         var roll = rng.NextDouble() * totalWeight;
         var acc = 0f;
 
         foreach (var quest in fallbackPool)
         {
-            acc += quest.Weight;
+            acc += quest.GetDropWeight();
             if (roll <= acc)
                 return quest.ID;
         }
@@ -1068,13 +1150,13 @@ public sealed class DailyQuestSystem : EntitySystem
             return null;
 
         var rng = new Random(HashCode.Combine(session.UserId.UserId.GetHashCode(), date.Date.Ticks, exclude.Count));
-        var totalWeight = pool.Sum(p => p.Weight);
+        var totalWeight = pool.Sum(p => p.GetDropWeight());
         var roll = rng.NextDouble() * totalWeight;
         var acc = 0f;
 
         foreach (var quest in pool)
         {
-            acc += quest.Weight;
+            acc += quest.GetDropWeight();
             if (roll <= acc)
                 return quest.ID;
         }

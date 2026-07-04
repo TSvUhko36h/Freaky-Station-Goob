@@ -1,379 +1,1932 @@
-﻿# SPDX-FileCopyrightText: 2026 Casha
-# Daily quest pool — 2 random quests per player per day.
+# SPDX-FileCopyrightText: 2026 Casha
+# Daily quest pool with Brawl Stars-style rarity tiers.
 
 - type: dailyQuest
-  id: TypanMedicHeal5
-  questType: HealOthers
-  name: daily-quest-typan-medic-heal-5-name
-  description: daily-quest-typan-medic-heal-5-desc
-  requiredJob: TypanMedic
-  targetCount: 5
-  rewardCoins: 2
-  weight: 1.2
-
-- type: dailyQuest
-  id: TypanCommanderStamp3
-  questType: StampDocuments
-  name: daily-quest-typan-commander-stamp-3-name
-  description: daily-quest-typan-commander-stamp-3-desc
-  requiredJob: TypanCommander
-  targetCount: 3
-  rewardCoins: 1
-  weight: 1.1
-
-- type: dailyQuest
-  id: TypanCargotechMining2000
-  questType: EarnMiningPoints
-  name: daily-quest-typan-cargo-mining-2000-name
-  description: daily-quest-typan-cargo-mining-2000-desc
-  requiredJob: TypanCargotech
-  targetCount: 2000
-  rewardCoins: 3
-  weight: 0.9
-
-- type: dailyQuest
-  id: PacifistRound
-  questType: NoMeleeHits
-  icon: JobIconMime
-  name: daily-quest-pacifist-round-name
-  description: daily-quest-pacifist-round-desc
-  rewardCoins: 2
-  minRoundPlaytime: 900
-  weight: 0.8
-
-- type: dailyQuest
-  id: UntouchableRound
-  questType: NoDamageTaken
-  icon: JobIconMedicalDoctor
-  name: daily-quest-untouchable-round-name
-  description: daily-quest-untouchable-round-desc
-  rewardCoins: 3
-  minRoundPlaytime: 900
-  weight: 0.7
-
-- type: dailyQuest
-  id: TypanPatrolCuff2
-  questType: CuffPlayers
-  name: daily-quest-typan-patrol-cuff-2-name
-  description: daily-quest-typan-patrol-cuff-2-desc
-  requiredJob: TypanPatrol
-  targetCount: 2
-  rewardCoins: 2
-  weight: 1
-
-- type: dailyQuest
-  id: TypanScienceUnlock1
-  questType: UnlockTechnology
-  name: daily-quest-typan-science-unlock-1-name
-  description: daily-quest-typan-science-unlock-1-desc
-  requiredJob: TypanScience
-  targetCount: 1
-  rewardCoins: 1
-  weight: 1.1
-
-- type: dailyQuest
-  id: TypanChefCook3
-  questType: CookMeals
-  name: daily-quest-typan-chef-cook-3-name
-  description: daily-quest-typan-chef-cook-3-desc
-  requiredJob: TypanChef
-  targetCount: 3
-  rewardCoins: 1
-  weight: 1.1
-
-- type: dailyQuest
-  id: TypanBotanistHarvest10
-  questType: HarvestPlants
-  name: daily-quest-typan-botanist-harvest-10-name
-  description: daily-quest-typan-botanist-harvest-10-desc
-  requiredJob: TypanBotanist
-  targetCount: 10
-  rewardCoins: 1
-  weight: 1.1
-
-- type: dailyQuest
-  id: TypanAtmosWeld5
-  questType: WeldStructures
-  name: daily-quest-typan-atmos-weld-5-name
-  description: daily-quest-typan-atmos-weld-5-desc
-  requiredJob: TypanAtmosTech
-  targetCount: 5
-  rewardCoins: 2
-  weight: 1
-
-- type: dailyQuest
-  id: TypanMedicInject3
-  questType: InjectPatients
-  name: daily-quest-typan-medic-inject-3-name
-  description: daily-quest-typan-medic-inject-3-desc
-  requiredJob: TypanMedic
-  targetCount: 3
-  rewardCoins: 2
-  weight: 1.1
-
-- type: dailyQuest
-  id: TypanCargotechBounty2
+  id: CargoBountyRare
+  rarity: rare
   questType: FulfillCargoBounty
-  name: daily-quest-typan-cargo-bounty-2-name
-  description: daily-quest-typan-cargo-bounty-2-desc
-  requiredJob: TypanCargotech
-  targetCount: 2
-  rewardCoins: 2
-  weight: 1
-
-- type: dailyQuest
-  id: TypanPatrolClean15
-  questType: CleanDecals
-  name: daily-quest-typan-patrol-clean-15-name
-  description: daily-quest-typan-patrol-clean-15-desc
-  requiredJob: TypanPatrol
-  targetCount: 15
-  rewardCoins: 1
-  weight: 0.9
-
-- type: dailyQuest
-  id: TypanCommanderSurvive30
-  questType: SurviveRound
-  name: daily-quest-typan-commander-survive-30-name
-  description: daily-quest-typan-commander-survive-30-desc
-  requiredJob: TypanCommander
-  targetCount: 1
-  rewardCoins: 2
-  minRoundPlaytime: 1800
-  weight: 0.9
-
-- type: dailyQuest
-  id: DetectiveScan3
-  questType: ScanForensics
-  name: daily-quest-detective-scan-3-name
-  description: daily-quest-detective-scan-3-desc
-  requiredJob: Detective
-  targetCount: 3
-  rewardCoins: 2
-  weight: 0.8
-
-- type: dailyQuest
-  id: TypanCargotechMagnet1
-  questType: PullSalvageMagnet
-  sprite:
-    sprite: /Textures/Structures/Machines/salvage.rsi
-    state: salvage-magnet
-  name: daily-quest-typan-cargo-magnet-1-name
-  description: daily-quest-typan-cargo-magnet-1-desc
-  requiredJob: TypanCargotech
-  targetCount: 1
-  rewardCoins: 1
-  weight: 1
-
-- type: dailyQuest
-  id: TypanScienceLathe5
-  questType: LatheProduce
-  name: daily-quest-typan-science-lathe-5-name
-  description: daily-quest-typan-science-lathe-5-desc
-  requiredJob: TypanScience
-  targetCount: 5
-  rewardCoins: 1
-  weight: 1.1
-
-- type: dailyQuest
-  id: TypanPatrolKill5
-  questType: KillHostiles
-  name: daily-quest-typan-patrol-kill-5-name
-  description: daily-quest-typan-patrol-kill-5-desc
-  requiredJob: TypanPatrol
-  targetCount: 5
-  rewardCoins: 2
-  weight: 1
-
-- type: dailyQuest
-  id: MimeEmote8
-  questType: PerformEmotes
-  name: daily-quest-mime-emote-8-name
-  description: daily-quest-mime-emote-8-desc
-  requiredJob: Mime
-  targetCount: 8
-  rewardCoins: 1
-  weight: 0.7
-
-- type: dailyQuest
-  id: TypanAtmosRepair3
-  questType: RepairStructures
-  name: daily-quest-typan-atmos-repair-3-name
-  description: daily-quest-typan-atmos-repair-3-desc
-  requiredJob: TypanAtmosTech
-  targetCount: 3
-  rewardCoins: 1
-  weight: 1
-
-- type: dailyQuest
-  id: TypanRDUnlock2
-  questType: UnlockTechnology
-  name: daily-quest-typan-rd-unlock-2-name
-  description: daily-quest-typan-rd-unlock-2-desc
-  requiredJob: TypanResearchDirector
-  targetCount: 2
-  rewardCoins: 2
-  weight: 0.9
-
-- type: dailyQuest
-  id: TypanBorgSurvive20
-  questType: SurviveRound
-  name: daily-quest-typan-borg-survive-20-name
-  description: daily-quest-typan-borg-survive-20-desc
-  requiredJob: TypanBorg
-  targetCount: 1
-  rewardCoins: 1
-  minRoundPlaytime: 1200
-  weight: 0.9
-
-- type: dailyQuest
-  id: MedicalDoctorHeal5
-  questType: HealOthers
-  name: daily-quest-medical-doctor-heal-5-name
-  description: daily-quest-medical-doctor-heal-5-desc
-  requiredJob: MedicalDoctor
-  targetCount: 5
-  rewardCoins: 2
-  weight: 1
-
-- type: dailyQuest
-  id: HeadOfPersonnelStamp3
-  questType: StampDocuments
-  name: daily-quest-hop-stamp-3-name
-  description: daily-quest-hop-stamp-3-desc
-  requiredJob: HeadOfPersonnel
-  targetCount: 3
-  rewardCoins: 1
-  weight: 1
-
-- type: dailyQuest
-  id: SalvageMining1500
-  questType: EarnMiningPoints
-  name: daily-quest-salvage-mining-1500-name
-  description: daily-quest-salvage-mining-1500-desc
-  requiredJob: SalvageSpecialist
-  targetCount: 1500
-  rewardCoins: 3
-  weight: 0.9
-
-- type: dailyQuest
-  id: SecurityCuff2
-  questType: CuffPlayers
-  name: daily-quest-security-cuff-2-name
-  description: daily-quest-security-cuff-2-desc
-  requiredJob: SecurityOfficer
-  targetCount: 2
-  rewardCoins: 2
-  weight: 1
-
-- type: dailyQuest
-  id: ScientistUnlock1
-  questType: UnlockTechnology
-  name: daily-quest-scientist-unlock-1-name
-  description: daily-quest-scientist-unlock-1-desc
-  requiredJob: Scientist
-  targetCount: 1
-  rewardCoins: 1
-  weight: 1
-
-- type: dailyQuest
-  id: ChefCook3
-  questType: CookMeals
-  name: daily-quest-chef-cook-3-name
-  description: daily-quest-chef-cook-3-desc
-  requiredJob: Chef
-  targetCount: 3
-  rewardCoins: 1
-  weight: 1
-
-- type: dailyQuest
-  id: BotanistHarvest8
-  questType: HarvestPlants
-  name: daily-quest-botanist-harvest-8-name
-  description: daily-quest-botanist-harvest-8-desc
-  requiredJob: Botanist
-  targetCount: 8
-  rewardCoins: 1
-  weight: 1
-
-- type: dailyQuest
-  id: JanitorClean20
-  questType: CleanDecals
-  name: daily-quest-janitor-clean-20-name
-  description: daily-quest-janitor-clean-20-desc
-  requiredJob: Janitor
-  targetCount: 20
-  rewardCoins: 1
-  weight: 1
-
-- type: dailyQuest
-  id: ParamedicInject4
-  questType: InjectPatients
-  name: daily-quest-paramedic-inject-4-name
-  description: daily-quest-paramedic-inject-4-desc
-  requiredJob: Paramedic
-  targetCount: 4
-  rewardCoins: 2
-  weight: 1
-
-- type: dailyQuest
-  id: CargoTechBounty2
-  questType: FulfillCargoBounty
-  name: daily-quest-cargo-bounty-2-name
-  description: daily-quest-cargo-bounty-2-desc
+  name: daily-quest-cargo-bounty-rare-name
+  description: daily-quest-cargo-bounty-rare-desc
   requiredJob: CargoTechnician
   targetCount: 2
-  rewardCoins: 2
-  weight: 1
 
 - type: dailyQuest
-  id: CaptainSurvive30
-  questType: SurviveRound
-  name: daily-quest-captain-survive-30-name
-  description: daily-quest-captain-survive-30-desc
-  requiredJob: Captain
+  id: CargoBountySuperRare
+  rarity: superRare
+  questType: FulfillCargoBounty
+  name: daily-quest-cargo-bounty-superRare-name
+  description: daily-quest-cargo-bounty-superRare-desc
+  requiredJob: CargoTechnician
+  targetCount: 4
+
+- type: dailyQuest
+  id: CargoBountyEpic
+  rarity: epic
+  questType: FulfillCargoBounty
+  name: daily-quest-cargo-bounty-epic-name
+  description: daily-quest-cargo-bounty-epic-desc
+  requiredJob: CargoTechnician
+  targetCount: 6
+
+- type: dailyQuest
+  id: CargoBountyMythic
+  rarity: mythic
+  questType: FulfillCargoBounty
+  name: daily-quest-cargo-bounty-mythic-name
+  description: daily-quest-cargo-bounty-mythic-desc
+  requiredJob: CargoTechnician
+  targetCount: 10
+
+- type: dailyQuest
+  id: CargoBountyLegendary
+  rarity: legendary
+  questType: EarnStationBankBalance
+  name: daily-quest-cargo-bounty-legendary-name
+  description: daily-quest-cargo-bounty-legendary-desc
+  requiredJob: CargoTechnician
+  targetCount: 100000
+
+
+- type: dailyQuest
+  id: TypanCargoBountyRare
+  rarity: rare
+  questType: FulfillCargoBounty
+  name: daily-quest-typan-cargo-bounty-rare-name
+  description: daily-quest-typan-cargo-bounty-rare-desc
+  requiredJob: TypanCargotech
+  targetCount: 2
+
+- type: dailyQuest
+  id: TypanCargoBountySuperRare
+  rarity: superRare
+  questType: FulfillCargoBounty
+  name: daily-quest-typan-cargo-bounty-superRare-name
+  description: daily-quest-typan-cargo-bounty-superRare-desc
+  requiredJob: TypanCargotech
+  targetCount: 4
+
+- type: dailyQuest
+  id: TypanCargoBountyEpic
+  rarity: epic
+  questType: FulfillCargoBounty
+  name: daily-quest-typan-cargo-bounty-epic-name
+  description: daily-quest-typan-cargo-bounty-epic-desc
+  requiredJob: TypanCargotech
+  targetCount: 6
+
+- type: dailyQuest
+  id: TypanCargoBountyMythic
+  rarity: mythic
+  questType: FulfillCargoBounty
+  name: daily-quest-typan-cargo-bounty-mythic-name
+  description: daily-quest-typan-cargo-bounty-mythic-desc
+  requiredJob: TypanCargotech
+  targetCount: 10
+
+- type: dailyQuest
+  id: TypanCargoBountyLegendary
+  rarity: legendary
+  questType: EarnStationBankBalance
+  name: daily-quest-typan-cargo-bounty-legendary-name
+  description: daily-quest-typan-cargo-bounty-legendary-desc
+  requiredJob: TypanCargotech
+  targetCount: 80000
+
+
+- type: dailyQuest
+  id: HealGeneralRare
+  rarity: rare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-general-rare-name
+  description: daily-quest-heal-general-rare-desc
+  targetCount: 3
+
+- type: dailyQuest
+  id: HealGeneralSuperRare
+  rarity: superRare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-general-superRare-name
+  description: daily-quest-heal-general-superRare-desc
+  targetCount: 5
+
+- type: dailyQuest
+  id: HealGeneralEpic
+  rarity: epic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-general-epic-name
+  description: daily-quest-heal-general-epic-desc
+  targetCount: 8
+
+- type: dailyQuest
+  id: HealGeneralMythic
+  rarity: mythic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-general-mythic-name
+  description: daily-quest-heal-general-mythic-desc
+  targetCount: 12
+
+- type: dailyQuest
+  id: HealGeneralLegendary
+  rarity: legendary
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-general-legendary-name
+  description: daily-quest-heal-general-legendary-desc
+  targetCount: 20
+
+
+- type: dailyQuest
+  id: HealMedicRare
+  rarity: rare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-medic-rare-name
+  description: daily-quest-heal-medic-rare-desc
+  requiredJob: MedicalDoctor
+  targetCount: 4
+
+- type: dailyQuest
+  id: HealMedicSuperRare
+  rarity: superRare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-medic-superRare-name
+  description: daily-quest-heal-medic-superRare-desc
+  requiredJob: MedicalDoctor
+  targetCount: 6
+
+- type: dailyQuest
+  id: HealMedicEpic
+  rarity: epic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-medic-epic-name
+  description: daily-quest-heal-medic-epic-desc
+  requiredJob: MedicalDoctor
+  targetCount: 10
+
+- type: dailyQuest
+  id: HealMedicMythic
+  rarity: mythic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-medic-mythic-name
+  description: daily-quest-heal-medic-mythic-desc
+  requiredJob: MedicalDoctor
+  targetCount: 15
+
+- type: dailyQuest
+  id: HealMedicLegendary
+  rarity: legendary
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-medic-legendary-name
+  description: daily-quest-heal-medic-legendary-desc
+  requiredJob: MedicalDoctor
+  targetCount: 25
+
+
+- type: dailyQuest
+  id: HealTypanMedicRare
+  rarity: rare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-typan-medic-rare-name
+  description: daily-quest-heal-typan-medic-rare-desc
+  requiredJob: TypanMedic
+  targetCount: 5
+
+- type: dailyQuest
+  id: HealTypanMedicSuperRare
+  rarity: superRare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-typan-medic-superRare-name
+  description: daily-quest-heal-typan-medic-superRare-desc
+  requiredJob: TypanMedic
+  targetCount: 8
+
+- type: dailyQuest
+  id: HealTypanMedicEpic
+  rarity: epic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-typan-medic-epic-name
+  description: daily-quest-heal-typan-medic-epic-desc
+  requiredJob: TypanMedic
+  targetCount: 12
+
+- type: dailyQuest
+  id: HealTypanMedicMythic
+  rarity: mythic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-typan-medic-mythic-name
+  description: daily-quest-heal-typan-medic-mythic-desc
+  requiredJob: TypanMedic
+  targetCount: 18
+
+- type: dailyQuest
+  id: HealTypanMedicLegendary
+  rarity: legendary
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-typan-medic-legendary-name
+  description: daily-quest-heal-typan-medic-legendary-desc
+  requiredJob: TypanMedic
+  targetCount: 30
+
+
+- type: dailyQuest
+  id: HealParamedicRare
+  rarity: rare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-paramedic-rare-name
+  description: daily-quest-heal-paramedic-rare-desc
+  requiredJob: Paramedic
+  targetCount: 4
+
+- type: dailyQuest
+  id: HealParamedicSuperRare
+  rarity: superRare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-paramedic-superRare-name
+  description: daily-quest-heal-paramedic-superRare-desc
+  requiredJob: Paramedic
+  targetCount: 6
+
+- type: dailyQuest
+  id: HealParamedicEpic
+  rarity: epic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-paramedic-epic-name
+  description: daily-quest-heal-paramedic-epic-desc
+  requiredJob: Paramedic
+  targetCount: 9
+
+- type: dailyQuest
+  id: HealParamedicMythic
+  rarity: mythic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-paramedic-mythic-name
+  description: daily-quest-heal-paramedic-mythic-desc
+  requiredJob: Paramedic
+  targetCount: 14
+
+- type: dailyQuest
+  id: HealParamedicLegendary
+  rarity: legendary
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-paramedic-legendary-name
+  description: daily-quest-heal-paramedic-legendary-desc
+  requiredJob: Paramedic
+  targetCount: 22
+
+
+- type: dailyQuest
+  id: HealCmoRare
+  rarity: rare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-cmo-rare-name
+  description: daily-quest-heal-cmo-rare-desc
+  requiredJob: ChiefMedicalOfficer
+  targetCount: 5
+
+- type: dailyQuest
+  id: HealCmoSuperRare
+  rarity: superRare
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-cmo-superRare-name
+  description: daily-quest-heal-cmo-superRare-desc
+  requiredJob: ChiefMedicalOfficer
+  targetCount: 8
+
+- type: dailyQuest
+  id: HealCmoEpic
+  rarity: epic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-cmo-epic-name
+  description: daily-quest-heal-cmo-epic-desc
+  requiredJob: ChiefMedicalOfficer
+  targetCount: 12
+
+- type: dailyQuest
+  id: HealCmoMythic
+  rarity: mythic
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-cmo-mythic-name
+  description: daily-quest-heal-cmo-mythic-desc
+  requiredJob: ChiefMedicalOfficer
+  targetCount: 18
+
+- type: dailyQuest
+  id: HealCmoLegendary
+  rarity: legendary
+  questType: HealOthers
+  sprite:
+    sprite: /Textures/Interface/Misc/health_icons.rsi
+    state: Fine
+  name: daily-quest-heal-cmo-legendary-name
+  description: daily-quest-heal-cmo-legendary-desc
+  requiredJob: ChiefMedicalOfficer
+  targetCount: 28
+
+
+- type: dailyQuest
+  id: StampHopRare
+  rarity: rare
+  questType: StampDocuments
+  name: daily-quest-stamp-hop-rare-name
+  description: daily-quest-stamp-hop-rare-desc
+  requiredJob: HeadOfPersonnel
+  targetCount: 2
+
+- type: dailyQuest
+  id: StampHopSuperRare
+  rarity: superRare
+  questType: StampDocuments
+  name: daily-quest-stamp-hop-superRare-name
+  description: daily-quest-stamp-hop-superRare-desc
+  requiredJob: HeadOfPersonnel
+  targetCount: 4
+
+- type: dailyQuest
+  id: StampHopEpic
+  rarity: epic
+  questType: StampDocuments
+  name: daily-quest-stamp-hop-epic-name
+  description: daily-quest-stamp-hop-epic-desc
+  requiredJob: HeadOfPersonnel
+  targetCount: 6
+
+- type: dailyQuest
+  id: StampHopMythic
+  rarity: mythic
+  questType: StampDocuments
+  name: daily-quest-stamp-hop-mythic-name
+  description: daily-quest-stamp-hop-mythic-desc
+  requiredJob: HeadOfPersonnel
+  targetCount: 8
+
+- type: dailyQuest
+  id: StampHopLegendary
+  rarity: legendary
+  questType: StampDocuments
+  name: daily-quest-stamp-hop-legendary-name
+  description: daily-quest-stamp-hop-legendary-desc
+  requiredJob: HeadOfPersonnel
+  targetCount: 12
+
+
+- type: dailyQuest
+  id: StampTypanCommanderRare
+  rarity: rare
+  questType: StampDocuments
+  name: daily-quest-stamp-typan-commander-rare-name
+  description: daily-quest-stamp-typan-commander-rare-desc
+  requiredJob: TypanCommander
+  targetCount: 2
+
+- type: dailyQuest
+  id: StampTypanCommanderSuperRare
+  rarity: superRare
+  questType: StampDocuments
+  name: daily-quest-stamp-typan-commander-superRare-name
+  description: daily-quest-stamp-typan-commander-superRare-desc
+  requiredJob: TypanCommander
+  targetCount: 4
+
+- type: dailyQuest
+  id: StampTypanCommanderEpic
+  rarity: epic
+  questType: StampDocuments
+  name: daily-quest-stamp-typan-commander-epic-name
+  description: daily-quest-stamp-typan-commander-epic-desc
+  requiredJob: TypanCommander
+  targetCount: 6
+
+- type: dailyQuest
+  id: StampTypanCommanderMythic
+  rarity: mythic
+  questType: StampDocuments
+  name: daily-quest-stamp-typan-commander-mythic-name
+  description: daily-quest-stamp-typan-commander-mythic-desc
+  requiredJob: TypanCommander
+  targetCount: 9
+
+- type: dailyQuest
+  id: StampTypanCommanderLegendary
+  rarity: legendary
+  questType: StampDocuments
+  name: daily-quest-stamp-typan-commander-legendary-name
+  description: daily-quest-stamp-typan-commander-legendary-desc
+  requiredJob: TypanCommander
+  targetCount: 14
+
+
+- type: dailyQuest
+  id: MiningSalvageRare
+  rarity: rare
+  questType: EarnMiningPoints
+  name: daily-quest-mining-salvage-rare-name
+  description: daily-quest-mining-salvage-rare-desc
+  requiredJob: SalvageSpecialist
+  targetCount: 1500
+
+- type: dailyQuest
+  id: MiningSalvageSuperRare
+  rarity: superRare
+  questType: EarnMiningPoints
+  name: daily-quest-mining-salvage-superRare-name
+  description: daily-quest-mining-salvage-superRare-desc
+  requiredJob: SalvageSpecialist
+  targetCount: 3000
+
+- type: dailyQuest
+  id: MiningSalvageEpic
+  rarity: epic
+  questType: EarnMiningPoints
+  name: daily-quest-mining-salvage-epic-name
+  description: daily-quest-mining-salvage-epic-desc
+  requiredJob: SalvageSpecialist
+  targetCount: 5000
+
+- type: dailyQuest
+  id: MiningSalvageMythic
+  rarity: mythic
+  questType: EarnMiningPoints
+  name: daily-quest-mining-salvage-mythic-name
+  description: daily-quest-mining-salvage-mythic-desc
+  requiredJob: SalvageSpecialist
+  targetCount: 8000
+
+- type: dailyQuest
+  id: MiningSalvageLegendary
+  rarity: legendary
+  questType: EarnMiningPoints
+  name: daily-quest-mining-salvage-legendary-name
+  description: daily-quest-mining-salvage-legendary-desc
+  requiredJob: SalvageSpecialist
+  targetCount: 15000
+
+
+- type: dailyQuest
+  id: MiningTypanCargoRare
+  rarity: rare
+  questType: EarnMiningPoints
+  name: daily-quest-mining-typan-cargo-rare-name
+  description: daily-quest-mining-typan-cargo-rare-desc
+  requiredJob: TypanCargotech
+  targetCount: 2000
+
+- type: dailyQuest
+  id: MiningTypanCargoSuperRare
+  rarity: superRare
+  questType: EarnMiningPoints
+  name: daily-quest-mining-typan-cargo-superRare-name
+  description: daily-quest-mining-typan-cargo-superRare-desc
+  requiredJob: TypanCargotech
+  targetCount: 4000
+
+- type: dailyQuest
+  id: MiningTypanCargoEpic
+  rarity: epic
+  questType: EarnMiningPoints
+  name: daily-quest-mining-typan-cargo-epic-name
+  description: daily-quest-mining-typan-cargo-epic-desc
+  requiredJob: TypanCargotech
+  targetCount: 6500
+
+- type: dailyQuest
+  id: MiningTypanCargoMythic
+  rarity: mythic
+  questType: EarnMiningPoints
+  name: daily-quest-mining-typan-cargo-mythic-name
+  description: daily-quest-mining-typan-cargo-mythic-desc
+  requiredJob: TypanCargotech
+  targetCount: 10000
+
+- type: dailyQuest
+  id: MiningTypanCargoLegendary
+  rarity: legendary
+  questType: EarnMiningPoints
+  name: daily-quest-mining-typan-cargo-legendary-name
+  description: daily-quest-mining-typan-cargo-legendary-desc
+  requiredJob: TypanCargotech
+  targetCount: 18000
+
+
+- type: dailyQuest
+  id: CuffSecurityRare
+  rarity: rare
+  questType: CuffPlayers
+  name: daily-quest-cuff-security-rare-name
+  description: daily-quest-cuff-security-rare-desc
+  requiredJob: SecurityOfficer
+  targetCount: 2
+
+- type: dailyQuest
+  id: CuffSecuritySuperRare
+  rarity: superRare
+  questType: CuffPlayers
+  name: daily-quest-cuff-security-superRare-name
+  description: daily-quest-cuff-security-superRare-desc
+  requiredJob: SecurityOfficer
+  targetCount: 3
+
+- type: dailyQuest
+  id: CuffSecurityEpic
+  rarity: epic
+  questType: CuffPlayers
+  name: daily-quest-cuff-security-epic-name
+  description: daily-quest-cuff-security-epic-desc
+  requiredJob: SecurityOfficer
+  targetCount: 5
+
+- type: dailyQuest
+  id: CuffSecurityMythic
+  rarity: mythic
+  questType: CuffPlayers
+  name: daily-quest-cuff-security-mythic-name
+  description: daily-quest-cuff-security-mythic-desc
+  requiredJob: SecurityOfficer
+  targetCount: 7
+
+- type: dailyQuest
+  id: CuffSecurityLegendary
+  rarity: legendary
+  questType: CuffPlayers
+  name: daily-quest-cuff-security-legendary-name
+  description: daily-quest-cuff-security-legendary-desc
+  requiredJob: SecurityOfficer
+  targetCount: 10
+
+
+- type: dailyQuest
+  id: CuffTypanPatrolRare
+  rarity: rare
+  questType: CuffPlayers
+  name: daily-quest-cuff-typan-patrol-rare-name
+  description: daily-quest-cuff-typan-patrol-rare-desc
+  requiredJob: TypanPatrol
+  targetCount: 2
+
+- type: dailyQuest
+  id: CuffTypanPatrolSuperRare
+  rarity: superRare
+  questType: CuffPlayers
+  name: daily-quest-cuff-typan-patrol-superRare-name
+  description: daily-quest-cuff-typan-patrol-superRare-desc
+  requiredJob: TypanPatrol
+  targetCount: 3
+
+- type: dailyQuest
+  id: CuffTypanPatrolEpic
+  rarity: epic
+  questType: CuffPlayers
+  name: daily-quest-cuff-typan-patrol-epic-name
+  description: daily-quest-cuff-typan-patrol-epic-desc
+  requiredJob: TypanPatrol
+  targetCount: 5
+
+- type: dailyQuest
+  id: CuffTypanPatrolMythic
+  rarity: mythic
+  questType: CuffPlayers
+  name: daily-quest-cuff-typan-patrol-mythic-name
+  description: daily-quest-cuff-typan-patrol-mythic-desc
+  requiredJob: TypanPatrol
+  targetCount: 7
+
+- type: dailyQuest
+  id: CuffTypanPatrolLegendary
+  rarity: legendary
+  questType: CuffPlayers
+  name: daily-quest-cuff-typan-patrol-legendary-name
+  description: daily-quest-cuff-typan-patrol-legendary-desc
+  requiredJob: TypanPatrol
+  targetCount: 10
+
+
+- type: dailyQuest
+  id: UnlockScientistRare
+  rarity: rare
+  questType: UnlockTechnology
+  name: daily-quest-unlock-scientist-rare-name
+  description: daily-quest-unlock-scientist-rare-desc
+  requiredJob: Scientist
   targetCount: 1
-  rewardCoins: 2
-  minRoundPlaytime: 1800
-  weight: 0.8
 
 - type: dailyQuest
-  id: ClownEmote10
+  id: UnlockScientistSuperRare
+  rarity: superRare
+  questType: UnlockTechnology
+  name: daily-quest-unlock-scientist-superRare-name
+  description: daily-quest-unlock-scientist-superRare-desc
+  requiredJob: Scientist
+  targetCount: 2
+
+- type: dailyQuest
+  id: UnlockScientistEpic
+  rarity: epic
+  questType: UnlockTechnology
+  name: daily-quest-unlock-scientist-epic-name
+  description: daily-quest-unlock-scientist-epic-desc
+  requiredJob: Scientist
+  targetCount: 3
+
+- type: dailyQuest
+  id: UnlockScientistMythic
+  rarity: mythic
+  questType: UnlockTechnology
+  name: daily-quest-unlock-scientist-mythic-name
+  description: daily-quest-unlock-scientist-mythic-desc
+  requiredJob: Scientist
+  targetCount: 4
+
+- type: dailyQuest
+  id: UnlockScientistLegendary
+  rarity: legendary
+  questType: UnlockTechnology
+  name: daily-quest-unlock-scientist-legendary-name
+  description: daily-quest-unlock-scientist-legendary-desc
+  requiredJob: Scientist
+  targetCount: 5
+
+
+- type: dailyQuest
+  id: UnlockTypanScienceRare
+  rarity: rare
+  questType: UnlockTechnology
+  name: daily-quest-unlock-typan-science-rare-name
+  description: daily-quest-unlock-typan-science-rare-desc
+  requiredJob: TypanScience
+  targetCount: 1
+
+- type: dailyQuest
+  id: UnlockTypanScienceSuperRare
+  rarity: superRare
+  questType: UnlockTechnology
+  name: daily-quest-unlock-typan-science-superRare-name
+  description: daily-quest-unlock-typan-science-superRare-desc
+  requiredJob: TypanScience
+  targetCount: 2
+
+- type: dailyQuest
+  id: UnlockTypanScienceEpic
+  rarity: epic
+  questType: UnlockTechnology
+  name: daily-quest-unlock-typan-science-epic-name
+  description: daily-quest-unlock-typan-science-epic-desc
+  requiredJob: TypanScience
+  targetCount: 3
+
+- type: dailyQuest
+  id: UnlockTypanScienceMythic
+  rarity: mythic
+  questType: UnlockTechnology
+  name: daily-quest-unlock-typan-science-mythic-name
+  description: daily-quest-unlock-typan-science-mythic-desc
+  requiredJob: TypanScience
+  targetCount: 4
+
+- type: dailyQuest
+  id: UnlockTypanScienceLegendary
+  rarity: legendary
+  questType: UnlockTechnology
+  name: daily-quest-unlock-typan-science-legendary-name
+  description: daily-quest-unlock-typan-science-legendary-desc
+  requiredJob: TypanScience
+  targetCount: 6
+
+
+- type: dailyQuest
+  id: CookChefRare
+  rarity: rare
+  questType: CookMeals
+  name: daily-quest-cook-chef-rare-name
+  description: daily-quest-cook-chef-rare-desc
+  requiredJob: Chef
+  targetCount: 3
+
+- type: dailyQuest
+  id: CookChefSuperRare
+  rarity: superRare
+  questType: CookMeals
+  name: daily-quest-cook-chef-superRare-name
+  description: daily-quest-cook-chef-superRare-desc
+  requiredJob: Chef
+  targetCount: 5
+
+- type: dailyQuest
+  id: CookChefEpic
+  rarity: epic
+  questType: CookMeals
+  name: daily-quest-cook-chef-epic-name
+  description: daily-quest-cook-chef-epic-desc
+  requiredJob: Chef
+  targetCount: 8
+
+- type: dailyQuest
+  id: CookChefMythic
+  rarity: mythic
+  questType: CookMeals
+  name: daily-quest-cook-chef-mythic-name
+  description: daily-quest-cook-chef-mythic-desc
+  requiredJob: Chef
+  targetCount: 12
+
+- type: dailyQuest
+  id: CookChefLegendary
+  rarity: legendary
+  questType: CookMeals
+  name: daily-quest-cook-chef-legendary-name
+  description: daily-quest-cook-chef-legendary-desc
+  requiredJob: Chef
+  targetCount: 16
+
+
+- type: dailyQuest
+  id: CookTypanChefRare
+  rarity: rare
+  questType: CookMeals
+  name: daily-quest-cook-typan-chef-rare-name
+  description: daily-quest-cook-typan-chef-rare-desc
+  requiredJob: TypanChef
+  targetCount: 3
+
+- type: dailyQuest
+  id: CookTypanChefSuperRare
+  rarity: superRare
+  questType: CookMeals
+  name: daily-quest-cook-typan-chef-superRare-name
+  description: daily-quest-cook-typan-chef-superRare-desc
+  requiredJob: TypanChef
+  targetCount: 5
+
+- type: dailyQuest
+  id: CookTypanChefEpic
+  rarity: epic
+  questType: CookMeals
+  name: daily-quest-cook-typan-chef-epic-name
+  description: daily-quest-cook-typan-chef-epic-desc
+  requiredJob: TypanChef
+  targetCount: 8
+
+- type: dailyQuest
+  id: CookTypanChefMythic
+  rarity: mythic
+  questType: CookMeals
+  name: daily-quest-cook-typan-chef-mythic-name
+  description: daily-quest-cook-typan-chef-mythic-desc
+  requiredJob: TypanChef
+  targetCount: 12
+
+- type: dailyQuest
+  id: CookTypanChefLegendary
+  rarity: legendary
+  questType: CookMeals
+  name: daily-quest-cook-typan-chef-legendary-name
+  description: daily-quest-cook-typan-chef-legendary-desc
+  requiredJob: TypanChef
+  targetCount: 16
+
+
+- type: dailyQuest
+  id: HarvestBotanistRare
+  rarity: rare
+  questType: HarvestPlants
+  name: daily-quest-harvest-botanist-rare-name
+  description: daily-quest-harvest-botanist-rare-desc
+  requiredJob: Botanist
+  targetCount: 8
+
+- type: dailyQuest
+  id: HarvestBotanistSuperRare
+  rarity: superRare
+  questType: HarvestPlants
+  name: daily-quest-harvest-botanist-superRare-name
+  description: daily-quest-harvest-botanist-superRare-desc
+  requiredJob: Botanist
+  targetCount: 12
+
+- type: dailyQuest
+  id: HarvestBotanistEpic
+  rarity: epic
+  questType: HarvestPlants
+  name: daily-quest-harvest-botanist-epic-name
+  description: daily-quest-harvest-botanist-epic-desc
+  requiredJob: Botanist
+  targetCount: 18
+
+- type: dailyQuest
+  id: HarvestBotanistMythic
+  rarity: mythic
+  questType: HarvestPlants
+  name: daily-quest-harvest-botanist-mythic-name
+  description: daily-quest-harvest-botanist-mythic-desc
+  requiredJob: Botanist
+  targetCount: 25
+
+- type: dailyQuest
+  id: HarvestBotanistLegendary
+  rarity: legendary
+  questType: HarvestPlants
+  name: daily-quest-harvest-botanist-legendary-name
+  description: daily-quest-harvest-botanist-legendary-desc
+  requiredJob: Botanist
+  targetCount: 40
+
+
+- type: dailyQuest
+  id: HarvestTypanBotanistRare
+  rarity: rare
+  questType: HarvestPlants
+  name: daily-quest-harvest-typan-botanist-rare-name
+  description: daily-quest-harvest-typan-botanist-rare-desc
+  requiredJob: TypanBotanist
+  targetCount: 10
+
+- type: dailyQuest
+  id: HarvestTypanBotanistSuperRare
+  rarity: superRare
+  questType: HarvestPlants
+  name: daily-quest-harvest-typan-botanist-superRare-name
+  description: daily-quest-harvest-typan-botanist-superRare-desc
+  requiredJob: TypanBotanist
+  targetCount: 15
+
+- type: dailyQuest
+  id: HarvestTypanBotanistEpic
+  rarity: epic
+  questType: HarvestPlants
+  name: daily-quest-harvest-typan-botanist-epic-name
+  description: daily-quest-harvest-typan-botanist-epic-desc
+  requiredJob: TypanBotanist
+  targetCount: 22
+
+- type: dailyQuest
+  id: HarvestTypanBotanistMythic
+  rarity: mythic
+  questType: HarvestPlants
+  name: daily-quest-harvest-typan-botanist-mythic-name
+  description: daily-quest-harvest-typan-botanist-mythic-desc
+  requiredJob: TypanBotanist
+  targetCount: 30
+
+- type: dailyQuest
+  id: HarvestTypanBotanistLegendary
+  rarity: legendary
+  questType: HarvestPlants
+  name: daily-quest-harvest-typan-botanist-legendary-name
+  description: daily-quest-harvest-typan-botanist-legendary-desc
+  requiredJob: TypanBotanist
+  targetCount: 45
+
+
+- type: dailyQuest
+  id: WeldEngineerRare
+  rarity: rare
+  questType: WeldStructures
+  name: daily-quest-weld-engineer-rare-name
+  description: daily-quest-weld-engineer-rare-desc
+  requiredJob: StationEngineer
+  targetCount: 5
+
+- type: dailyQuest
+  id: WeldEngineerSuperRare
+  rarity: superRare
+  questType: WeldStructures
+  name: daily-quest-weld-engineer-superRare-name
+  description: daily-quest-weld-engineer-superRare-desc
+  requiredJob: StationEngineer
+  targetCount: 8
+
+- type: dailyQuest
+  id: WeldEngineerEpic
+  rarity: epic
+  questType: WeldStructures
+  name: daily-quest-weld-engineer-epic-name
+  description: daily-quest-weld-engineer-epic-desc
+  requiredJob: StationEngineer
+  targetCount: 12
+
+- type: dailyQuest
+  id: WeldEngineerMythic
+  rarity: mythic
+  questType: WeldStructures
+  name: daily-quest-weld-engineer-mythic-name
+  description: daily-quest-weld-engineer-mythic-desc
+  requiredJob: StationEngineer
+  targetCount: 18
+
+- type: dailyQuest
+  id: WeldEngineerLegendary
+  rarity: legendary
+  questType: WeldStructures
+  name: daily-quest-weld-engineer-legendary-name
+  description: daily-quest-weld-engineer-legendary-desc
+  requiredJob: StationEngineer
+  targetCount: 25
+
+
+- type: dailyQuest
+  id: WeldTypanAtmosRare
+  rarity: rare
+  questType: WeldStructures
+  name: daily-quest-weld-typan-atmos-rare-name
+  description: daily-quest-weld-typan-atmos-rare-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 5
+
+- type: dailyQuest
+  id: WeldTypanAtmosSuperRare
+  rarity: superRare
+  questType: WeldStructures
+  name: daily-quest-weld-typan-atmos-superRare-name
+  description: daily-quest-weld-typan-atmos-superRare-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 8
+
+- type: dailyQuest
+  id: WeldTypanAtmosEpic
+  rarity: epic
+  questType: WeldStructures
+  name: daily-quest-weld-typan-atmos-epic-name
+  description: daily-quest-weld-typan-atmos-epic-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 12
+
+- type: dailyQuest
+  id: WeldTypanAtmosMythic
+  rarity: mythic
+  questType: WeldStructures
+  name: daily-quest-weld-typan-atmos-mythic-name
+  description: daily-quest-weld-typan-atmos-mythic-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 18
+
+- type: dailyQuest
+  id: WeldTypanAtmosLegendary
+  rarity: legendary
+  questType: WeldStructures
+  name: daily-quest-weld-typan-atmos-legendary-name
+  description: daily-quest-weld-typan-atmos-legendary-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 25
+
+
+- type: dailyQuest
+  id: CleanJanitorRare
+  rarity: rare
+  questType: CleanDecals
+  name: daily-quest-clean-janitor-rare-name
+  description: daily-quest-clean-janitor-rare-desc
+  requiredJob: Janitor
+  targetCount: 15
+
+- type: dailyQuest
+  id: CleanJanitorSuperRare
+  rarity: superRare
+  questType: CleanDecals
+  name: daily-quest-clean-janitor-superRare-name
+  description: daily-quest-clean-janitor-superRare-desc
+  requiredJob: Janitor
+  targetCount: 25
+
+- type: dailyQuest
+  id: CleanJanitorEpic
+  rarity: epic
+  questType: CleanDecals
+  name: daily-quest-clean-janitor-epic-name
+  description: daily-quest-clean-janitor-epic-desc
+  requiredJob: Janitor
+  targetCount: 35
+
+- type: dailyQuest
+  id: CleanJanitorMythic
+  rarity: mythic
+  questType: CleanDecals
+  name: daily-quest-clean-janitor-mythic-name
+  description: daily-quest-clean-janitor-mythic-desc
+  requiredJob: Janitor
+  targetCount: 50
+
+- type: dailyQuest
+  id: CleanJanitorLegendary
+  rarity: legendary
+  questType: CleanDecals
+  name: daily-quest-clean-janitor-legendary-name
+  description: daily-quest-clean-janitor-legendary-desc
+  requiredJob: Janitor
+  targetCount: 70
+
+
+- type: dailyQuest
+  id: CleanTypanPatrolRare
+  rarity: rare
+  questType: CleanDecals
+  name: daily-quest-clean-typan-patrol-rare-name
+  description: daily-quest-clean-typan-patrol-rare-desc
+  requiredJob: TypanPatrol
+  targetCount: 12
+
+- type: dailyQuest
+  id: CleanTypanPatrolSuperRare
+  rarity: superRare
+  questType: CleanDecals
+  name: daily-quest-clean-typan-patrol-superRare-name
+  description: daily-quest-clean-typan-patrol-superRare-desc
+  requiredJob: TypanPatrol
+  targetCount: 20
+
+- type: dailyQuest
+  id: CleanTypanPatrolEpic
+  rarity: epic
+  questType: CleanDecals
+  name: daily-quest-clean-typan-patrol-epic-name
+  description: daily-quest-clean-typan-patrol-epic-desc
+  requiredJob: TypanPatrol
+  targetCount: 30
+
+- type: dailyQuest
+  id: CleanTypanPatrolMythic
+  rarity: mythic
+  questType: CleanDecals
+  name: daily-quest-clean-typan-patrol-mythic-name
+  description: daily-quest-clean-typan-patrol-mythic-desc
+  requiredJob: TypanPatrol
+  targetCount: 45
+
+- type: dailyQuest
+  id: CleanTypanPatrolLegendary
+  rarity: legendary
+  questType: CleanDecals
+  name: daily-quest-clean-typan-patrol-legendary-name
+  description: daily-quest-clean-typan-patrol-legendary-desc
+  requiredJob: TypanPatrol
+  targetCount: 60
+
+
+- type: dailyQuest
+  id: InjectParamedicRare
+  rarity: rare
+  questType: InjectPatients
+  name: daily-quest-inject-paramedic-rare-name
+  description: daily-quest-inject-paramedic-rare-desc
+  requiredJob: Paramedic
+  targetCount: 4
+
+- type: dailyQuest
+  id: InjectParamedicSuperRare
+  rarity: superRare
+  questType: InjectPatients
+  name: daily-quest-inject-paramedic-superRare-name
+  description: daily-quest-inject-paramedic-superRare-desc
+  requiredJob: Paramedic
+  targetCount: 6
+
+- type: dailyQuest
+  id: InjectParamedicEpic
+  rarity: epic
+  questType: InjectPatients
+  name: daily-quest-inject-paramedic-epic-name
+  description: daily-quest-inject-paramedic-epic-desc
+  requiredJob: Paramedic
+  targetCount: 9
+
+- type: dailyQuest
+  id: InjectParamedicMythic
+  rarity: mythic
+  questType: InjectPatients
+  name: daily-quest-inject-paramedic-mythic-name
+  description: daily-quest-inject-paramedic-mythic-desc
+  requiredJob: Paramedic
+  targetCount: 12
+
+- type: dailyQuest
+  id: InjectParamedicLegendary
+  rarity: legendary
+  questType: InjectPatients
+  name: daily-quest-inject-paramedic-legendary-name
+  description: daily-quest-inject-paramedic-legendary-desc
+  requiredJob: Paramedic
+  targetCount: 18
+
+
+- type: dailyQuest
+  id: InjectTypanMedicRare
+  rarity: rare
+  questType: InjectPatients
+  name: daily-quest-inject-typan-medic-rare-name
+  description: daily-quest-inject-typan-medic-rare-desc
+  requiredJob: TypanMedic
+  targetCount: 3
+
+- type: dailyQuest
+  id: InjectTypanMedicSuperRare
+  rarity: superRare
+  questType: InjectPatients
+  name: daily-quest-inject-typan-medic-superRare-name
+  description: daily-quest-inject-typan-medic-superRare-desc
+  requiredJob: TypanMedic
+  targetCount: 5
+
+- type: dailyQuest
+  id: InjectTypanMedicEpic
+  rarity: epic
+  questType: InjectPatients
+  name: daily-quest-inject-typan-medic-epic-name
+  description: daily-quest-inject-typan-medic-epic-desc
+  requiredJob: TypanMedic
+  targetCount: 8
+
+- type: dailyQuest
+  id: InjectTypanMedicMythic
+  rarity: mythic
+  questType: InjectPatients
+  name: daily-quest-inject-typan-medic-mythic-name
+  description: daily-quest-inject-typan-medic-mythic-desc
+  requiredJob: TypanMedic
+  targetCount: 12
+
+- type: dailyQuest
+  id: InjectTypanMedicLegendary
+  rarity: legendary
+  questType: InjectPatients
+  name: daily-quest-inject-typan-medic-legendary-name
+  description: daily-quest-inject-typan-medic-legendary-desc
+  requiredJob: TypanMedic
+  targetCount: 18
+
+
+- type: dailyQuest
+  id: InjectChemistRare
+  rarity: rare
+  questType: InjectPatients
+  name: daily-quest-inject-chemist-rare-name
+  description: daily-quest-inject-chemist-rare-desc
+  requiredJob: Chemist
+  targetCount: 5
+
+- type: dailyQuest
+  id: InjectChemistSuperRare
+  rarity: superRare
+  questType: InjectPatients
+  name: daily-quest-inject-chemist-superRare-name
+  description: daily-quest-inject-chemist-superRare-desc
+  requiredJob: Chemist
+  targetCount: 8
+
+- type: dailyQuest
+  id: InjectChemistEpic
+  rarity: epic
+  questType: InjectPatients
+  name: daily-quest-inject-chemist-epic-name
+  description: daily-quest-inject-chemist-epic-desc
+  requiredJob: Chemist
+  targetCount: 12
+
+- type: dailyQuest
+  id: InjectChemistMythic
+  rarity: mythic
+  questType: InjectPatients
+  name: daily-quest-inject-chemist-mythic-name
+  description: daily-quest-inject-chemist-mythic-desc
+  requiredJob: Chemist
+  targetCount: 16
+
+- type: dailyQuest
+  id: InjectChemistLegendary
+  rarity: legendary
+  questType: InjectPatients
+  name: daily-quest-inject-chemist-legendary-name
+  description: daily-quest-inject-chemist-legendary-desc
+  requiredJob: Chemist
+  targetCount: 24
+
+
+- type: dailyQuest
+  id: KillSecurityRare
+  rarity: rare
+  questType: KillHostiles
+  name: daily-quest-kill-security-rare-name
+  description: daily-quest-kill-security-rare-desc
+  requiredJob: SecurityOfficer
+  targetCount: 3
+
+- type: dailyQuest
+  id: KillSecuritySuperRare
+  rarity: superRare
+  questType: KillHostiles
+  name: daily-quest-kill-security-superRare-name
+  description: daily-quest-kill-security-superRare-desc
+  requiredJob: SecurityOfficer
+  targetCount: 5
+
+- type: dailyQuest
+  id: KillSecurityEpic
+  rarity: epic
+  questType: KillHostiles
+  name: daily-quest-kill-security-epic-name
+  description: daily-quest-kill-security-epic-desc
+  requiredJob: SecurityOfficer
+  targetCount: 8
+
+- type: dailyQuest
+  id: KillSecurityMythic
+  rarity: mythic
+  questType: KillHostiles
+  name: daily-quest-kill-security-mythic-name
+  description: daily-quest-kill-security-mythic-desc
+  requiredJob: SecurityOfficer
+  targetCount: 12
+
+- type: dailyQuest
+  id: KillSecurityLegendary
+  rarity: legendary
+  questType: KillHostiles
+  name: daily-quest-kill-security-legendary-name
+  description: daily-quest-kill-security-legendary-desc
+  requiredJob: SecurityOfficer
+  targetCount: 20
+
+
+- type: dailyQuest
+  id: KillTypanPatrolRare
+  rarity: rare
+  questType: KillHostiles
+  name: daily-quest-kill-typan-patrol-rare-name
+  description: daily-quest-kill-typan-patrol-rare-desc
+  requiredJob: TypanPatrol
+  targetCount: 5
+
+- type: dailyQuest
+  id: KillTypanPatrolSuperRare
+  rarity: superRare
+  questType: KillHostiles
+  name: daily-quest-kill-typan-patrol-superRare-name
+  description: daily-quest-kill-typan-patrol-superRare-desc
+  requiredJob: TypanPatrol
+  targetCount: 8
+
+- type: dailyQuest
+  id: KillTypanPatrolEpic
+  rarity: epic
+  questType: KillHostiles
+  name: daily-quest-kill-typan-patrol-epic-name
+  description: daily-quest-kill-typan-patrol-epic-desc
+  requiredJob: TypanPatrol
+  targetCount: 12
+
+- type: dailyQuest
+  id: KillTypanPatrolMythic
+  rarity: mythic
+  questType: KillHostiles
+  name: daily-quest-kill-typan-patrol-mythic-name
+  description: daily-quest-kill-typan-patrol-mythic-desc
+  requiredJob: TypanPatrol
+  targetCount: 18
+
+- type: dailyQuest
+  id: KillTypanPatrolLegendary
+  rarity: legendary
+  questType: KillHostiles
+  name: daily-quest-kill-typan-patrol-legendary-name
+  description: daily-quest-kill-typan-patrol-legendary-desc
+  requiredJob: TypanPatrol
+  targetCount: 25
+
+
+- type: dailyQuest
+  id: ScanDetectiveRare
+  rarity: rare
+  questType: ScanForensics
+  name: daily-quest-scan-detective-rare-name
+  description: daily-quest-scan-detective-rare-desc
+  requiredJob: Detective
+  targetCount: 3
+
+- type: dailyQuest
+  id: ScanDetectiveSuperRare
+  rarity: superRare
+  questType: ScanForensics
+  name: daily-quest-scan-detective-superRare-name
+  description: daily-quest-scan-detective-superRare-desc
+  requiredJob: Detective
+  targetCount: 5
+
+- type: dailyQuest
+  id: ScanDetectiveEpic
+  rarity: epic
+  questType: ScanForensics
+  name: daily-quest-scan-detective-epic-name
+  description: daily-quest-scan-detective-epic-desc
+  requiredJob: Detective
+  targetCount: 7
+
+- type: dailyQuest
+  id: ScanDetectiveMythic
+  rarity: mythic
+  questType: ScanForensics
+  name: daily-quest-scan-detective-mythic-name
+  description: daily-quest-scan-detective-mythic-desc
+  requiredJob: Detective
+  targetCount: 10
+
+- type: dailyQuest
+  id: ScanDetectiveLegendary
+  rarity: legendary
+  questType: ScanForensics
+  name: daily-quest-scan-detective-legendary-name
+  description: daily-quest-scan-detective-legendary-desc
+  requiredJob: Detective
+  targetCount: 15
+
+
+- type: dailyQuest
+  id: LatheScientistRare
+  rarity: rare
+  questType: LatheProduce
+  name: daily-quest-lathe-scientist-rare-name
+  description: daily-quest-lathe-scientist-rare-desc
+  requiredJob: Scientist
+  targetCount: 5
+
+- type: dailyQuest
+  id: LatheScientistSuperRare
+  rarity: superRare
+  questType: LatheProduce
+  name: daily-quest-lathe-scientist-superRare-name
+  description: daily-quest-lathe-scientist-superRare-desc
+  requiredJob: Scientist
+  targetCount: 8
+
+- type: dailyQuest
+  id: LatheScientistEpic
+  rarity: epic
+  questType: LatheProduce
+  name: daily-quest-lathe-scientist-epic-name
+  description: daily-quest-lathe-scientist-epic-desc
+  requiredJob: Scientist
+  targetCount: 12
+
+- type: dailyQuest
+  id: LatheScientistMythic
+  rarity: mythic
+  questType: LatheProduce
+  name: daily-quest-lathe-scientist-mythic-name
+  description: daily-quest-lathe-scientist-mythic-desc
+  requiredJob: Scientist
+  targetCount: 18
+
+- type: dailyQuest
+  id: LatheScientistLegendary
+  rarity: legendary
+  questType: LatheProduce
+  name: daily-quest-lathe-scientist-legendary-name
+  description: daily-quest-lathe-scientist-legendary-desc
+  requiredJob: Scientist
+  targetCount: 25
+
+
+- type: dailyQuest
+  id: LatheTypanScienceRare
+  rarity: rare
+  questType: LatheProduce
+  name: daily-quest-lathe-typan-science-rare-name
+  description: daily-quest-lathe-typan-science-rare-desc
+  requiredJob: TypanScience
+  targetCount: 5
+
+- type: dailyQuest
+  id: LatheTypanScienceSuperRare
+  rarity: superRare
+  questType: LatheProduce
+  name: daily-quest-lathe-typan-science-superRare-name
+  description: daily-quest-lathe-typan-science-superRare-desc
+  requiredJob: TypanScience
+  targetCount: 8
+
+- type: dailyQuest
+  id: LatheTypanScienceEpic
+  rarity: epic
+  questType: LatheProduce
+  name: daily-quest-lathe-typan-science-epic-name
+  description: daily-quest-lathe-typan-science-epic-desc
+  requiredJob: TypanScience
+  targetCount: 12
+
+- type: dailyQuest
+  id: LatheTypanScienceMythic
+  rarity: mythic
+  questType: LatheProduce
+  name: daily-quest-lathe-typan-science-mythic-name
+  description: daily-quest-lathe-typan-science-mythic-desc
+  requiredJob: TypanScience
+  targetCount: 18
+
+- type: dailyQuest
+  id: LatheTypanScienceLegendary
+  rarity: legendary
+  questType: LatheProduce
+  name: daily-quest-lathe-typan-science-legendary-name
+  description: daily-quest-lathe-typan-science-legendary-desc
+  requiredJob: TypanScience
+  targetCount: 25
+
+
+- type: dailyQuest
+  id: RepairEngineerRare
+  rarity: rare
+  questType: RepairStructures
+  name: daily-quest-repair-engineer-rare-name
+  description: daily-quest-repair-engineer-rare-desc
+  requiredJob: StationEngineer
+  targetCount: 3
+
+- type: dailyQuest
+  id: RepairEngineerSuperRare
+  rarity: superRare
+  questType: RepairStructures
+  name: daily-quest-repair-engineer-superRare-name
+  description: daily-quest-repair-engineer-superRare-desc
+  requiredJob: StationEngineer
+  targetCount: 5
+
+- type: dailyQuest
+  id: RepairEngineerEpic
+  rarity: epic
+  questType: RepairStructures
+  name: daily-quest-repair-engineer-epic-name
+  description: daily-quest-repair-engineer-epic-desc
+  requiredJob: StationEngineer
+  targetCount: 8
+
+- type: dailyQuest
+  id: RepairEngineerMythic
+  rarity: mythic
+  questType: RepairStructures
+  name: daily-quest-repair-engineer-mythic-name
+  description: daily-quest-repair-engineer-mythic-desc
+  requiredJob: StationEngineer
+  targetCount: 12
+
+- type: dailyQuest
+  id: RepairEngineerLegendary
+  rarity: legendary
+  questType: RepairStructures
+  name: daily-quest-repair-engineer-legendary-name
+  description: daily-quest-repair-engineer-legendary-desc
+  requiredJob: StationEngineer
+  targetCount: 18
+
+
+- type: dailyQuest
+  id: RepairTypanAtmosRare
+  rarity: rare
+  questType: RepairStructures
+  name: daily-quest-repair-typan-atmos-rare-name
+  description: daily-quest-repair-typan-atmos-rare-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 3
+
+- type: dailyQuest
+  id: RepairTypanAtmosSuperRare
+  rarity: superRare
+  questType: RepairStructures
+  name: daily-quest-repair-typan-atmos-superRare-name
+  description: daily-quest-repair-typan-atmos-superRare-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 5
+
+- type: dailyQuest
+  id: RepairTypanAtmosEpic
+  rarity: epic
+  questType: RepairStructures
+  name: daily-quest-repair-typan-atmos-epic-name
+  description: daily-quest-repair-typan-atmos-epic-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 8
+
+- type: dailyQuest
+  id: RepairTypanAtmosMythic
+  rarity: mythic
+  questType: RepairStructures
+  name: daily-quest-repair-typan-atmos-mythic-name
+  description: daily-quest-repair-typan-atmos-mythic-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 12
+
+- type: dailyQuest
+  id: RepairTypanAtmosLegendary
+  rarity: legendary
+  questType: RepairStructures
+  name: daily-quest-repair-typan-atmos-legendary-name
+  description: daily-quest-repair-typan-atmos-legendary-desc
+  requiredJob: TypanAtmosTech
+  targetCount: 18
+
+
+- type: dailyQuest
+  id: EmoteGeneralRare
+  rarity: rare
   questType: PerformEmotes
-  name: daily-quest-clown-emote-10-name
-  description: daily-quest-clown-emote-10-desc
+  icon: JobIconNoId
+  name: daily-quest-emote-general-rare-name
+  description: daily-quest-emote-general-rare-desc
+  targetCount: 6
+
+- type: dailyQuest
+  id: EmoteGeneralSuperRare
+  rarity: superRare
+  questType: PerformEmotes
+  icon: JobIconNoId
+  name: daily-quest-emote-general-superRare-name
+  description: daily-quest-emote-general-superRare-desc
+  targetCount: 10
+
+- type: dailyQuest
+  id: EmoteGeneralEpic
+  rarity: epic
+  questType: PerformEmotes
+  icon: JobIconNoId
+  name: daily-quest-emote-general-epic-name
+  description: daily-quest-emote-general-epic-desc
+  targetCount: 15
+
+- type: dailyQuest
+  id: EmoteGeneralMythic
+  rarity: mythic
+  questType: PerformEmotes
+  icon: JobIconNoId
+  name: daily-quest-emote-general-mythic-name
+  description: daily-quest-emote-general-mythic-desc
+  targetCount: 22
+
+- type: dailyQuest
+  id: EmoteGeneralLegendary
+  rarity: legendary
+  questType: PerformEmotes
+  icon: JobIconNoId
+  name: daily-quest-emote-general-legendary-name
+  description: daily-quest-emote-general-legendary-desc
+  targetCount: 30
+
+
+- type: dailyQuest
+  id: EmoteMimeRare
+  rarity: rare
+  questType: PerformEmotes
+  name: daily-quest-emote-mime-rare-name
+  description: daily-quest-emote-mime-rare-desc
+  requiredJob: Mime
+  targetCount: 8
+
+- type: dailyQuest
+  id: EmoteMimeSuperRare
+  rarity: superRare
+  questType: PerformEmotes
+  name: daily-quest-emote-mime-superRare-name
+  description: daily-quest-emote-mime-superRare-desc
+  requiredJob: Mime
+  targetCount: 12
+
+- type: dailyQuest
+  id: EmoteMimeEpic
+  rarity: epic
+  questType: PerformEmotes
+  name: daily-quest-emote-mime-epic-name
+  description: daily-quest-emote-mime-epic-desc
+  requiredJob: Mime
+  targetCount: 18
+
+- type: dailyQuest
+  id: EmoteMimeMythic
+  rarity: mythic
+  questType: PerformEmotes
+  name: daily-quest-emote-mime-mythic-name
+  description: daily-quest-emote-mime-mythic-desc
+  requiredJob: Mime
+  targetCount: 25
+
+- type: dailyQuest
+  id: EmoteMimeLegendary
+  rarity: legendary
+  questType: PerformEmotes
+  name: daily-quest-emote-mime-legendary-name
+  description: daily-quest-emote-mime-legendary-desc
+  requiredJob: Mime
+  targetCount: 35
+
+
+- type: dailyQuest
+  id: EmoteClownRare
+  rarity: rare
+  questType: PerformEmotes
+  name: daily-quest-emote-clown-rare-name
+  description: daily-quest-emote-clown-rare-desc
   requiredJob: Clown
   targetCount: 10
-  rewardCoins: 1
-  weight: 0.7
 
 - type: dailyQuest
-  id: GeneralPlay30
+  id: EmoteClownSuperRare
+  rarity: superRare
+  questType: PerformEmotes
+  name: daily-quest-emote-clown-superRare-name
+  description: daily-quest-emote-clown-superRare-desc
+  requiredJob: Clown
+  targetCount: 15
+
+- type: dailyQuest
+  id: EmoteClownEpic
+  rarity: epic
+  questType: PerformEmotes
+  name: daily-quest-emote-clown-epic-name
+  description: daily-quest-emote-clown-epic-desc
+  requiredJob: Clown
+  targetCount: 22
+
+- type: dailyQuest
+  id: EmoteClownMythic
+  rarity: mythic
+  questType: PerformEmotes
+  name: daily-quest-emote-clown-mythic-name
+  description: daily-quest-emote-clown-mythic-desc
+  requiredJob: Clown
+  targetCount: 30
+
+- type: dailyQuest
+  id: EmoteClownLegendary
+  rarity: legendary
+  questType: PerformEmotes
+  name: daily-quest-emote-clown-legendary-name
+  description: daily-quest-emote-clown-legendary-desc
+  requiredJob: Clown
+  targetCount: 40
+
+
+- type: dailyQuest
+  id: SurviveGeneralRare
+  rarity: rare
   questType: SurviveRound
   icon: JobIconNoId
-  name: daily-quest-general-play-30-name
-  description: daily-quest-general-play-30-desc
+  name: daily-quest-survive-general-rare-name
+  description: daily-quest-survive-general-rare-desc
   targetCount: 1
-  rewardCoins: 1
+  minRoundPlaytime: 1200
+
+- type: dailyQuest
+  id: SurviveGeneralSuperRare
+  rarity: superRare
+  questType: SurviveRound
+  icon: JobIconNoId
+  name: daily-quest-survive-general-superRare-name
+  description: daily-quest-survive-general-superRare-desc
+  targetCount: 1
+  minRoundPlaytime: 1500
+
+- type: dailyQuest
+  id: SurviveGeneralEpic
+  rarity: epic
+  questType: SurviveRound
+  icon: JobIconNoId
+  name: daily-quest-survive-general-epic-name
+  description: daily-quest-survive-general-epic-desc
+  targetCount: 1
   minRoundPlaytime: 1800
-  weight: 1.3
 
 - type: dailyQuest
-  id: GeneralEmote6
-  questType: PerformEmotes
+  id: SurviveGeneralMythic
+  rarity: mythic
+  questType: SurviveRound
   icon: JobIconNoId
-  name: daily-quest-general-emote-6-name
-  description: daily-quest-general-emote-6-desc
-  targetCount: 6
-  rewardCoins: 1
-  weight: 1.2
+  name: daily-quest-survive-general-mythic-name
+  description: daily-quest-survive-general-mythic-desc
+  targetCount: 1
+  minRoundPlaytime: 2400
 
 - type: dailyQuest
-  id: GeneralHeal3
-  questType: HealOthers
+  id: SurviveGeneralLegendary
+  rarity: legendary
+  questType: SurviveRound
   icon: JobIconNoId
-  name: daily-quest-general-heal-3-name
-  description: daily-quest-general-heal-3-desc
-  targetCount: 3
-  rewardCoins: 1
-  weight: 1.2
+  name: daily-quest-survive-general-legendary-name
+  description: daily-quest-survive-general-legendary-desc
+  targetCount: 1
+  minRoundPlaytime: 3600
+
+
+- type: dailyQuest
+  id: SurviveCaptainRare
+  rarity: rare
+  questType: SurviveRound
+  name: daily-quest-survive-captain-rare-name
+  description: daily-quest-survive-captain-rare-desc
+  requiredJob: Captain
+  targetCount: 1
+  minRoundPlaytime: 1800
+
+- type: dailyQuest
+  id: SurviveCaptainSuperRare
+  rarity: superRare
+  questType: SurviveRound
+  name: daily-quest-survive-captain-superRare-name
+  description: daily-quest-survive-captain-superRare-desc
+  requiredJob: Captain
+  targetCount: 1
+  minRoundPlaytime: 2100
+
+- type: dailyQuest
+  id: SurviveCaptainEpic
+  rarity: epic
+  questType: SurviveRound
+  name: daily-quest-survive-captain-epic-name
+  description: daily-quest-survive-captain-epic-desc
+  requiredJob: Captain
+  targetCount: 1
+  minRoundPlaytime: 2400
+
+- type: dailyQuest
+  id: SurviveCaptainMythic
+  rarity: mythic
+  questType: SurviveRound
+  name: daily-quest-survive-captain-mythic-name
+  description: daily-quest-survive-captain-mythic-desc
+  requiredJob: Captain
+  targetCount: 1
+  minRoundPlaytime: 3000
+
+- type: dailyQuest
+  id: SurviveCaptainLegendary
+  rarity: legendary
+  questType: SurviveRound
+  name: daily-quest-survive-captain-legendary-name
+  description: daily-quest-survive-captain-legendary-desc
+  requiredJob: Captain
+  targetCount: 1
+  minRoundPlaytime: 4200
+
+
+- type: dailyQuest
+  id: PacifistRare
+  rarity: rare
+  questType: NoMeleeHits
+  icon: JobIconMime
+  name: daily-quest-pacifist-rare-name
+  description: daily-quest-pacifist-rare-desc
+  targetCount: 1
+  minRoundPlaytime: 900
+
+- type: dailyQuest
+  id: PacifistSuperRare
+  rarity: superRare
+  questType: NoMeleeHits
+  icon: JobIconMime
+  name: daily-quest-pacifist-superRare-name
+  description: daily-quest-pacifist-superRare-desc
+  targetCount: 1
+  minRoundPlaytime: 1200
+
+- type: dailyQuest
+  id: PacifistEpic
+  rarity: epic
+  questType: NoMeleeHits
+  icon: JobIconMime
+  name: daily-quest-pacifist-epic-name
+  description: daily-quest-pacifist-epic-desc
+  targetCount: 1
+  minRoundPlaytime: 1500
+
+- type: dailyQuest
+  id: PacifistMythic
+  rarity: mythic
+  questType: NoMeleeHits
+  icon: JobIconMime
+  name: daily-quest-pacifist-mythic-name
+  description: daily-quest-pacifist-mythic-desc
+  targetCount: 1
+  minRoundPlaytime: 1800
+
+- type: dailyQuest
+  id: PacifistLegendary
+  rarity: legendary
+  questType: NoMeleeHits
+  icon: JobIconMime
+  name: daily-quest-pacifist-legendary-name
+  description: daily-quest-pacifist-legendary-desc
+  targetCount: 1
+  minRoundPlaytime: 2400
+
+
+- type: dailyQuest
+  id: UntouchableRare
+  rarity: rare
+  questType: NoDamageTaken
+  icon: JobIconMedicalDoctor
+  name: daily-quest-untouchable-rare-name
+  description: daily-quest-untouchable-rare-desc
+  targetCount: 1
+  minRoundPlaytime: 900
+
+- type: dailyQuest
+  id: UntouchableSuperRare
+  rarity: superRare
+  questType: NoDamageTaken
+  icon: JobIconMedicalDoctor
+  name: daily-quest-untouchable-superRare-name
+  description: daily-quest-untouchable-superRare-desc
+  targetCount: 1
+  minRoundPlaytime: 1200
+
+- type: dailyQuest
+  id: UntouchableEpic
+  rarity: epic
+  questType: NoDamageTaken
+  icon: JobIconMedicalDoctor
+  name: daily-quest-untouchable-epic-name
+  description: daily-quest-untouchable-epic-desc
+  targetCount: 1
+  minRoundPlaytime: 1500
+
+- type: dailyQuest
+  id: UntouchableMythic
+  rarity: mythic
+  questType: NoDamageTaken
+  icon: JobIconMedicalDoctor
+  name: daily-quest-untouchable-mythic-name
+  description: daily-quest-untouchable-mythic-desc
+  targetCount: 1
+  minRoundPlaytime: 1800
+
+- type: dailyQuest
+  id: UntouchableLegendary
+  rarity: legendary
+  questType: NoDamageTaken
+  icon: JobIconMedicalDoctor
+  name: daily-quest-untouchable-legendary-name
+  description: daily-quest-untouchable-legendary-desc
+  targetCount: 1
+  minRoundPlaytime: 2400
+

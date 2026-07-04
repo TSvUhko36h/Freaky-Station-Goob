@@ -21,6 +21,7 @@ public sealed class DailyQuestEntry
     public string? IconState { get; set; }
     public bool IsTimeBased { get; set; }
     public bool CanReplace { get; set; }
+    public DailyQuestRarity Rarity { get; set; }
 
     public DailyQuestEntry()
     {
@@ -40,7 +41,8 @@ public sealed class DailyQuestEntry
         string? iconSprite,
         string? iconState,
         bool isTimeBased,
-        bool canReplace)
+        bool canReplace,
+        DailyQuestRarity rarity = DailyQuestRarity.Rare)
     {
         QuestId = questId;
         Title = title;
@@ -56,6 +58,7 @@ public sealed class DailyQuestEntry
         IconState = iconState;
         IsTimeBased = isTimeBased;
         CanReplace = canReplace;
+        Rarity = rarity;
     }
 }
 

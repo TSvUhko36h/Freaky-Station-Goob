@@ -24,4 +24,5 @@ public enum DailyQuestType : byte
     PerformEmotes,
     RepairStructures,
     SurviveRound,
+    EarnStationBankBalance,
 }

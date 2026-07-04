@@ -9,7 +9,7 @@ blood-cult-role-greeting = The Geometer of Blood, Nar-Sie, has sent a number of 
     You must work with your brethren to summon an avatar of your eldritch goddess!
 
 blood-cult-role-briefing-short = Use '^' to contact other members of your brethren.
-blood-cult-role-briefing-rending-locations = The veil can be thorn {$location}, {$coordinates}
+blood-cult-role-briefing-rending-locations = The veil can be torn {$location}, {$coordinates}
 blood-cult-role-briefing-emergency-rending = We can draw {$amount} more rending or apocalypse runes!
 
 objective-issuer-blood-cult = [color=red]The Geometer of Blood[/color]
@@ -19,3 +19,19 @@ blood-cult-condition-failure = The crew have managed to stop the rending of real
 
 blood-cultists-list-start = Members of Geometer of Blood were:
 blood-cultists-list-name = [color=White]{ $name }[/color] ([color=gray]{ $user }[/color])
+
+blood-cult-ui-roundstart-title = Nar'Si Blood Cult
+blood-cult-ui-roundstart-text-1 = You are a cultist of the Geometer of Blood!
+blood-cult-ui-roundstart-text-2 = Sacrifice your marked target and tear the veil to summon Nar'Sie.
+blood-cult-ui-roundstart-text-3 = Speak Eldritch with ^ to reach your brethren. Stealth is your greatest ally.
+blood-cult-ui-popup-confirm = Understood
+
+blood-cult-objective-sacrifice-title = Sacrifice { $targetName } ({ CAPITALIZE($job) })
+
+blood-cult-roundend-stats-cultists = The cult had { $count } cultists
+blood-cult-roundend-stats-constructs = { $count } constructs were created
+blood-cult-roundend-stats-stage = Cult stage reached: { $stage }
+
+blood-cult-stage-start = initial
+blood-cult-stage-red-eyes = red eyes
+blood-cult-stage-pentagram = pentagram
