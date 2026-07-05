@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Content.Server._Mini.AntagUnlock;
 using Content.Server._Mini.JobUnlock;
+using Content.Server._Mini.TypanWar;
 using Content.Server.Popups;
 using Content.Server.Sponsors;
 using Content.Server.Antag;
@@ -98,6 +99,7 @@ public sealed class AntagTokenSystem : EntitySystem
         "NukeTraitor",
         "NukeLing",
         "Honkops",
+        "TypanStationWar",
     };
 
     private static int EncodeUtcDayNumber(DateTime utc)
@@ -2028,6 +2030,9 @@ private void NormalizeMonthlyState(PlayerTokenState state, DateTime nowUtc, NetU
 
     private bool IsRoundstartRoleBlockedByPreset()
     {
+        if (TypanStationWarRuleSystem.IsModeActive)
+            return true;
+
         var preset = _gameTicker.RunLevel == GameRunLevel.PreRoundLobby
             ? _gameTicker.Preset
             : _gameTicker.CurrentPreset ?? _gameTicker.Preset;
