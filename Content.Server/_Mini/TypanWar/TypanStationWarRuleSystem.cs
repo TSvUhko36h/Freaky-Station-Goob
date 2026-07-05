@@ -114,7 +114,7 @@ public sealed class TypanStationWarRuleSystem : GameRuleSystem<TypanStationWarRu
 
     private void OnConsoleFtlAttempt(ref ConsoleFTLAttemptEvent ev)
     {
-        if (!IsModeActive || ev.Cancelled)
+        if (ev.Cancelled || !ShouldBlockFtl())
             return;
 
         ev.Cancelled = true;
@@ -123,11 +123,28 @@ public sealed class TypanStationWarRuleSystem : GameRuleSystem<TypanStationWarRu
 
     private void OnShuttleFtlAttempt(ref ShuttleFTLAttemptEvent ev)
     {
-        if (!IsModeActive || ev.Cancelled)
+        if (ev.Cancelled || !ShouldBlockFtl())
             return;
 
         ev.Cancelled = true;
         ev.Reason = Loc.GetString("typan-war-ftl-blocked");
+    }
+
+    /// <summary>
+    /// FTL is blocked during the prep phase only.
+    /// </summary>
+    private bool ShouldBlockFtl()
+    {
+        var query = EntityQueryEnumerator<TypanStationWarRuleComponent, GameRuleComponent>();
+        while (query.MoveNext(out var uid, out var component, out var gameRule))
+        {
+            if (!GameTicker.IsGameRuleActive(uid, gameRule))
+                continue;
+
+            return component.Phase == TypanWarPhase.Pending;
+        }
+
+        return false;
     }
 
     protected override void Started(EntityUid uid, TypanStationWarRuleComponent component, GameRuleComponent gameRule, GameRuleStartedEvent args)
