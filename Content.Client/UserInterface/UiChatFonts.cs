@@ -18,18 +18,18 @@ public static class UiChatFonts
 
     public static Font Get(IResourceCache cache)
     {
-        var fonts = IoCManager.Resolve<IUiFontStackManager>();
-        return cache.GetChatStack("Regular", fonts.GetChatFontSize(BaseSize));
+        return cache.GetChatStack("Regular", BaseSize);
     }
 
     public static void ApplyToOutput(Control output, IResourceCache? cache = null)
     {
         cache ??= IoCManager.Resolve<IResourceCache>();
+        var font = Get(cache);
 
         switch (output)
         {
             case CustomOutputPanel custom:
-                custom.FontOverride = Get(cache);
+                custom.FontOverride = font;
                 custom.LineHeightScale = LineHeightScale;
                 custom.InvalidateStyleSheet();
                 custom.InvalidateLayout();

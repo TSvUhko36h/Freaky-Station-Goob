@@ -4,6 +4,8 @@ using System;
 using Content.Shared._Mini.DailyRewards;
 using JetBrains.Annotations;
 using Robust.Client.UserInterface;
+using Robust.Shared.GameObjects;
+using Robust.Shared.IoC;
 
 namespace Content.Client._Mini.DailyRewards;
 
@@ -22,7 +24,7 @@ public sealed class DailyRewardBoundUserInterface : BoundUserInterface
         base.Open();
         _window = this.CreateWindow<DailyRewardWindow>();
         _window.Title = "Daily Rewards";
-        _window.OnClaimPressed += OnClaimPressed;
+        IoCManager.Resolve<IEntityManager>().System<DailyRewardUiSystem>().AttachWindow(_window);
     }
 
     protected override void UpdateState(BoundUserInterfaceState state)
@@ -35,8 +37,11 @@ public sealed class DailyRewardBoundUserInterface : BoundUserInterface
         _window.UpdateState(msg);
     }
 
-    private void OnClaimPressed()
+    protected override void Dispose(bool disposing)
     {
-        SendMessage(new DailyRewardClaimMessage());
+        if (disposing && _window != null)
+            IoCManager.Resolve<IEntityManager>().System<DailyRewardUiSystem>().DetachWindow(_window);
+
+        base.Dispose(disposing);
     }
 }

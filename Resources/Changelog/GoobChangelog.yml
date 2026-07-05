@@ -23610,3 +23610,9 @@ Entries:
       message: Added a low blood alert to the health analyzer.
   id: 2711
   time: '2026-06-23T12:32:06.0000000+00:00'
+- author: Egor Romanovich
+  changes:
+    - type: Add
+      message: Nar'Sie runed metal now uses a Ratvar-style construction radial menu.
+  id: 2712
+  time: '2026-07-04T22:17:00.0000000+00:00'

@@ -1,6 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Content.Server.Actions;
+using Content.Server.EUI;
+using Content.Server._Mini.BloodCult.UI;
 using Content.Server.Antag;
 using Content.Server.Antag.Components;
 using Content.Server.Body.Systems;
@@ -43,6 +45,7 @@ public sealed class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleComponent>
 {
     [Dependency] private readonly IRobustRandom _random = default!;
 
+    [Dependency] private readonly EuiManager _euiMan = default!;
     [Dependency] private readonly ActionsSystem _actions = default!;
     [Dependency] private readonly AntagSelectionSystem _antagSelection = default!;
     [Dependency] private readonly BloodSpearSystem _bloodSpear = default!;
@@ -97,6 +100,11 @@ public sealed class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleComponent>
         base.AppendRoundEndText(uid, component, gameRule, ref args);
         var winText = Loc.GetString($"blood-cult-condition-{component.WinCondition.ToString().ToLower()}");
         args.AddLine(winText);
+
+        args.AddLine(Loc.GetString("blood-cult-roundend-stats-cultists", ("count", component.Cultists.Count)));
+        args.AddLine(Loc.GetString("blood-cult-roundend-stats-constructs", ("count", component.Constructs.Count)));
+        args.AddLine(Loc.GetString("blood-cult-roundend-stats-stage",
+            ("stage", Loc.GetString(GetStageLocId(component.Stage)))));
 
         args.AddLine(Loc.GetString("blood-cultists-list-start"));
 
@@ -380,7 +388,17 @@ public sealed class BloodCultRuleSystem : GameRuleSystem<BloodCultRuleComponent>
 
         if (rule.Comp.OfferingTarget is { } target && target != cultist)
             _mind.TryAddObjective(mindId, mind, "KillTargetCultObjective");
+
+        if (TryComp(cultist, out ActorComponent? actor))
+            _euiMan.OpenEui(new BloodCultRoundStartEui(), actor.PlayerSession);
     }
+
+    private static string GetStageLocId(CultStage stage) => stage switch
+    {
+        CultStage.RedEyes => "blood-cult-stage-red-eyes",
+        CultStage.Pentagram => "blood-cult-stage-pentagram",
+        _ => "blood-cult-stage-start",
+    };
 
     private void GetRandomRunePlacements(BloodCultRuleComponent component)
     {

@@ -1,14 +1,14 @@
 ratvar-has-risen = РАТВАР ПРОБУДИЛСЯ
-ratvar-has-risen-sender = ???
+ratvar-has-risen-sender = Центральное командование
 
 ratvar-spawn-start =
-    Праведники Ратвара вот-вот освободят его из заточения
+    Праведники Ратвара вот-вот освободят его из заточения!
     Недопустите этого любой ценой!
-    Судя по данным это происходит по координатам { $position }
+    Судя по данным, это происходит в районе { $location }
 ratvar-spawn-end =
     Праведники Ратвара освободили его из заточения!
     Они вызвали его в этот мир, и теперь он будет править им!
-    Судя по данным это произошло по координатам { $position }
+    Судя по данным, это произошло в районе { $location }
 ratvar-name = Ратвар
 ratvar-winstate-idle = [color=green]Праведники Ратвара не смогли вызволить его из заточения![/color]
 ratvar-winstate-summoning = [color=yellow]Праведники Ратвара не успели вызволить его заточения, до эвакуации![/color]
@@ -179,6 +179,7 @@ objective-title-RatvarPowerObjective = Энергия
 objective-description-RatvarPowerObjective = Накопите энергию, чтобы у нас была сила для призыва Ратвара!
 objective-title-RatvarSummonObjective = Призыв
 objective-description-RatvarSummonObjective = Мы готовы к призыву Ратвара!
+ratvar-summon-objective-location = Установите алтарь в районе { $location } и используйте на нём осколок для призыва.
 
 # Antags
 antag-name-RatvarRighteous = Праведник Ратвара

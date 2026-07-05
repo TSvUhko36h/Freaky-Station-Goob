@@ -8,6 +8,7 @@ using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.XAML;
 using Robust.Shared.GameObjects;
 using Robust.Shared.IoC;
+using Robust.Shared.Localization;
 
 namespace Content.Client.RPSX.DarkForces.Ratvar.Enchantment;
 
@@ -37,7 +38,7 @@ public sealed partial class RatvarEnchantmentMenu : RadialMenu
             {
                 StyleClasses = { "RadialMenuButton" },
                 SetSize = new Vector2(64f, 64f),
-                ToolTip = model.Name
+                ToolTip = Loc.GetString(model.Name)
             };
 
             var texture = new TextureRect

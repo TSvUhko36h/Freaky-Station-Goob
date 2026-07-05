@@ -1,9 +1,12 @@
+using System;
+using System.Collections.Generic;
 using Content.Client.Resources;
 using Content.Shared.CCVar;
 using Content.Shared.UserInterface;
 using Robust.Client.Graphics;
 using Robust.Client.ResourceManagement;
 using Robust.Shared.Configuration;
+using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
 
 namespace Content.Client.UserInterface;
@@ -21,8 +24,6 @@ public interface IUiFontStackManager
     /// </summary>
     Font GetChatStack(IResourceCache cache, string variation = "Regular", int size = 12, bool display = false);
 
-    int GetChatFontSize(int baseSize = 12);
-
     bool UsesPrimaryChatFontOverride { get; }
 
     Font GetStackWithPrimary(IResourceCache cache, string path, int size = 10);
@@ -34,6 +35,7 @@ public sealed class UiFontStackManager : IUiFontStackManager
     [Dependency] private readonly IConfigurationManager _configurationManager = default!;
 
     private const string DefaultStyleId = "Default";
+    private const float AlternateFontSizeScale = 0.85f;
 
     private static readonly string[] NotoRegularFallback =
     [
@@ -70,6 +72,8 @@ public sealed class UiFontStackManager : IUiFontStackManager
     public UiFontStylePrototype ActiveStyle { get; private set; } = default!;
 
     private bool _initialized;
+    private string _cachedStyleId = DefaultStyleId;
+    private readonly Dictionary<(string Path, int Size), int> _normalizedSizeCache = new();
 
     public void Initialize()
     {
@@ -92,28 +96,23 @@ public sealed class UiFontStackManager : IUiFontStackManager
             style = _prototypeManager.Index<UiFontStylePrototype>(DefaultStyleId);
 
         ActiveStyle = style;
+        if (_cachedStyleId != style.ID)
+        {
+            _cachedStyleId = style.ID;
+            _normalizedSizeCache.Clear();
+        }
     }
 
     public Font GetStack(IResourceCache cache, string variation = "Regular", int size = 10, bool display = false)
     {
         EnsureInitialized();
-        return BuildStackInternal(cache, variation, ApplySizeOffset(size), display);
+        return BuildStackInternal(cache, variation, size, display, applyUiOffset: true);
     }
 
     public Font GetChatStack(IResourceCache cache, string variation = "Regular", int size = 12, bool display = false)
     {
         EnsureInitialized();
-        return BuildStackInternal(cache, variation, size, display);
-    }
-
-    public int GetChatFontSize(int baseSize = 12)
-    {
-        EnsureInitialized();
-
-        if (ActiveStyle?.ID == DefaultStyleId)
-            return 13;
-
-        return baseSize + (ActiveStyle?.ChatSizeOffset ?? 0);
+        return BuildStackInternal(cache, variation, size, display, applyUiOffset: false);
     }
 
     public bool UsesPrimaryChatFontOverride =>
@@ -123,6 +122,8 @@ public sealed class UiFontStackManager : IUiFontStackManager
     {
         EnsureInitialized();
         size = ApplySizeOffset(size);
+        if (ActiveStyle.ID != DefaultStyleId)
+            size = NormalizeToNotoPixelSize(cache, path, size);
 
         if (ActiveStyle.ID == DefaultStyleId && !ActiveStyle.NotoFallback)
             return cache.GetFont(NotoStackWithPrimary(path), size);
@@ -130,15 +131,25 @@ public sealed class UiFontStackManager : IUiFontStackManager
         return BuildStack(cache, path, "Regular", size);
     }
 
-    private Font BuildStackInternal(IResourceCache cache, string variation, int size, bool display)
+    private Font BuildStackInternal(
+        IResourceCache cache,
+        string variation,
+        int size,
+        bool display,
+        bool applyUiOffset)
     {
+        if (applyUiOffset)
+            size = ApplySizeOffset(size);
+
         var primary = ResolvePrimaryPath(variation, display);
+        if (ActiveStyle.ID != DefaultStyleId)
+            size = NormalizeToNotoPixelSize(cache, primary, size);
 
         if (ActiveStyle.ID == DefaultStyleId && !ActiveStyle.NotoFallback)
             return BuildDefaultStack(cache, primary, variation, size);
 
         if (!ActiveStyle.NotoFallback)
-            return cache.GetFont(primary, size);
+            return MaybeFilterCozetteControls(primary, cache.GetFont(primary, size));
 
         return BuildStack(cache, primary, variation, size);
     }
@@ -168,7 +179,7 @@ public sealed class UiFontStackManager : IUiFontStackManager
     private Font BuildStack(IResourceCache cache, string primary, string variation, int size)
     {
         if (!ActiveStyle.NotoFallback)
-            return cache.GetFont(primary, size);
+            return MaybeFilterCozetteControls(primary, cache.GetFont(primary, size));
 
         var fallback = variation switch
         {
@@ -182,7 +193,23 @@ public sealed class UiFontStackManager : IUiFontStackManager
         var paths = new string[fallback.Length + 1];
         paths[0] = primary;
         fallback.CopyTo(paths, 1);
-        return cache.GetFont(paths, size);
+        return MaybeFilterCozetteControls(primary, cache.GetFont(paths, size));
+    }
+
+    private static Font MaybeFilterCozetteControls(string primaryPath, Font font)
+    {
+        if (!primaryPath.Contains("Cozette", StringComparison.OrdinalIgnoreCase))
+            return font;
+
+        if (font is not StackedFont stacked || stacked.Stack.Length == 0)
+            return new C0ControlFilteredFont(font);
+
+        var filtered = new Font[stacked.Stack.Length];
+        filtered[0] = new C0ControlFilteredFont(stacked.Stack[0]);
+        for (var i = 1; i < stacked.Stack.Length; i++)
+            filtered[i] = stacked.Stack[i];
+
+        return new StackedFont(filtered);
     }
 
     private static Font BuildDefaultStack(IResourceCache cache, string primary, string variation, int size)
@@ -202,6 +229,44 @@ public sealed class UiFontStackManager : IUiFontStackManager
     {
         var offset = ActiveStyle?.SizeOffset ?? 0;
         return offset == 0 ? size : size + offset;
+    }
+
+    /// <summary>
+    /// Scales alternate fonts toward Noto Sans height, then applies <see cref="AlternateFontSizeScale"/>.
+    /// </summary>
+    private int NormalizeToNotoPixelSize(IResourceCache cache, string primaryPath, int size)
+    {
+        if (size <= 0)
+            return size;
+
+        var cacheKey = (primaryPath, size);
+        if (_normalizedSizeCache.TryGetValue(cacheKey, out var cached))
+            return cached;
+
+        var normalized = size;
+        try
+        {
+            var notoFont = cache.GetFont(NotoRegularFallback[0], size);
+            var notoHeight = notoFont.GetHeight(1f);
+            if (notoHeight > 0)
+            {
+                var styleFont = cache.GetFont(primaryPath, size);
+                var styleHeight = styleFont.GetHeight(1f);
+                if (styleHeight > 0 && !MathHelper.CloseToPercent(styleHeight, notoHeight))
+                {
+                    normalized = Math.Max(1, (int)Math.Round(size * (notoHeight / (float)styleHeight)));
+                }
+            }
+
+            normalized = Math.Max(1, (int)Math.Round(normalized * AlternateFontSizeScale));
+        }
+        catch (Exception)
+        {
+            normalized = Math.Max(1, (int)Math.Round(size * AlternateFontSizeScale));
+        }
+
+        _normalizedSizeCache[cacheKey] = normalized;
+        return normalized;
     }
 
     private static string[] NotoStackWithPrimary(string path)

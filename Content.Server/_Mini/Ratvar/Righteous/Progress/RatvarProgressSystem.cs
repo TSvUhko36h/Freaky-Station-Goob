@@ -19,6 +19,7 @@ public sealed partial class RatvarProgressSystem : EntitySystem
 {
     [Dependency] private readonly MindSystem _mindSystem = default!;
     [Dependency] private readonly ObjectivesSystem _objectivesSystem = default!;
+    [Dependency] private readonly RatvarSummonObjectiveSystem _summonObjectiveSystem = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
 
     [ValidatePrototypeId<EntityPrototype>]
@@ -105,6 +106,8 @@ public sealed partial class RatvarProgressSystem : EntitySystem
             return;
 
         CreateObjective(RatvarSummonObjectivePrototype, ref comp.RatvarSummonObjective);
+        if (comp.RatvarSummonObjective != EntityUid.Invalid)
+            _summonObjectiveSystem.TryAssignTarget(comp.RatvarSummonObjective);
         AddObjectivesToRighteouses(comp.RatvarSummonObjective);
     }
 
@@ -188,13 +191,16 @@ public sealed partial class RatvarProgressSystem : EntitySystem
         if (!TryComp<RatvarSummonObjectiveComponent>(comp.RatvarSummonObjective, out var objectiveComponent))
             return false;
 
-        if (objectiveComponent.Target == null)
+        if (objectiveComponent.Target is not { } target || TerminatingOrDeleted(target))
             return false;
 
-        var targetTransform = Transform(objectiveComponent.Target.Value);
-        var uidTransform = Transform(uid);
+        if (!TryComp<TransformComponent>(target, out var targetTransform))
+            return false;
 
-        return uidTransform.Coordinates.InRange(EntityManager, targetTransform.Coordinates, 6f);
+        if (!TryComp<TransformComponent>(uid, out var uidTransform))
+            return false;
+
+        return uidTransform.Coordinates.InRange(EntityManager, targetTransform.Coordinates, objectiveComponent.SummonRange);
     }
 
     public bool IsPortalInProgress()

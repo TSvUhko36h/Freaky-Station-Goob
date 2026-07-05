@@ -5,8 +5,10 @@
   components:
   - type: GameRule
     minPlayers: 15
+    chaosScore: 1000
   - type: BloodCultRule
   - type: AntagSelection
+    selectionTime: IntraPlayerSpawn
     definitions:
     - prefRoles: [ BloodCultist ]
       max: 4

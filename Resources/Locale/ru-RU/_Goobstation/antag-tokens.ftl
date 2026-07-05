@@ -120,6 +120,9 @@ antag-store-role-vox-description = Гост роль вокса рейдера.
 antag-store-role-ratvar-cult-name = Праведник Ратвара
 antag-store-role-ratvar-cult-description = Очередь на раундстартовое событие культа Ратвара.
 
+antag-store-role-blood-cult-name = Культист крови
+antag-store-role-blood-cult-description = Очередь на раундстартовое событие культа Нар'Сi.
+
 # Server (AntagTokenSystem)
 antag-tokens-online-reward = Вы получили {$amount} билет(ов) за {$hours} ч. на сервере!
 antag-tokens-sponsor-bonus-popup = Донатерский бонус: +{$amount} билет(ов) (уровень {$tier})!

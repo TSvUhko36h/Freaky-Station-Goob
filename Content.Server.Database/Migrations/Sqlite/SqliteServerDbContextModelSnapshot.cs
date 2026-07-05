@@ -841,6 +841,45 @@ namespace Content.Server.Database.Migrations.Sqlite
                     b.ToTable("connection_log", (string)null);
                 });
 
+            modelBuilder.Entity("Content.Server.Database.DailyQuestProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("daily_quest_progress_id");
+
+                    b.Property<string>("AssignedQuestIds")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("assigned_quest_ids");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("player_id");
+
+                    b.Property<string>("ProgressValues")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("progress_values");
+
+                    b.Property<DateTime>("QuestDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("quest_date");
+
+                    b.Property<string>("StatusFlags")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("status_flags");
+
+                    b.HasKey("Id")
+                        .HasName("PK_daily_quest_progress");
+
+                    b.HasIndex("PlayerId", "QuestDate")
+                        .IsUnique();
+
+                    b.ToTable("daily_quest_progress", (string)null);
+                });
+
             modelBuilder.Entity("Content.Server.Database.DailyRewardProgress", b =>
                 {
                     b.Property<int>("Id")

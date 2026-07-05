@@ -11,6 +11,7 @@ using Content.Shared.RPSX.DarkForces.Ratvar.Righteous.Abilities;
 using Content.Shared.RPSX.DarkForces.Ratvar.Righteous.Items;
 using Content.Shared.RPSX.DarkForces.Ratvar.UI;
 using Content.Server.RPSX.DarkForces.Ratvar.Righteous.Structures.Portal;
+using Content.Shared.Placeable;
 using Content.Shared.Silicons.Borgs.Components;
 using Content.Shared.Tag;
 using Robust.Shared.GameObjects;
@@ -51,23 +52,28 @@ public sealed partial class RatvarAbilitiesSystem
         SubscribeLocalEvent<RatvarShardComponent, RatvarShardReconstructEvent>(OnReconstructEvent);
         SubscribeLocalEvent<RatvarShardComponent, RatvarShardEmpEvent>(OnEmpEvent);
         SubscribeLocalEvent<RatvarShardComponent, RatvarEnchantmentSelectedMessage>(OnEnchantmentSelected);
-        SubscribeLocalEvent<RatvarShardComponent, AfterInteractEvent>(OnShardAfterInteract);
+        SubscribeLocalEvent<RatvarAltarComponent, AfterInteractUsingEvent>(OnAltarShardInteract,
+            before: new[] { typeof(PlaceableSurfaceSystem) });
     }
 
-    private void OnShardAfterInteract(EntityUid uid, RatvarShardComponent component, AfterInteractEvent args)
+    private void OnAltarShardInteract(EntityUid uid, RatvarAltarComponent component, AfterInteractUsingEvent args)
     {
-        if (!HasComp<RatvarAltarComponent>(args.Target) || !HasComp<HumanoidAppearanceComponent>(args.User))
+        if (args.Handled || !args.CanReach || !HasComp<RatvarShardComponent>(args.Used))
             return;
 
-        if (!_progressSystem.IsEntityAtSummonPoint(args.Used) || _progressSystem.IsPortalInProgress())
+        if (!HasComp<HumanoidAppearanceComponent>(args.User))
+            return;
+
+        if (!_progressSystem.IsEntityAtSummonPoint(uid) || _progressSystem.IsPortalInProgress())
             return;
 
         var transform = Transform(uid);
         var portal = Spawn("RatvarPortal", transform.Coordinates);
         _portalSystem.BeginSpawnCountdown(portal);
 
-        QueueDel(args.Target);
         QueueDel(uid);
+        QueueDel(args.Used);
+        args.Handled = true;
     }
 
     private void OnReconstructEvent(EntityUid uid, RatvarShardComponent component, RatvarShardReconstructEvent args)

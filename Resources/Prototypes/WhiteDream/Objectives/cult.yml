@@ -15,4 +15,4 @@
     roles:
     - BloodCultistRole
   - type: KillTargetCult
-    title: objective-condition-kill-person-title
+    title: blood-cult-objective-sacrifice-title

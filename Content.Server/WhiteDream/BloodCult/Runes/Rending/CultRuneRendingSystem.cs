@@ -1,7 +1,9 @@
-﻿using Content.Server.Chat.Systems;
+﻿using Content.Server.AlertLevel;
+using Content.Server.Chat.Systems;
 using Content.Server.DoAfter;
 using Content.Server.Pinpointer;
 using Content.Server.Popups;
+using Content.Server.Station.Systems;
 using Content.Server.WhiteDream.BloodCult.Gamerule;
 using Content.Shared.DoAfter;
 using Content.Shared.WhiteDream.BloodCult.Runes;
@@ -15,6 +17,7 @@ namespace Content.Server.WhiteDream.BloodCult.Runes.Rending;
 
 public sealed class CultRuneRendingSystem : EntitySystem
 {
+    [Dependency] private readonly AlertLevelSystem _alertLevel = default!;
     [Dependency] private readonly AppearanceSystem _appearance = default!;
     [Dependency] private readonly AudioSystem _audio = default!;
     [Dependency] private readonly ChatSystem _chat = default!;
@@ -22,6 +25,7 @@ public sealed class CultRuneRendingSystem : EntitySystem
     [Dependency] private readonly DoAfterSystem _doAfter = default!;
     [Dependency] private readonly NavMapSystem _navMap = default!;
     [Dependency] private readonly PopupSystem _popup = default!;
+    [Dependency] private readonly StationSystem _station = default!;
     [Dependency] private readonly TransformSystem _transform = default!;
 
     public override void Initialize()
@@ -83,6 +87,9 @@ public sealed class CultRuneRendingSystem : EntitySystem
             Loc.GetString("blood-cult-title"),
             false,
             colorOverride: Color.DarkRed);
+
+        if (_station.GetOwningStation(rune.Owner) is { } station)
+            _alertLevel.SetLevel(station, "gamma", true, true, true);
 
         _appearance.SetData(rune, RendingRuneVisuals.Active, true);
         rune.Comp.AudioEntity =
