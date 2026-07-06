@@ -100,6 +100,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.Linq;
+using Content.Server._Mini.Networking;
 using Content.Server.Chat.Systems;
 using Content.Server.GameTicking;
 using Content.Server.Station.Components;
@@ -107,7 +108,6 @@ using Content.Server.Station.Events;
 using Content.Shared.Station;
 using Content.Shared.Station.Components;
 using JetBrains.Annotations;
-using Robust.Server.GameStates;
 using Robust.Server.Player;
 using Robust.Shared.Collections;
 using Robust.Shared.Enums;
@@ -132,7 +132,7 @@ public sealed partial class StationSystem : SharedStationSystem
     [Dependency] private readonly ChatSystem _chatSystem = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
     [Dependency] private readonly MetaDataSystem _metaData = default!;
-    [Dependency] private readonly PvsOverrideSystem _pvsOverride = default!;
+    [Dependency] private readonly PvsSessionOverrideSystem _pvsSession = default!;
 
     private ISawmill _sawmill = default!;
 
@@ -161,9 +161,6 @@ public sealed partial class StationSystem : SharedStationSystem
 
         SubscribeLocalEvent<StationGridAddedEvent>(OnStationGridAdded);
         SubscribeLocalEvent<StationGridRemovedEvent>(OnStationGridRemoved);
-
-        SubscribeLocalEvent<ActorComponent, ComponentStartup>(OnActorStartup);
-        SubscribeLocalEvent<ActorComponent, EntParentChangedMessage>(OnActorParentChanged);
 
         _player.PlayerStatusChanged += OnPlayerStatusChanged;
     }
@@ -194,51 +191,6 @@ public sealed partial class StationSystem : SharedStationSystem
         {
             RaiseNetworkEvent(new StationsUpdatedEvent(GetStationNames()), e.Session);
         }
-
-        if (e.NewStatus == SessionStatus.InGame)
-            UpdatePlayerStationPvs(e.Session);
-    }
-
-    private void OnActorStartup(EntityUid uid, ActorComponent component, ComponentStartup args)
-    {
-        UpdatePlayerStationPvs(component.PlayerSession, uid);
-    }
-
-    private void OnActorParentChanged(EntityUid uid, ActorComponent component, EntParentChangedMessage args)
-    {
-        UpdatePlayerStationPvs(component.PlayerSession, uid);
-    }
-
-    private void UpdatePlayerStationPvs(ICommonSession session, EntityUid? player = null)
-    {
-        if (session.Status != SessionStatus.InGame)
-            return;
-
-        player ??= session.AttachedEntity;
-        EntityUid? station = null;
-
-        if (player != null && _xformQuery.TryGetComponent(player, out var xform))
-        {
-            if (xform.GridUid != null && TryComp<StationMemberComponent>(xform.GridUid, out var member))
-                station = member.Station;
-        }
-
-        var query = EntityQueryEnumerator<StationDataComponent>();
-        while (query.MoveNext(out var uid, out _))
-        {
-            if (uid == station)
-                _pvsOverride.AddSessionOverride(uid, session);
-            else
-                _pvsOverride.RemoveSessionOverride(uid, session);
-        }
-    }
-
-    private void UpdateAllPlayerStationPvs()
-    {
-        foreach (var session in _player.Sessions)
-        {
-            UpdatePlayerStationPvs(session);
-        }
     }
 
     private void UpdateTrackersOnGrid(EntityUid gridId, EntityUid? station)
@@ -262,7 +214,7 @@ public sealed partial class StationSystem : SharedStationSystem
         var metaData = MetaData(uid);
         RaiseLocalEvent(new StationInitializedEvent(uid));
         _sawmill.Info($"Set up station {metaData.EntityName} ({uid}).");
-        UpdateAllPlayerStationPvs();
+        _pvsSession.RefreshAllPlayers();
     }
 
     private void OnStationDeleted(EntityUid uid, StationDataComponent component, ComponentShutdown args)

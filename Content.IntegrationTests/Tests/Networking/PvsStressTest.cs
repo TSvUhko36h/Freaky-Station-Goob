@@ -14,7 +14,7 @@ namespace Content.IntegrationTests.Tests.Networking;
 [TestFixture]
 public sealed class PvsStressTest
 {
-    private static readonly EntProtoId TestEnt = "MarkerPaper";
+    private static readonly EntProtoId TestEnt = "Crowbar";
 
     [Test]
     public async Task SpawnAndMovePvsStressTest()
@@ -22,7 +22,6 @@ public sealed class PvsStressTest
         await using var pair = await PoolManager.GetServerClient(new PoolSettings
         {
             Connected = true,
-            DummyTicker = false,
             EnableNetPvs = true,
             Destructive = true,
         });
@@ -40,7 +39,8 @@ public sealed class PvsStressTest
             server.PlayerMan.SetAttachedEntity(pair.Player, player, true);
         });
 
-        await pair.RunTicksSync(10);
+        // Let PVS catch up after attaching the local player.
+        await pair.RunTicksSync(30);
 
         var initialClientCount = client.EntMan.EntityCount;
 
@@ -53,7 +53,7 @@ public sealed class PvsStressTest
             }
         });
 
-        await pair.RunTicksSync(20);
+        await pair.RunTicksSync(30);
         Assert.That(client.EntMan.EntityCount, Is.GreaterThan(initialClientCount));
 
         await server.WaitPost(() =>

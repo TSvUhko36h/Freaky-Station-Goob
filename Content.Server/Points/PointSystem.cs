@@ -11,13 +11,11 @@
 
 using System.Linq;
 using Content.Goobstation.Maths.FixedPoint;
+using Content.Server._Mini.Networking;
 using Content.Shared.Points;
 using JetBrains.Annotations;
 using Robust.Server.GameStates;
-using Robust.Shared.Map;
 using Robust.Server.Player;
-using Robust.Shared.Enums;
-using Robust.Shared.GameObjects;
 using Robust.Shared.Player;
 using Robust.Shared.Utility;
 
@@ -28,6 +26,7 @@ public sealed class PointSystem : SharedPointSystem
 {
     [Dependency] private readonly IPlayerManager _player = default!;
     [Dependency] private readonly PvsOverrideSystem _pvsOverride = default!;
+    [Dependency] private readonly PvsSessionOverrideSystem _pvsSession = default!;
 
     /// <inheritdoc/>
     public override void Initialize()
@@ -36,37 +35,11 @@ public sealed class PointSystem : SharedPointSystem
 
         SubscribeLocalEvent<PointManagerComponent, ComponentStartup>(OnStartup);
         SubscribeLocalEvent<PointManagerComponent, ComponentShutdown>(OnShutdown);
-        SubscribeLocalEvent<ActorComponent, ComponentStartup>(OnActorStartup);
-        SubscribeLocalEvent<ActorComponent, EntParentChangedMessage>(OnActorParentChanged);
-
-        _player.PlayerStatusChanged += OnPlayerStatusChanged;
-    }
-
-    public override void Shutdown()
-    {
-        base.Shutdown();
-        _player.PlayerStatusChanged -= OnPlayerStatusChanged;
-    }
-
-    private void OnPlayerStatusChanged(object? sender, SessionStatusEventArgs e)
-    {
-        if (e.NewStatus == SessionStatus.InGame)
-            UpdatePointManagerOverrides(e.Session);
-    }
-
-    private void OnActorStartup(EntityUid uid, ActorComponent component, ComponentStartup args)
-    {
-        UpdatePointManagerOverrides(component.PlayerSession, uid);
-    }
-
-    private void OnActorParentChanged(EntityUid uid, ActorComponent component, EntParentChangedMessage args)
-    {
-        UpdatePointManagerOverrides(component.PlayerSession, uid);
     }
 
     private void OnStartup(EntityUid uid, PointManagerComponent component, ComponentStartup args)
     {
-        UpdatePointManagerOverrides();
+        _pvsSession.RefreshPointManagerOverrides();
     }
 
     private void OnShutdown(EntityUid uid, PointManagerComponent component, ComponentShutdown args)
@@ -74,32 +47,6 @@ public sealed class PointSystem : SharedPointSystem
         foreach (var session in _player.Sessions)
         {
             _pvsOverride.RemoveSessionOverride(uid, session);
-        }
-    }
-
-    private void UpdatePointManagerOverrides(ICommonSession? session = null, EntityUid? player = null)
-    {
-        var sessions = session != null ? new[] { session } : _player.Sessions;
-
-        foreach (var targetSession in sessions)
-        {
-            if (targetSession.Status != SessionStatus.InGame)
-                continue;
-
-            var attached = player ?? targetSession.AttachedEntity;
-            MapId? playerMap = null;
-
-            if (attached != null && TryComp<TransformComponent>(attached, out var xform))
-                playerMap = xform.MapID;
-
-            var query = EntityQueryEnumerator<PointManagerComponent, TransformComponent>();
-            while (query.MoveNext(out var uid, out _, out var managerXform))
-            {
-                if (playerMap.HasValue && managerXform.MapID == playerMap.Value)
-                    _pvsOverride.AddSessionOverride(uid, targetSession);
-                else
-                    _pvsOverride.RemoveSessionOverride(uid, targetSession);
-            }
         }
     }
 
