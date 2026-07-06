@@ -66,6 +66,7 @@ public sealed class TypanStationWarRuleSystem : GameRuleSystem<TypanStationWarRu
     [Dependency] private readonly TypanWarBalanceSystem _warBalance = default!;
     [Dependency] private readonly TypanStationGoalObjectiveSystem _typanGoals = default!;
     [Dependency] private readonly NtStationGoalObjectiveSystem _ntGoals = default!;
+    [Dependency] private readonly TypanStationWarMapEnsureSystem _mapEnsure = default!;
     [Dependency] private readonly StationSystem _station = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly IPlayerManager _playerManager = default!;
@@ -215,11 +216,26 @@ public sealed class TypanStationWarRuleSystem : GameRuleSystem<TypanStationWarRu
 
         if (!TryResolveStations(component, out var ntStation, out var typanStation))
         {
-            Log.Warning("Typan station war cancelled: could not resolve NT and Typan stations (is Typan map loaded?)");
-            ForceEndSelf(uid, gameRule);
+            _mapEnsure.TryEnsureSupplementalMaps();
+
+            if (TryResolveStations(component, out ntStation, out typanStation))
+            {
+                BeginWarMode(uid, component, ntStation, typanStation);
+                return;
+            }
+
+            component.AwaitingStations = true;
+            component.AwaitingStationsAccumulator = 0f;
+            Log.Warning("Typan station war: waiting for NT and Typan stations to finish loading...");
             return;
         }
 
+        BeginWarMode(uid, component, ntStation, typanStation);
+    }
+
+    private void BeginWarMode(EntityUid uid, TypanStationWarRuleComponent component, EntityUid ntStation, EntityUid typanStation)
+    {
+        component.AwaitingStations = false;
         component.NtStation = ntStation;
         component.TypanStation = typanStation;
         component.Phase = TypanWarPhase.Pending;
@@ -255,6 +271,23 @@ public sealed class TypanStationWarRuleSystem : GameRuleSystem<TypanStationWarRu
         {
             if (!GameTicker.IsGameRuleActive(uid, gameRule))
                 continue;
+
+            if (component.AwaitingStations)
+            {
+                component.AwaitingStationsAccumulator += frameTime;
+
+                if (TryResolveStations(component, out var ntStation, out var typanStation))
+                {
+                    BeginWarMode(uid, component, ntStation, typanStation);
+                }
+                else if (component.AwaitingStationsAccumulator >= 30f)
+                {
+                    Log.Error("Typan station war cancelled: NT and Typan stations never appeared after map load.");
+                    ForceEndSelf(uid, gameRule);
+                }
+
+                continue;
+            }
 
             if (component.Phase == TypanWarPhase.Ended || component.Phase == TypanWarPhase.Inactive)
                 continue;

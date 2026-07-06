@@ -85,6 +85,7 @@
 
 using Content.Server._CorvaxGoob.Skills;
 using Content.Server._TT.StationHandleJob;
+using Content.Server._Mini.TypanWar;
 using SkillTypes = Content.Shared._CorvaxGoob.Skills.Skills;
 using Content.Server.Administration.Managers;
 using Content.Server.Administration.Systems;
@@ -126,6 +127,7 @@ namespace Content.Server.GameTicking
         [Dependency] private readonly AdminSystem _admin = default!;
         [Dependency] private readonly SkillsSystem _skills = default!; // CorvaxGoob-Skills
         [Dependency] private readonly TTStationHandleJobSystem _ttStationHandleJob = default!;
+        [Dependency] private readonly TypanWarBalanceSystem _typanWarBalance = default!;
         public static readonly EntProtoId ObserverPrototypeName = "MobObserver";
         public static readonly EntProtoId AdminObserverPrototypeName = "AdminObserver";
 
@@ -183,11 +185,15 @@ namespace Content.Server.GameTicking
             _ttStationHandleJob.EnsureHandledStationsIncluded(spawnableStations);
             var assignedJobs = _stationJobs.AssignJobs(profiles, spawnableStations);
 
+            _ttStationHandleJob.AssignRoundstartHandledJobs(ref assignedJobs, profiles, playerNetIds);
+
             _ttStationHandleJob.FixJobStationAssignments(ref assignedJobs);
 
             _stationJobs.AssignOverflowJobs(ref assignedJobs, playerNetIds, profiles, spawnableStations);
 
             _ttStationHandleJob.FixJobStationAssignments(ref assignedJobs);
+
+            _typanWarBalance.BalanceRoundstartAssignments(ref assignedJobs);
 
             // Calculate extended access for stations.
             var stationJobCounts = spawnableStations.ToDictionary(e => e, _ => 0);
