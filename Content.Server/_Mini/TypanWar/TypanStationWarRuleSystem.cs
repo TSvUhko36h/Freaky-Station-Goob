@@ -66,6 +66,7 @@ public sealed class TypanStationWarRuleSystem : GameRuleSystem<TypanStationWarRu
     [Dependency] private readonly TypanWarBalanceSystem _warBalance = default!;
     [Dependency] private readonly TypanStationGoalObjectiveSystem _typanGoals = default!;
     [Dependency] private readonly NtStationGoalObjectiveSystem _ntGoals = default!;
+    [Dependency] private readonly TypanStationWarMapEnsureSystem _mapEnsure = default!;
     [Dependency] private readonly StationSystem _station = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly IPlayerManager _playerManager = default!;
@@ -215,6 +216,14 @@ public sealed class TypanStationWarRuleSystem : GameRuleSystem<TypanStationWarRu
 
         if (!TryResolveStations(component, out var ntStation, out var typanStation))
         {
+            _mapEnsure.TryEnsureSupplementalMaps();
+
+            if (TryResolveStations(component, out ntStation, out typanStation))
+            {
+                BeginWarMode(uid, component, ntStation, typanStation);
+                return;
+            }
+
             component.AwaitingStations = true;
             component.AwaitingStationsAccumulator = 0f;
             Log.Warning("Typan station war: waiting for NT and Typan stations to finish loading...");
