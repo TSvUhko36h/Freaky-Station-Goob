@@ -903,10 +903,14 @@ public sealed class TypanStationWarRuleSystem : GameRuleSystem<TypanStationWarRu
 
     private void OnGameRuleAdded(ref GameRuleAddedEvent args)
     {
-        if (!IsTypanWarBlocking())
+        // Only block midround additions — roundstart rules are added in the lobby before war goes active.
+        if (GameTicker.RunLevel != GameRunLevel.InRound || !IsTypanWarBlocking())
             return;
 
         if (HasComp<TypanStationWarRuleComponent>(args.RuleEntity))
+            return;
+
+        if (HasComp<AdminForcedGameRuleComponent>(args.RuleEntity))
             return;
 
         if (!TryComp<GameRuleComponent>(args.RuleEntity, out var rule))
