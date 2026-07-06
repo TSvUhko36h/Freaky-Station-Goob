@@ -185,6 +185,8 @@ namespace Content.Server.GameTicking
             _ttStationHandleJob.EnsureHandledStationsIncluded(spawnableStations);
             var assignedJobs = _stationJobs.AssignJobs(profiles, spawnableStations);
 
+            _ttStationHandleJob.AssignRoundstartHandledJobs(ref assignedJobs, profiles, playerNetIds);
+
             _ttStationHandleJob.FixJobStationAssignments(ref assignedJobs);
 
             _stationJobs.AssignOverflowJobs(ref assignedJobs, playerNetIds, profiles, spawnableStations);

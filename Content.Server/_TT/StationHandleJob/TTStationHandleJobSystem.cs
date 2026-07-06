@@ -1,9 +1,12 @@
+using Content.Server.Administration.Managers;
 using Content.Server.GameTicking;
 using Content.Server.Shuttles.Systems;
 using Content.Server.Spawners.Components;
 using Content.Server.Spawners.EntitySystems;
 using Content.Server.Station.Components;
+using Content.Server.Station.Events;
 using Content.Server.Station.Systems;
+using Content.Shared.Preferences;
 using Content.Shared.Roles;
 using Content.Shared.Roles.Jobs;
 using Content.Shared.Station.Components;
@@ -17,8 +20,10 @@ namespace Content.Server._TT.StationHandleJob;
 
 public sealed class TTStationHandleJobSystem : EntitySystem
 {
+    [Dependency] private readonly IBanManager _banManager = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly GameTicker _gameTicker = default!;
+    [Dependency] private readonly StationJobsSystem _stationJobs = default!;
     [Dependency] private readonly StationSpawningSystem _stationSpawning = default!;
     [Dependency] private readonly StationSystem _station = default!;
     [Dependency] private readonly SharedJobSystem _jobs = default!;
@@ -91,6 +96,44 @@ public sealed class TTStationHandleJobSystem : EntitySystem
 
             if (!stations.Contains(station))
                 stations.Add(station);
+        }
+    }
+
+    /// <summary>
+    /// Assigns Typan (and other handled) jobs that the stock roundstart allocator skips when
+    /// multiple stations split the player budget by slot count.
+    /// </summary>
+    public void AssignRoundstartHandledJobs(
+        ref Dictionary<NetUserId, (ProtoId<JobPrototype>?, EntityUid)> assignedJobs,
+        IReadOnlyDictionary<NetUserId, HumanoidCharacterProfile> profiles,
+        IEnumerable<NetUserId> readyPlayers)
+    {
+        EnsureCacheBuilt();
+
+        var usedSlots = new Dictionary<(EntityUid Station, ProtoId<JobPrototype> Job), int>();
+        foreach (var (_, (job, station)) in assignedJobs)
+        {
+            if (job is not { } assignedJob || station == EntityUid.Invalid)
+                continue;
+
+            var key = (station, assignedJob);
+            usedSlots[key] = usedSlots.GetValueOrDefault(key) + 1;
+        }
+
+        foreach (var userId in readyPlayers)
+        {
+            if (assignedJobs.ContainsKey(userId))
+                continue;
+
+            if (!profiles.TryGetValue(userId, out var profile))
+                continue;
+
+            if (SelectRoundstartHandledJob(userId, profile, usedSlots) is not { } pick)
+                continue;
+
+            assignedJobs[userId] = (pick.Job, pick.Station);
+            var key = (pick.Station, pick.Job);
+            usedSlots[key] = usedSlots.GetValueOrDefault(key) + 1;
         }
     }
 
@@ -247,6 +290,80 @@ public sealed class TTStationHandleJobSystem : EntitySystem
         }
 
         return false;
+    }
+
+    private readonly record struct HandledJobPick(ProtoId<JobPrototype> Job, EntityUid Station);
+
+    private HandledJobPick? SelectRoundstartHandledJob(
+        NetUserId userId,
+        HumanoidCharacterProfile profile,
+        Dictionary<(EntityUid Station, ProtoId<JobPrototype> Job), int> usedSlots)
+    {
+        var roleBans = _banManager.GetJobBans(userId);
+        var candidates = new List<ProtoId<JobPrototype>>();
+
+        foreach (var (jobIdStr, priority) in profile.JobPriorities)
+        {
+            if (priority == JobPriority.Never)
+                continue;
+
+            var jobId = new ProtoId<JobPrototype>(jobIdStr);
+            if (!IsHandledJob(jobId))
+                continue;
+
+            candidates.Add(jobId);
+        }
+
+        if (candidates.Count == 0)
+            return null;
+
+        var ev = new StationJobsGetCandidatesEvent(userId, candidates);
+        RaiseLocalEvent(ref ev);
+
+        HandledJobPick? best = null;
+        var bestPriority = JobPriority.Never;
+
+        foreach (var jobId in ev.Jobs)
+        {
+            if (roleBans != null && roleBans.Contains(jobId))
+                continue;
+
+            if (!profile.JobPriorities.TryGetValue(jobId, out var priority) || priority == JobPriority.Never)
+                continue;
+
+            if (priority <= bestPriority)
+                continue;
+
+            if (!TryGetHandledStation(jobId, out var station))
+                continue;
+
+            if (!HasOpenRoundstartSlot(station, jobId, usedSlots))
+                continue;
+
+            best = new HandledJobPick(jobId, station);
+            bestPriority = priority;
+        }
+
+        return best;
+    }
+
+    private bool HasOpenRoundstartSlot(
+        EntityUid station,
+        ProtoId<JobPrototype> jobId,
+        Dictionary<(EntityUid Station, ProtoId<JobPrototype> Job), int> usedSlots)
+    {
+        if (!TryComp<StationJobsComponent>(station, out var stationJobs))
+            return false;
+
+        var slots = _stationJobs.GetRoundStartJobs(station, stationJobs);
+        if (!slots.TryGetValue(jobId, out var count))
+            return false;
+
+        if (count == null)
+            return true;
+
+        var used = usedSlots.GetValueOrDefault((station, jobId));
+        return used < count;
     }
 
     private EntityUid? FindDefaultStation(
