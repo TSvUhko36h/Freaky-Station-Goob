@@ -44,23 +44,24 @@ namespace Content.IntegrationTests.Tests.GameRules
             var sGameTiming = server.ResolveDependency<IGameTiming>();
 
             MaxTimeRestartRuleComponent maxTime = null;
-            await server.WaitPost(() =>
-            {
-                sGameTicker.StartGameRule("MaxTimeRestart", out var ruleEntity);
-                Assert.That(entityManager.TryGetComponent<MaxTimeRestartRuleComponent>(ruleEntity, out maxTime));
-            });
-
-            Assert.That(server.EntMan.Count<GameRuleComponent>(), Is.EqualTo(1));
-            Assert.That(server.EntMan.Count<ActiveGameRuleComponent>(), Is.EqualTo(1));
 
             await server.WaitAssertion(() =>
             {
                 Assert.That(sGameTicker.RunLevel, Is.EqualTo(GameRunLevel.PreRoundLobby));
-                maxTime.RoundMaxTime = TimeSpan.FromSeconds(3);
                 sGameTicker.StartRound();
             });
 
-            // MisandryBox/JobObjectiveRule - either this or fucking every preset.yml.
+            // StartRound clears manually added rules. Goobstation auto-starts JobObjectiveRule.
+            Assert.That(server.EntMan.Count<GameRuleComponent>(), Is.EqualTo(1));
+            Assert.That(server.EntMan.Count<ActiveGameRuleComponent>(), Is.EqualTo(1));
+
+            await server.WaitPost(() =>
+            {
+                sGameTicker.StartGameRule("MaxTimeRestart", out var ruleEntity);
+                Assert.That(entityManager.TryGetComponent<MaxTimeRestartRuleComponent>(ruleEntity, out maxTime));
+                maxTime.RoundMaxTime = TimeSpan.FromSeconds(3);
+            });
+
             Assert.That(server.EntMan.Count<GameRuleComponent>(), Is.EqualTo(2));
             Assert.That(server.EntMan.Count<ActiveGameRuleComponent>(), Is.EqualTo(2));
 

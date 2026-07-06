@@ -60,10 +60,6 @@ typan-war-manifest =
 
 
 
-typan-war-ff-action-name = Защита союзников
-
-typan-war-ff-action-desc = Не поражать союзников из дальнобойного оружия.
-
 typan-war-ff-enabled = Защита союзников включена — вы не задеваете своих.
 
 typan-war-ff-disabled = Защита союзников выключена.
