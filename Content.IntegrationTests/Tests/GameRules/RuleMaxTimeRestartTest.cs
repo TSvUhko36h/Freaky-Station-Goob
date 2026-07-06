@@ -53,9 +53,10 @@ namespace Content.IntegrationTests.Tests.GameRules
                 sGameTicker.StartRound();
             });
 
-            // StartRound clears manually added rules. Goobstation auto-starts JobObjectiveRule.
-            Assert.That(server.EntMan.Count<GameRuleComponent>(), Is.EqualTo(1));
-            Assert.That(server.EntMan.Count<ActiveGameRuleComponent>(), Is.EqualTo(1));
+            await server.WaitPost(() => sGameTicker.ClearGameRules());
+
+            Assert.That(server.EntMan.Count<GameRuleComponent>(), Is.Zero);
+            Assert.That(server.EntMan.Count<ActiveGameRuleComponent>(), Is.Zero);
 
             await server.WaitPost(() =>
             {
@@ -65,8 +66,8 @@ namespace Content.IntegrationTests.Tests.GameRules
                 maxTimeRestart.RestartTimer(maxTime);
             });
 
-            Assert.That(server.EntMan.Count<GameRuleComponent>(), Is.EqualTo(2));
-            Assert.That(server.EntMan.Count<ActiveGameRuleComponent>(), Is.EqualTo(2));
+            Assert.That(server.EntMan.Count<GameRuleComponent>(), Is.EqualTo(1));
+            Assert.That(server.EntMan.Count<ActiveGameRuleComponent>(), Is.EqualTo(1));
 
             await server.WaitAssertion(() =>
             {

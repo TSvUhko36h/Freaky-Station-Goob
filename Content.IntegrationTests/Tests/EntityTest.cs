@@ -271,6 +271,7 @@ namespace Content.IntegrationTests.Tests
             await using var pair = await PoolManager.GetServerClient(settings);
             var server = pair.Server;
             var client = pair.Client;
+            pair.ClientLogHandler.IgnoredSawmills.Add("state");
             var ticker = server.System<GameTicker>();
 
             await server.WaitPost(() =>
@@ -346,6 +347,9 @@ namespace Content.IntegrationTests.Tests
                     {
                         foreach (var ent in spawned)
                         {
+                            if (!sEntMan.EntityExists(ent))
+                                continue;
+
                             foreach (var (_, component) in sEntMan.GetNetComponents(ent))
                             {
                                 sEntMan.Dirty(ent, component);
@@ -457,6 +461,7 @@ namespace Content.IntegrationTests.Tests
             var mapSys = pair.Server.System<SharedMapSystem>();
             var server = pair.Server;
             var client = pair.Client;
+            pair.ClientLogHandler.IgnoredSawmills.Add("state");
             var ticker = server.System<GameTicker>();
 
             await server.WaitPost(() =>
