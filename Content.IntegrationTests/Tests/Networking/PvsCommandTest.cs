@@ -18,7 +18,7 @@ public sealed class PvsCommandTest
     [Test]
     public async Task TestPvsCommands()
     {
-        await using var pair = await PoolManager.GetServerClient(new PoolSettings { Connected = true, DummyTicker = false });
+        await using var pair = await PoolManager.GetServerClient(new PoolSettings { Connected = true, DummyTicker = false, EnableNetPvs = true });
         var (server, client) = pair;
         await pair.RunTicksSync(5);
 

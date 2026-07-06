@@ -15,6 +15,10 @@ using Content.Shared.DeviceLinking;
 using Content.Shared.Lathe;
 using Content.Shared.Materials;
 using Robust.Server.GameStates;
+using Robust.Server.Player;
+using Robust.Shared.Enums;
+using Robust.Shared.GameObjects;
+using Robust.Shared.Player;
 using Timer = Robust.Shared.Timing.Timer;
 
 namespace Content.Goobstation.Server.Silo;
@@ -23,6 +27,7 @@ public sealed class SiloSystem : SharedSiloSystem
 {
     [Dependency] private readonly LatheSystem _lathe = default!;
     [Dependency] private readonly PvsOverrideSystem _pvs = default!;
+    [Dependency] private readonly IPlayerManager _player = default!;
 
     public override void Initialize()
     {
@@ -32,16 +37,71 @@ public sealed class SiloSystem : SharedSiloSystem
         SubscribeLocalEvent<SiloComponent, MaterialAmountChangedEvent>(OnMaterialAmountChanged);
         SubscribeLocalEvent<SiloComponent, ComponentStartup>(OnStartup);
         SubscribeLocalEvent<SiloComponent, ComponentShutdown>(OnShutdown);
+        SubscribeLocalEvent<ActorComponent, ComponentStartup>(OnActorStartup);
+        SubscribeLocalEvent<ActorComponent, EntParentChangedMessage>(OnActorParentChanged);
+
+        _player.PlayerStatusChanged += OnPlayerStatusChanged;
+    }
+
+    public override void Shutdown()
+    {
+        base.Shutdown();
+        _player.PlayerStatusChanged -= OnPlayerStatusChanged;
+    }
+
+    private void OnPlayerStatusChanged(object? sender, SessionStatusEventArgs e)
+    {
+        if (e.NewStatus == SessionStatus.InGame)
+            UpdateSiloOverrides(e.Session);
+    }
+
+    private void OnActorStartup(EntityUid uid, ActorComponent component, ComponentStartup args)
+    {
+        UpdateSiloOverrides(component.PlayerSession, uid);
+    }
+
+    private void OnActorParentChanged(EntityUid uid, ActorComponent component, EntParentChangedMessage args)
+    {
+        UpdateSiloOverrides(component.PlayerSession, uid);
     }
 
     private void OnStartup(Entity<SiloComponent> ent, ref ComponentStartup args)
     {
-        _pvs.AddGlobalOverride(ent);
+        UpdateSiloOverrides();
     }
 
     private void OnShutdown(Entity<SiloComponent> ent, ref ComponentShutdown args)
     {
-        _pvs.RemoveGlobalOverride(ent);
+        foreach (var session in _player.Sessions)
+        {
+            _pvs.RemoveSessionOverride(ent, session);
+        }
+    }
+
+    private void UpdateSiloOverrides(ICommonSession? session = null, EntityUid? player = null)
+    {
+        var sessions = session != null ? new[] { session } : _player.Sessions;
+
+        foreach (var targetSession in sessions)
+        {
+            if (targetSession.Status != SessionStatus.InGame)
+                continue;
+
+            var attached = player ?? targetSession.AttachedEntity;
+            EntityUid? playerGrid = null;
+
+            if (attached != null && TryComp<TransformComponent>(attached, out var xform))
+                playerGrid = xform.GridUid;
+
+            var query = EntityQueryEnumerator<SiloComponent, TransformComponent>();
+            while (query.MoveNext(out var siloUid, out _, out var siloXform))
+            {
+                if (playerGrid != null && siloXform.GridUid == playerGrid)
+                    _pvs.AddSessionOverride(siloUid, targetSession);
+                else
+                    _pvs.RemoveSessionOverride(siloUid, targetSession);
+            }
+        }
     }
 
     private void OnMaterialAmountChanged(Entity<SiloComponent> ent, ref MaterialAmountChangedEvent args)

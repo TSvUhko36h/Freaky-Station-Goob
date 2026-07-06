@@ -75,6 +75,9 @@ public static partial class PoolManager
 
             if (cfg.IsCVarRegistered(CVars.NetInterp.Name))
                 cfg.SetCVar(CVars.NetInterp, !settings.DisableInterpolate);
+
+            if (settings.EnableNetPvs && cfg.IsCVarRegistered(CVars.NetPVS.Name))
+                cfg.SetCVar(CVars.NetPVS, true);
         });
     }
 

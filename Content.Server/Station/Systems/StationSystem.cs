@@ -111,6 +111,7 @@ using Robust.Server.GameStates;
 using Robust.Server.Player;
 using Robust.Shared.Collections;
 using Robust.Shared.Enums;
+using Robust.Shared.GameObjects;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Player;
@@ -161,6 +162,9 @@ public sealed partial class StationSystem : SharedStationSystem
         SubscribeLocalEvent<StationGridAddedEvent>(OnStationGridAdded);
         SubscribeLocalEvent<StationGridRemovedEvent>(OnStationGridRemoved);
 
+        SubscribeLocalEvent<ActorComponent, ComponentStartup>(OnActorStartup);
+        SubscribeLocalEvent<ActorComponent, EntParentChangedMessage>(OnActorParentChanged);
+
         _player.PlayerStatusChanged += OnPlayerStatusChanged;
     }
 
@@ -190,6 +194,51 @@ public sealed partial class StationSystem : SharedStationSystem
         {
             RaiseNetworkEvent(new StationsUpdatedEvent(GetStationNames()), e.Session);
         }
+
+        if (e.NewStatus == SessionStatus.InGame)
+            UpdatePlayerStationPvs(e.Session);
+    }
+
+    private void OnActorStartup(EntityUid uid, ActorComponent component, ComponentStartup args)
+    {
+        UpdatePlayerStationPvs(component.PlayerSession, uid);
+    }
+
+    private void OnActorParentChanged(EntityUid uid, ActorComponent component, EntParentChangedMessage args)
+    {
+        UpdatePlayerStationPvs(component.PlayerSession, uid);
+    }
+
+    private void UpdatePlayerStationPvs(ICommonSession session, EntityUid? player = null)
+    {
+        if (session.Status != SessionStatus.InGame)
+            return;
+
+        player ??= session.AttachedEntity;
+        EntityUid? station = null;
+
+        if (player != null && _xformQuery.TryGetComponent(player, out var xform))
+        {
+            if (xform.GridUid != null && TryComp<StationMemberComponent>(xform.GridUid, out var member))
+                station = member.Station;
+        }
+
+        var query = EntityQueryEnumerator<StationDataComponent>();
+        while (query.MoveNext(out var uid, out _))
+        {
+            if (uid == station)
+                _pvsOverride.AddSessionOverride(uid, session);
+            else
+                _pvsOverride.RemoveSessionOverride(uid, session);
+        }
+    }
+
+    private void UpdateAllPlayerStationPvs()
+    {
+        foreach (var session in _player.Sessions)
+        {
+            UpdatePlayerStationPvs(session);
+        }
     }
 
     private void UpdateTrackersOnGrid(EntityUid gridId, EntityUid? station)
@@ -213,7 +262,7 @@ public sealed partial class StationSystem : SharedStationSystem
         var metaData = MetaData(uid);
         RaiseLocalEvent(new StationInitializedEvent(uid));
         _sawmill.Info($"Set up station {metaData.EntityName} ({uid}).");
-        _pvsOverride.AddGlobalOverride(uid);
+        UpdateAllPlayerStationPvs();
     }
 
     private void OnStationDeleted(EntityUid uid, StationDataComponent component, ComponentShutdown args)
