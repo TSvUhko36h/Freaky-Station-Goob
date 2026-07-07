@@ -89,6 +89,10 @@ public sealed class DailyQuestSystem : EntitySystem
     [Dependency] private readonly StationSystem _station = default!;
 
     private readonly Dictionary<NetUserId, PlayerDailyQuestState> _states = new();
+    /// <summary>
+    /// Round-scoped quest state kept across launcher reconnects within the same round.
+    /// </summary>
+    private readonly Dictionary<NetUserId, DailyQuestRoundTracker> _roundTrackers = new();
 
     private EntityQuery<MindComponent> _mindQuery;
     private EntityQuery<MobStateComponent> _mobQuery;
@@ -405,6 +409,7 @@ public sealed class DailyQuestSystem : EntitySystem
 
         _states[player.UserId] = PlayerDailyQuestState.FromDb(progress, player.UserId.UserId, today);
         DeduplicateSlots(_states[player.UserId]);
+        RestoreRoundTracker(player.UserId, _states[player.UserId]);
         _states[player.UserId].LoadedFromDb = true;
     }
 
@@ -420,7 +425,14 @@ public sealed class DailyQuestSystem : EntitySystem
 
     private void OnPlayerDisconnect(ICommonSession player)
     {
-        Persist(player.UserId);
+        if (_states.TryGetValue(player.UserId, out var state))
+        {
+            FlushPlaytime(state);
+            state.Round.TrackingSince = null;
+            _roundTrackers[player.UserId] = CloneRoundTracker(state.Round);
+            Persist(player.UserId);
+        }
+
         _states.Remove(player.UserId);
     }
 
@@ -441,9 +453,12 @@ public sealed class DailyQuestSystem : EntitySystem
         state.Round.ActiveEntity = uid;
         state.Round.TrackingSince ??= _timing.CurTime;
 
-        var points = _miningPoints.GetPointComp(uid);
-        if (points?.Comp != null)
-            state.Round.MiningPointsBaseline = points.Value.Comp.Points;
+        if (state.Round.MiningPointsBaseline == 0)
+        {
+            var points = _miningPoints.GetPointComp(uid);
+            if (points?.Comp != null)
+                state.Round.MiningPointsBaseline = points.Value.Comp.Points;
+        }
     }
 
     private void OnRoundEnd(RoundEndMessageEvent ev)
@@ -463,6 +478,8 @@ public sealed class DailyQuestSystem : EntitySystem
 
     private void OnRoundRestartCleanup(RoundRestartCleanupEvent _)
     {
+        _roundTrackers.Clear();
+
         foreach (var state in _states.Values)
             state.Round.Reset();
     }
@@ -576,7 +593,11 @@ public sealed class DailyQuestSystem : EntitySystem
         if (!IsHumanPlayer(args.Target))
             return;
 
-        TryIncrement(args.User, DailyQuestType.HealOthers, 1, uniqueKey: args.Target);
+        Guid? uniquePlayerId = null;
+        if (_minds.TryGetMind(args.Target, out _, out var mind) && mind.UserId != null)
+            uniquePlayerId = mind.UserId.Value.UserId;
+
+        TryIncrement(args.User, DailyQuestType.HealOthers, 1, uniquePlayerId);
     }
 
     private void OnPaperStamped(Entity<PaperComponent> ent, ref PaperStampedEvent args)
@@ -865,15 +886,15 @@ public sealed class DailyQuestSystem : EntitySystem
             CompleteSlot(session, slot, proto);
     }
 
-    private void TryIncrement(EntityUid user, DailyQuestType type, int amount = 1, EntityUid? uniqueKey = null)
+    private void TryIncrement(EntityUid user, DailyQuestType type, int amount = 1, Guid? uniquePlayerId = null)
     {
         if (!TryGetSession(user, out var session))
             return;
 
-        TryIncrement(session, type, amount, uniqueKey);
+        TryIncrement(session, type, amount, uniquePlayerId);
     }
 
-    private void TryIncrement(ICommonSession session, DailyQuestType type, int amount = 1, EntityUid? uniqueKey = null)
+    private void TryIncrement(ICommonSession session, DailyQuestType type, int amount = 1, Guid? uniquePlayerId = null)
     {
         var state = EnsureState(session.UserId);
 
@@ -891,15 +912,15 @@ public sealed class DailyQuestSystem : EntitySystem
             if (!JobMatches(session, proto.RequiredJob))
                 continue;
 
-            if (uniqueKey != null)
+            if (uniquePlayerId != null)
             {
                 if (!state.Round.UniqueProgress.TryGetValue(slot.QuestId, out var set))
                 {
-                    set = new HashSet<EntityUid>();
+                    set = new HashSet<Guid>();
                     state.Round.UniqueProgress[slot.QuestId] = set;
                 }
 
-                if (!set.Add(uniqueKey.Value))
+                if (!set.Add(uniquePlayerId.Value))
                     continue;
             }
 
@@ -1032,6 +1053,35 @@ public sealed class DailyQuestSystem : EntitySystem
         state.Round.TrackingSince = _timing.CurTime;
     }
 
+    private void RestoreRoundTracker(NetUserId userId, PlayerDailyQuestState state, bool onlyIfEmpty = false)
+    {
+        if (!_roundTrackers.TryGetValue(userId, out var round))
+            return;
+
+        if (onlyIfEmpty && state.Round.WasActivePlayer)
+            return;
+
+        state.Round = CloneRoundTracker(round);
+        state.Round.TrackingSince = null;
+    }
+
+    private static DailyQuestRoundTracker CloneRoundTracker(DailyQuestRoundTracker source)
+    {
+        return new DailyQuestRoundTracker
+        {
+            WasActivePlayer = source.WasActivePlayer,
+            ActiveEntity = source.ActiveEntity,
+            ActivePlaytime = source.ActivePlaytime,
+            TrackingSince = source.TrackingSince,
+            FailedNoMelee = source.FailedNoMelee,
+            FailedNoDamage = source.FailedNoDamage,
+            MiningPointsBaseline = source.MiningPointsBaseline,
+            UniqueProgress = source.UniqueProgress.ToDictionary(
+                kvp => kvp.Key,
+                kvp => new HashSet<Guid>(kvp.Value)),
+        };
+    }
+
     private PlayerDailyQuestState EnsureState(NetUserId userId)
     {
         if (_states.TryGetValue(userId, out var existing))
@@ -1040,6 +1090,7 @@ public sealed class DailyQuestSystem : EntitySystem
         var today = GetCurrentQuestDate();
         var state = PlayerDailyQuestState.FromDb(null, userId.UserId, today);
         DeduplicateSlots(state);
+        RestoreRoundTracker(userId, state, onlyIfEmpty: true);
         _states[userId] = state;
         return state;
     }
@@ -1120,6 +1171,7 @@ public sealed class DailyQuestSystem : EntitySystem
             state.Slots.Clear();
             state.Round = new DailyQuestRoundTracker();
             state.DailyReplaceUsed = false;
+            _roundTrackers.Remove(session.UserId);
         }
 
         DeduplicateSlots(state);
@@ -1400,7 +1452,7 @@ public sealed class DailyQuestSystem : EntitySystem
         public bool FailedNoMelee;
         public bool FailedNoDamage;
         public uint MiningPointsBaseline;
-        public Dictionary<string, HashSet<EntityUid>> UniqueProgress = new();
+        public Dictionary<string, HashSet<Guid>> UniqueProgress = new();
 
         public void Reset()
         {
