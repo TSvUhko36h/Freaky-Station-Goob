@@ -385,7 +385,7 @@ public sealed class DailyQuestSystem : EntitySystem
             return false;
 
         if (IsTimeBasedQuest(proto))
-            return state.Round.ActivePlaytime <= TimeSpan.Zero;
+            return state.Round.ActivePlaytime <= TimeSpan.Zero && !state.Round.WasActivePlayer;
 
         return slot.Progress <= 0;
     }
@@ -416,6 +416,7 @@ public sealed class DailyQuestSystem : EntitySystem
     private void OnPlayerDataLoaded(ICommonSession player)
     {
         var state = EnsureState(player.UserId);
+        RestoreRoundTracker(player.UserId, state);
         if (ArePreferencesReady(player))
             EnsureDailyAssignmentsIfNeeded(player, state);
 
@@ -429,7 +430,8 @@ public sealed class DailyQuestSystem : EntitySystem
         {
             FlushPlaytime(state);
             state.Round.TrackingSince = null;
-            _roundTrackers[player.UserId] = CloneRoundTracker(state.Round);
+            state.Round.ActiveEntity = null;
+            _roundTrackers[player.UserId] = CloneRoundTracker(state.Round, persistEntityReference: false);
             Persist(player.UserId);
         }
 
@@ -767,7 +769,7 @@ public sealed class DailyQuestSystem : EntitySystem
     {
         if (!TryGetSession(args.Actor, out var session) ||
             !_states.TryGetValue(session.UserId, out var state) ||
-            state.Round.ActiveEntity is not { Valid: true } uid)
+            TryGetQuestTrackingEntity(session, state) is not { } uid)
             return;
 
         var points = _miningPoints.GetPointComp(uid);
@@ -852,7 +854,7 @@ public sealed class DailyQuestSystem : EntitySystem
 
     private void UpdateMiningProgress(ICommonSession session, PlayerDailyQuestState state, DailyQuestSlot slot, DailyQuestPrototype proto)
     {
-        if (state.Round.ActiveEntity is not { Valid: true } uid)
+        if (TryGetQuestTrackingEntity(session, state) is not { } uid)
             return;
 
         var points = _miningPoints.GetPointComp(uid);
@@ -870,7 +872,7 @@ public sealed class DailyQuestSystem : EntitySystem
 
     private void UpdateStationBankProgress(ICommonSession session, PlayerDailyQuestState state, DailyQuestSlot slot, DailyQuestPrototype proto)
     {
-        if (state.Round.ActiveEntity is not { Valid: true } uid)
+        if (TryGetQuestTrackingEntity(session, state) is not { } uid)
             return;
 
         var station = _station.GetOwningStation(uid);
@@ -910,6 +912,9 @@ public sealed class DailyQuestSystem : EntitySystem
                 continue;
 
             if (!JobMatches(session, proto.RequiredJob))
+                continue;
+
+            if (proto.QuestType == DailyQuestType.HealOthers && uniquePlayerId == null)
                 continue;
 
             if (uniquePlayerId != null)
@@ -1061,16 +1066,38 @@ public sealed class DailyQuestSystem : EntitySystem
         if (onlyIfEmpty && state.Round.WasActivePlayer)
             return;
 
-        state.Round = CloneRoundTracker(round);
+        state.Round = CloneRoundTracker(round, persistEntityReference: false);
         state.Round.TrackingSince = null;
     }
 
-    private static DailyQuestRoundTracker CloneRoundTracker(DailyQuestRoundTracker source)
+    private EntityUid? TryGetQuestTrackingEntity(ICommonSession session, PlayerDailyQuestState state)
+    {
+        if (state.Round.ActiveEntity is { Valid: true } active && EntityBelongsToSession(active, session))
+            return active;
+
+        if (session.AttachedEntity is { Valid: true } attached)
+            return attached;
+
+        state.Round.ActiveEntity = null;
+        return null;
+    }
+
+    private bool EntityBelongsToSession(EntityUid uid, ICommonSession session)
+    {
+        if (session.GetMind() is not { } mindId)
+            return false;
+
+        return _minds.TryGetMind(uid, out var entityMindId, out _) && entityMindId == mindId;
+    }
+
+    private static DailyQuestRoundTracker CloneRoundTracker(
+        DailyQuestRoundTracker source,
+        bool persistEntityReference = true)
     {
         return new DailyQuestRoundTracker
         {
             WasActivePlayer = source.WasActivePlayer,
-            ActiveEntity = source.ActiveEntity,
+            ActiveEntity = persistEntityReference ? source.ActiveEntity : null,
             ActivePlaytime = source.ActivePlaytime,
             TrackingSince = source.TrackingSince,
             FailedNoMelee = source.FailedNoMelee,
