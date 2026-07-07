@@ -2,7 +2,7 @@
   id: Typan
   mapName: 'Станция синдиката'
   mapPath: /Maps/typan.yml
-  minPlayers: 10
+  minPlayers: 20
   stations:
     Typan:
       stationProto: StandardTypanStation
