@@ -74,6 +74,11 @@
     - Typan
 
   - type: additionalMap
+    id: FreakyOmega
+    maps:
+    - Typan
+
+  - type: additionalMap
     id: Origin
     maps:
     - Typan
