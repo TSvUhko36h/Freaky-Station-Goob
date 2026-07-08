@@ -144,10 +144,10 @@
     - !type:DepartmentTimeRequirement
       department: Security
       time: 36000 # 10 hrs
-    - !type:SpeciesRequirement # Goob - None Felinid
-      inverted: true
-      species:
-      - Felinid
+    # - !type:SpeciesRequirement # Goob - None Felinid
+    #   inverted: true
+    #   species:
+    #   - Felinid
     - !type:SpeciesRequirement # CorvaxGoob-Species
       inverted: true
       species:
