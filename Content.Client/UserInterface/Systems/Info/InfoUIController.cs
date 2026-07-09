@@ -95,6 +95,7 @@ public sealed class InfoUIController : UIController, IOnStateExited<GameplayStat
         _rulesPopup.OnAcceptPressed += OnAcceptPressed;
         UIManager.WindowRoot.AddChild(_rulesPopup);
         LayoutContainer.SetAnchorPreset(_rulesPopup, LayoutContainer.LayoutPreset.Wide);
+        UIManager.DeferAction(() => _rulesPopup.RulesControl.Refresh());
     }
 
     private void OnQuitPressed()
