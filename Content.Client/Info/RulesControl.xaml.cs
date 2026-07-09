@@ -47,7 +47,7 @@ public sealed partial class RulesControl : BoxContainer, ILinkClickHandler
 
         RulesPanel.PanelOverride = new StyleBoxFlat
         {
-            BackgroundColor = Color.FromHex("#1C1C28"),
+            BackgroundColor = Color.FromHex("#0E0E1444"),
         };
 
         HomeButton.OnPressed += _ => SetGuide();

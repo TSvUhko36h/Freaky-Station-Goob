@@ -1,22 +1,20 @@
-<Document>
-  <ColorBox Color="#3a2a2a" OutlineColor="#5a4a4a" OutlineThickness="2" Margin="1">
+﻿<Document>
+  <ColorBox Color="#281C1C55" OutlineColor="#F8717133" OutlineThickness="1" Margin="2">
     <Box Orientation="Vertical">
       <Box Orientation="Horizontal" HorizontalAlignment="Center">
-        Правило 2: Убийство
+        [color=#F87171][head=2]Правило 2. Убийство и неоправданное нападение[/head][/color]
       </Box>
-      <Box Orientation="Vertical" Margin="10">
+      <Box Orientation="Vertical" Margin="12">
         Убийство требует веского обоснования. Это не действие, которое можно совершать по прихоти.
-        <Box Orientation="Vertical" Margin="10">
-         Если у вас есть сомнения — обращайтесь в АХелп.
 
-         Если вы довели конфликт до точки убийства, но не получили разрешения администратора, окончательное решение остаётся за администрацией.
+        Если у вас есть сомнения, обращайтесь в АХелп. Если вы довели конфликт до точки убийства без разрешения администратора, окончательное решение остаётся за администрацией.
 
-         Специально раздувать конфликт ради убийства — запрещено и будет наказано баном.
+        Специально раздувать конфликт ради убийства запрещено и будет наказано баном.
+
+        - [textlink="2.1. Самооборона" link="DefaultRule21"]
+        - [textlink="2.2. Мелкие конфликты" link="DefaultRule22"]
+        - [textlink="2.3. Массовое убийство" link="DefaultRule23"]
       </Box>
-    - [textlink="2.1 Самооборона" link="DefaultRule21"]
-    - [textlink="2.2 Мелкие конфликты" link="DefaultRule22"]
-    - [textlink="2.3 Массовое убийство" link="DefaultRule23"]
-     </Box>
     </Box>
   </ColorBox>
 </Document>

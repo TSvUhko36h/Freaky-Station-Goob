@@ -1,36 +1,54 @@
-<Document>
-  <ColorBox Color="#3a3a3a" OutlineColor="#5a5a5a" OutlineThickness="2" Margin="1">
+﻿<Document>
+  <ColorBox Color="#1C1C2855" OutlineColor="#DAA52033" OutlineThickness="1" Margin="2">
     <Box Orientation="Vertical">
       <Box Orientation="Horizontal" HorizontalAlignment="Center">
-
         [color=#DAA520][head=2]Мини-станция[/head][/color]
       </Box>
-      <Box Orientation="Vertical" Margin="10">
-      Здесь вас ждут увлекательные смены, живой игровой процесс, робаст, захватывающие механики и множество возможностей для для исследования Космической станции 14. Присоединяйтесь и проводите своё время в удовольствие!
+      <Box Orientation="Vertical" Margin="12">
+        Здесь вас ждут увлекательные смены, живой игровой процесс, робаст, захватывающие механики и множество возможностей для исследования Космической станции 14. Присоединяйтесь и проводите своё время с удовольствием!
       </Box>
     </Box>
   </ColorBox>
 
-  <ColorBox Color="#3a3a3a" OutlineColor="#5a5a5a" OutlineThickness="2" Margin="1">
+  <ColorBox Color="#1C1C2866" OutlineColor="#E2E8F022" OutlineThickness="1" Margin="2">
     <Box Orientation="Vertical">
-     <Box Orientation="Horizontal" HorizontalAlignment="Center">
+      <Box Orientation="Horizontal" HorizontalAlignment="Center">
+        [color=#E2E8F0][head=2]Правила сервера[/head][/color]
+      </Box>
+      <Box Orientation="Vertical" Margin="12">
+        Правила созданы для комфортной и приятной игры, а также для наказания тех, кто нарушает атмосферу сервера. Мы держим курс на весёлые раунды с кучей возможностей и максимальной свободой действий в пределах РП и механик игры.
 
-      [head=2]Правила сервера Мини-станция[/head]
+        Если вы уже играли на РП-проектах, вряд ли найдёте здесь что-то принципиально новое. Тем не менее, мы настоятельно рекомендуем ознакомиться с правилами всем без исключения. [color=#F87171]Незнание правил не освобождает от ответственности.[/color]
+
+        Вопросы по правилам можно задать в Discord сервера или через АХелп прямо во время игры. Незнакомые термины смотрите в [textlink="словаре терминов" link="Glossary"].
       </Box>
-      <Box Orientation="Vertical" Margin="10">
-       [color=red]Незнание правил не освобождает от ответственности![/color]                                                                    
+      <Box Orientation="Vertical" Margin="8 4 12 12">
+        - [textlink="0. Нулевое правило" link="DefaultRule0"]
+        - [textlink="1. Гриф" link="DefaultRule1"]
+        - [textlink="2. Убийство и неоправданное нападение" link="DefaultRule2"]
+        - [textlink="3. Нарушение игровой атмосферы" link="DefaultRule3"]
+        - [textlink="4. Логика персонажей" link="DefaultRule4"]
+        - [textlink="5. Ответственная игра за антагониста" link="DefaultRule5"]
+        - [textlink="6. Самоантагонизм" link="DefaultRule6"]
+        - [textlink="7. Валидхант" link="DefaultRule7"]
+        - [textlink="8. Эротический контент" link="DefaultRule8"]
+        - [textlink="9. Нечестная игра" link="DefaultRule9"]
+        - [textlink="10. Злоупотребление АХелпом / спам" link="DefaultRule10"]
       </Box>
-      - [textlink="0. Нулевое правило" link="DefaultRule0"]                                                              
-      - [textlink="1. Гриф" link="DefaultRule1"]
-      - [textlink="2. Убийство и неоправданное нападение" link="DefaultRule2"]
-      - [textlink="3. Нарушение игровой атмосферы" link="DefaultRule3"]
-      - [textlink="4. Логика персонажей" link="DefaultRule4"]
-      - [textlink="5. Ответственная игра за антагониста" link="DefaultRule5"]
-      - [textlink="6. Самоантагонизм" link="DefaultRule6"]
-      - [textlink="7. Валидхант" link="DefaultRule7"]
-      - [textlink="8. Эротический контент" link="DefaultRule8"]
-      - [textlink="9. Нечестная игра" link="DefaultRule9"]
-      - [textlink="10. Злоупотребление АХелпом / Cпам" link="DefaultRule10"]
+    </Box>
+  </ColorBox>
+
+  <ColorBox Color="#2A1F0C55" OutlineColor="#DAA52044" OutlineThickness="1" Margin="2">
+    <Box Orientation="Vertical">
+      <Box Orientation="Horizontal" HorizontalAlignment="Center">
+        [color=#DAA520][head=2]Правила Тайпана[/head][/color]
+      </Box>
+      <Box Orientation="Vertical" Margin="12">
+        Отдельный свод правил для взаимодействия станции NanoTrasen и подразделения «Тайпан». Обязательны для всех, кто играет на стороне Тайпана или взаимодействует с ним в раунде.
+      </Box>
+      <Box Orientation="Vertical" Margin="8 4 12 12">
+        - [textlink="Правила взаимодействия станции и Тайпана" link="DefaultTypanRuleset"]
+      </Box>
     </Box>
   </ColorBox>
 </Document>

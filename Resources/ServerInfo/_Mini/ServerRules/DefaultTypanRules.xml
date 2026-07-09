@@ -1,0 +1,29 @@
+﻿<Document>
+  <ColorBox Color="#2A1F0C55" OutlineColor="#DAA52044" OutlineThickness="1" Margin="2">
+    <Box Orientation="Vertical">
+      <Box Orientation="Horizontal" HorizontalAlignment="Center">
+        [color=#DAA520][head=2]Правила взаимодействия станции и Тайпана[/head][/color]
+      </Box>
+      <Box Orientation="Vertical" Margin="12">
+        Эти правила созданы для более комфортной и приятной игры, а также для наказания тех, кто нарушает ламповую атмосферу сервера. Наш сервер держит курс на весёлые раунды с кучей различных возможностей и максимальной свободой действий в пределах РП и механик игры.
+
+        Скорее всего, если вы обычный игрок, хоть немного знакомый с РП-проектами, то в правилах вы вряд ли найдёте для себя что-то новое. Тем не менее, мы настоятельно рекомендуем ознакомиться с правилами всем участникам проекта без исключения. [color=#F87171]Незнание закона не освобождает от ответственности.[/color]
+
+        Вопросы по правилам можно задать в Discord сервера или через АХелп прямо во время игры. Незнакомые термины смотрите в [textlink="словаре терминов" link="Glossary"].
+      </Box>
+      <Box Orientation="Vertical" Margin="8 4 12 12">
+        - [textlink="0. Не будь мудаком" link="DefaultTypanRule0"]
+        - [textlink="1. Цели Тайпана" link="DefaultTypanRule1"]
+        - [textlink="2. Скрытность действий" link="DefaultTypanRule2"]
+        - [textlink="3. Покидание сектора" link="DefaultTypanRule3"]
+        - [textlink="4. Обращение с захваченными сотрудниками НТ" link="DefaultTypanRule4"]
+        - [textlink="5. Захват глав отдела станции" link="DefaultTypanRule5"]
+        - [textlink="6. Освобождение сотрудников Тайпана" link="DefaultTypanRule6"]
+        - [textlink="7. Использование оружия" link="DefaultTypanRule7"]
+        - [textlink="8. Избегание конфликтов" link="DefaultTypanRule8"]
+        - [textlink="9. Иерархия и дисциплина" link="DefaultTypanRule9"]
+        - [textlink="10. Минимизация ущерба" link="DefaultTypanRule10"]
+      </Box>
+    </Box>
+  </ColorBox>
+</Document>

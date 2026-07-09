@@ -1,14 +1,13 @@
-<Document>
-  <ColorBox Color="#3a2a2a" OutlineColor="#5a4a4a" OutlineThickness="2" Margin="1">
+﻿<Document>
+  <ColorBox Color="#281C1C55" OutlineColor="#F8717133" OutlineThickness="1" Margin="2">
     <Box Orientation="Vertical">
       <Box Orientation="Horizontal" HorizontalAlignment="Center">
-        6.1. Взрывчатка
+        [color=#F87171][head=2]6.1. Взрывчатка[/head][/color]
       </Box>
-      <Box Orientation="Vertical" Margin="10">
-        Обычные члены экипажа должны использовать взрывчатку крайне       ответственно.
-        <Box Orientation="Vertical" Margin="10">
-         Если сомневаетесь — свяжитесь с администрацией.
-        </Box>
+      <Box Orientation="Vertical" Margin="12">
+        Обычные члены экипажа должны использовать взрывчатку крайне ответственно. Взрывчатка не является инструментом для решения бытовых конфликтов.
+
+        Если сомневаетесь, свяжитесь с администрацией через АХелп.
       </Box>
     </Box>
   </ColorBox>
