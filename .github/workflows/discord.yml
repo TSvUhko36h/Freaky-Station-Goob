@@ -14,45 +14,64 @@ jobs:
       - name: Send Discord notification
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          PR_AVATAR: ${{ github.event.pull_request.user.avatar_url }}
+          PR_HEAD: ${{ github.event.pull_request.head.ref }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          PR_ADD: ${{ github.event.pull_request.additions }}
+          PR_DEL: ${{ github.event.pull_request.deletions }}
+          PR_FILES: ${{ github.event.pull_request.changed_files }}
+          PR_COMMITS: ${{ github.event.pull_request.commits }}
+          PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
         run: |
-          cat > payload.json <<EOF
-          {
-            "username": "Freaky Station",
-            "embeds": [
-              {
-                "title": "🚀 Pull Request Merged",
-                "description": "**${{ github.event.pull_request.title }}**\n\nby **${{ github.event.pull_request.user.login }}**\n\n🌿 \`${{ github.event.pull_request.head.ref }}\` → \`${{ github.event.pull_request.base.ref }}\`\n🔗 PR #${{ github.event.pull_request.number }}",
-                "url": "${{ github.event.pull_request.html_url }}",
-                "color": 16716936,
-                "author": {
-                  "name": "${{ github.event.pull_request.user.login }}",
-                  "icon_url": "${{ github.event.pull_request.user.avatar_url }}"
-                },
-                "fields": [
-                  {
-                    "name": "📊 Changes",
-                    "value": "```diff\n+ ${{ github.event.pull_request.additions }} lines\n- ${{ github.event.pull_request.deletions }} lines\n```",
-                    "inline": false
+          jq -n \
+            --arg title "$PR_TITLE" \
+            --arg url "$PR_URL" \
+            --arg num "$PR_NUM" \
+            --arg user "$PR_USER" \
+            --arg avatar "$PR_AVATAR" \
+            --arg head "$PR_HEAD" \
+            --arg base "$PR_BASE" \
+            --arg add "$PR_ADD" \
+            --arg del "$PR_DEL" \
+            --arg files "$PR_FILES" \
+            --arg commits "$PR_COMMITS" \
+            --arg merged_at "$PR_MERGED_AT" \
+            '{
+              "username": "Freaky Station",
+              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+              "embeds": [
+                {
+                  "title": "✅ Pull Request Merged!",
+                  "description": "**[#\($num)] \($title)**\n\nMerge: 🌿 `\($head)` ➔ 📦 `\($base)`",
+                  "url": $url,
+                  "color": 2330166,
+                  "author": {
+                    "name": $user,
+                    "icon_url": $avatar
                   },
-                  {
-                    "name": "📁 Files changed",
-                    "value": "${{ github.event.pull_request.changed_files }}",
-                    "inline": true
+                  "fields": [
+                    {
+                      "name": "📊 Code Changes",
+                      "value": "```diff\n+ \($add) additions\n- \($del) deletions\n```",
+                      "inline": true
+                    },
+                    {
+                      "name": "🗂️ Activity",
+                      "value": "```yaml\nfiles: \($files)\ncommits: \($commits)\n```",
+                      "inline": true
+                    }
+                  ],
+                  "footer": {
+                    "text": "Freaky Station • GitHub Actions"
                   },
-                  {
-                    "name": "📝 Commits",
-                    "value": "${{ github.event.pull_request.commits }}",
-                    "inline": true
-                  }
-                ],
-                "footer": {
-                  "text": "Freaky Station • GitHub"
-                },
-                "timestamp": "${{ github.event.pull_request.merged_at }}"
-              }
-            ]
-          }
-          EOF
+                  "timestamp": $merged_at
+                }
+              ]
+            }' > payload.json
 
           curl \
             -H "Content-Type: application/json" \
