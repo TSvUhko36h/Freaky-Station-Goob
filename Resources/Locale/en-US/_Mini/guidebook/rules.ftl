@@ -1,6 +1,7 @@
 guide-entry-default-ruleset = Server Rules
 guide-entry-default-rule0 = Rule 0
 guide-entry-default-rule1 = Rule 1
+guide-entry-default-rule11 = Rule 1.1
 guide-entry-default-rule2 = Rule 2
 guide-entry-default-rule21 = Rule 2.1
 guide-entry-default-rule22 = Rule 2.2

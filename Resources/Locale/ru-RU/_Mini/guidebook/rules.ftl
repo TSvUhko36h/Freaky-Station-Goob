@@ -1,6 +1,7 @@
 guide-entry-default-ruleset = Правила сервера
 guide-entry-default-rule0 = Правило 0
 guide-entry-default-rule1 = Правило 1
+guide-entry-default-rule11 = Правило 1.1
 guide-entry-default-rule2 = Правило 2
 guide-entry-default-rule21 = Правило 2.1
 guide-entry-default-rule22 = Правило 2.2

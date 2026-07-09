@@ -7,6 +7,7 @@
   children:
   - DefaultRule0
   - DefaultRule1
+  - DefaultRule11
   - DefaultRule2
   - DefaultRule21
   - DefaultRule22
@@ -144,6 +145,13 @@
   priority: 2
   ruleEntry: true
   text: "/ServerInfo/_Mini/ServerRules/DefaultRule1.xml"
+
+- type: guideEntry
+  id: DefaultRule11
+  name: guide-entry-default-rule11
+  priority: 3
+  ruleEntry: true
+  text: "/ServerInfo/_Mini/ServerRules/DefaultRule11.xml"
 
 - type: guideEntry
   id: DefaultRule2
