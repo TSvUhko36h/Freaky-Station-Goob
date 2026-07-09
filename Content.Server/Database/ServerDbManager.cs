@@ -228,11 +228,19 @@ namespace Content.Server.Database
         Task UpdatePlayTimes(IReadOnlyCollection<PlayTimeUpdate> updates);
         Task<DailyRewardProgress?> GetDailyRewardProgress(Guid playerId, CancellationToken cancel = default);
         Task UpsertDailyRewardProgress(DailyRewardProgress progress);
+        Task<DailyQuestProgress?> GetDailyQuestProgress(Guid playerId, DateTime questDate, CancellationToken cancel = default);
+        Task<List<DailyQuestProgress>> GetRecentDailyQuestProgress(Guid playerId, int limit, CancellationToken cancel = default);
+        Task UpsertDailyQuestProgress(DailyQuestProgress progress);
         Task<List<PlayerAntagToken>> GetPlayerAntagTokens(Guid playerId, CancellationToken cancel = default);
         Task<PlayerAntagTokenSelection?> GetPlayerAntagTokenSelection(Guid playerId, CancellationToken cancel = default);
         Task SetPlayerAntagTokenAmount(Guid playerId, string tokenId, int amount);
         Task SetPlayerAntagTokenSelection(Guid playerId, string tokenId, string antagId);
         Task ClearPlayerAntagTokenSelection(Guid playerId);
+        Task<bool> HasAdminHelpRatingSince(Guid playerUserId, DateTime sinceUtc, CancellationToken cancel = default);
+        Task<int> GetAdminHelpRatingCountSince(Guid playerUserId, DateTime sinceUtc, CancellationToken cancel = default);
+        Task<bool> HasPlayerRatedAdminToday(Guid playerUserId, Guid adminUserId, DateTime sinceUtc, CancellationToken cancel = default);
+        Task<HashSet<Guid>> GetRatedAdminUserIdsSince(Guid playerUserId, DateTime sinceUtc, CancellationToken cancel = default);
+        Task<bool> TryAddAdminHelpRating(AdminHelpRating rating);
 
         #endregion
 
@@ -667,6 +675,24 @@ namespace Content.Server.Database
             return RunDbCommand(() => _db.UpsertDailyRewardProgress(progress));
         }
 
+        public Task<DailyQuestProgress?> GetDailyQuestProgress(Guid playerId, DateTime questDate, CancellationToken cancel = default)
+        {
+            DbReadOpsMetric.Inc();
+            return RunDbCommand(() => _db.GetDailyQuestProgress(playerId, questDate, cancel));
+        }
+
+        public Task<List<DailyQuestProgress>> GetRecentDailyQuestProgress(Guid playerId, int limit, CancellationToken cancel = default)
+        {
+            DbReadOpsMetric.Inc();
+            return RunDbCommand(() => _db.GetRecentDailyQuestProgress(playerId, limit, cancel));
+        }
+
+        public Task UpsertDailyQuestProgress(DailyQuestProgress progress)
+        {
+            DbWriteOpsMetric.Inc();
+            return RunDbCommand(() => _db.UpsertDailyQuestProgress(progress));
+        }
+
         public Task<List<PlayerAntagToken>> GetPlayerAntagTokens(Guid playerId, CancellationToken cancel = default)
         {
             DbReadOpsMetric.Inc();
@@ -695,6 +721,36 @@ namespace Content.Server.Database
         {
             DbWriteOpsMetric.Inc();
             return RunDbCommand(() => _db.ClearPlayerAntagTokenSelection(playerId));
+        }
+
+        public Task<bool> HasAdminHelpRatingSince(Guid playerUserId, DateTime sinceUtc, CancellationToken cancel = default)
+        {
+            DbReadOpsMetric.Inc();
+            return RunDbCommand(() => _db.HasAdminHelpRatingSince(playerUserId, sinceUtc, cancel));
+        }
+
+        public Task<int> GetAdminHelpRatingCountSince(Guid playerUserId, DateTime sinceUtc, CancellationToken cancel = default)
+        {
+            DbReadOpsMetric.Inc();
+            return RunDbCommand(() => _db.GetAdminHelpRatingCountSince(playerUserId, sinceUtc, cancel));
+        }
+
+        public Task<bool> HasPlayerRatedAdminToday(Guid playerUserId, Guid adminUserId, DateTime sinceUtc, CancellationToken cancel = default)
+        {
+            DbReadOpsMetric.Inc();
+            return RunDbCommand(() => _db.HasPlayerRatedAdminToday(playerUserId, adminUserId, sinceUtc, cancel));
+        }
+
+        public Task<HashSet<Guid>> GetRatedAdminUserIdsSince(Guid playerUserId, DateTime sinceUtc, CancellationToken cancel = default)
+        {
+            DbReadOpsMetric.Inc();
+            return RunDbCommand(() => _db.GetRatedAdminUserIdsSince(playerUserId, sinceUtc, cancel));
+        }
+
+        public Task<bool> TryAddAdminHelpRating(AdminHelpRating rating)
+        {
+            DbWriteOpsMetric.Inc();
+            return RunDbCommand(() => _db.TryAddAdminHelpRating(rating));
         }
 
         #endregion

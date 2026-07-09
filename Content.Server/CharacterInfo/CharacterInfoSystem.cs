@@ -16,6 +16,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using Content.Server._Mini.Objectives;
 using Content.Server.Mind;
 using Content.Server.Roles;
 using Content.Server.Roles.Jobs;
@@ -32,6 +33,7 @@ public sealed class CharacterInfoSystem : EntitySystem
     [Dependency] private readonly MindSystem _minds = default!;
     [Dependency] private readonly RoleSystem _roles = default!;
     [Dependency] private readonly SharedObjectivesSystem _objectives = default!;
+    [Dependency] private readonly AntagObjectiveCoinRewardSystem _antagObjectiveRewards = default!;
 
     public override void Initialize()
     {
@@ -51,16 +53,17 @@ public sealed class CharacterInfoSystem : EntitySystem
         var objectives = new Dictionary<string, List<ObjectiveInfo>>();
         var jobTitle = Loc.GetString("character-info-no-profession");
         string? briefing = null;
+        var antagAllComplete = false;
+        var antagCoinGranted = false;
+
         if (_minds.TryGetMind(entity, out var mindId, out var mind))
         {
-            // Get objectives
             foreach (var objective in mind.Objectives)
             {
                 var info = _objectives.GetInfo(objective, mindId, mind);
                 if (info == null)
                     continue;
 
-                // group objectives by their issuer
                 var issuer = Comp<ObjectiveComponent>(objective).LocIssuer;
                 if (!objectives.ContainsKey(issuer))
                     objectives[issuer] = new List<ObjectiveInfo>();
@@ -70,10 +73,17 @@ public sealed class CharacterInfoSystem : EntitySystem
             if (_jobs.MindTryGetJobName(mindId, out var jobName))
                 jobTitle = jobName;
 
-            // Get briefing
             briefing = _roles.MindGetBriefing(mindId);
+            antagAllComplete = _antagObjectiveRewards.AreAllObjectivesComplete(mindId, mind);
+            antagCoinGranted = _antagObjectiveRewards.IsRewardGranted(mindId);
         }
 
-        RaiseNetworkEvent(new CharacterInfoEvent(GetNetEntity(entity), jobTitle, objectives, briefing), args.SenderSession);
+        RaiseNetworkEvent(new CharacterInfoEvent(
+            GetNetEntity(entity),
+            jobTitle,
+            objectives,
+            briefing,
+            antagAllComplete,
+            antagCoinGranted), args.SenderSession);
     }
 }

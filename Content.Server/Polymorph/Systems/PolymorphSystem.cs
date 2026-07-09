@@ -126,6 +126,7 @@ using Content.Shared.DetailExaminable;
 using Content.Shared.Hands.EntitySystems;
 using Content.Shared.IdentityManagement;
 using Content.Shared.Inventory;
+using Content.Shared.Interaction.Components; // CorvaxGoob edit
 using Content.Shared.Mind;
 using Content.Shared.Mindshield.Components;
 using Content.Shared.Mobs.Components;
@@ -495,6 +496,27 @@ public sealed partial class PolymorphSystem : EntitySystem
             _mindSystem.TransferTo(mindId, child, mind: mind);
 
         _tag.RemoveTag(uid, SharedBindSoulSystem.IgnoreBindSoulTag); // Goobstation
+
+        // CorvaxGoob edit start - items that failed to transfer must not disappear to paused map.
+        // This only applies to transfer mode: for inventory None (e.g. jaunts), force-dropping here strips the parent body.
+        if (configuration.Inventory == PolymorphInventoryChange.Transfer)
+        {
+            if (_inventory.TryGetContainerSlotEnumerator(uid, out var safetyEnum))
+            {
+                while (safetyEnum.MoveNext(out var slot))
+                {
+                    if (slot.ContainedEntity is { } item && !HasComp<UnremoveableComponent>(item))
+                        _inventory.TryUnequip(uid, slot.ID, silent: true, force: true);
+                }
+            }
+
+            foreach (var held in _hands.EnumerateHeld(uid))
+            {
+                if (!HasComp<UnremoveableComponent>(held))
+                    _hands.TryDrop(uid, held, checkActionBlocker: false);
+            }
+        }
+        // CorvaxGoob edit end
 
         //Ensures a map to banish the entity to
         EnsurePausedMap();

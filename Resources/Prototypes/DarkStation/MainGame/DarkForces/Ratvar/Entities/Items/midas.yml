@@ -1,0 +1,21 @@
+- type: ratvarMidasTouch
+  id: MidasTouchSteel
+  item: SheetBrass
+
+- type: ratvarMidasTouch
+  id: MidasTouchPlasteel
+  item: SheetBrass
+
+- type: ratvarMidasTouch
+  id: MidasTouchClockworkSlab
+  item: RatvarSlab
+  icon:
+    sprite: DarkStation/MainGame/DarkForces/Ratvar/Weapons/clockwork_slab.rsi
+    state: clock_slab
+
+- type: ratvarMidasTouch
+  id: MidasTouchBrass
+  item: RatvarIntegrationCog
+  icon:
+    sprite: DarkStation/MainGame/DarkForces/Ratvar/Items/integration_cog.rsi
+    state: gear

@@ -1,0 +1,40 @@
+- type: entity
+  id: RatvarPortal
+  suffix: Ratvar
+  components:
+  - type: Transform
+    anchored: true
+  - type: Clickable
+  - type: Sprite
+    noRot: true
+    scale: 3, 3
+    sprite: DarkStation/MainGame/DarkForces/Ratvar/Structures/portal.rsi
+    layers:
+    - state: spatial_gateway
+  - type: Physics
+    bodyType: Static
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-1.5,-1.5,1.5,1.5"
+        density: 100
+        mask:
+        - TableMask
+  - type: InteractionOutline
+  - type: Damageable
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 500
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+  - type: RatvarPortal
+  - type: AmbientSound
+    volume: 5
+    range: 12
+    sound:
+      path: /Audio/DarkStation/DarkForces/Ratvar/clockcult_gateway_charging.ogg

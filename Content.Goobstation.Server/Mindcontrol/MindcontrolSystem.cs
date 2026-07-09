@@ -64,6 +64,11 @@ public sealed class MindcontrolSystem : EntitySystem
     {
         if (component.Master == null)
             return;
+        if (HasComp<MindControlImmuneComponent>(uid))
+        {
+            RemComp<MindcontrolledComponent>(uid);
+            return;
+        }
         if (HasComp<MindShieldComponent>(uid))  //you somhow managed to implant somone whit a mindshield.
             return;
         if (uid == component.Master.Value)  //good jobb, you implanted yourself

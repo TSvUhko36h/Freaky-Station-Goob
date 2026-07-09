@@ -1,0 +1,85 @@
+- type: adminRankIcon
+  id: Host
+  rank: Хост
+  icon: /Textures/_Mini/Interface/AdminIcons/host.png
+
+- type: adminRankIcon
+  id: JuniorModerator
+  rank: Младший модератор
+  icon: /Textures/_Mini/Interface/AdminIcons/junior_moderator.png
+
+- type: adminRankIcon
+  id: Moderator
+  rank: Модератор
+  icon: /Textures/_Mini/Interface/AdminIcons/moderator.png
+
+- type: adminRankIcon
+  id: SeniorModerator
+  rank: Старший модератор
+  icon: /Textures/_Mini/Interface/AdminIcons/senior_moderator.png
+
+- type: adminRankIcon
+  id: Judge
+  rank: Судья
+  icon: /Textures/_Mini/Interface/AdminIcons/judge.png
+
+- type: adminRankIcon
+  id: JuniorEventMaster
+  rank: Младший ивент мастер
+  icon: /Textures/_Mini/Interface/AdminIcons/junior_event_master.png
+
+- type: adminRankIcon
+  id: EventMaster
+  rank: Ивент мастер
+  icon: /Textures/_Mini/Interface/AdminIcons/event_master.png
+
+- type: adminRankIcon
+  id: SeniorEventMaster
+  rank: Главный ивент мастер
+  icon: /Textures/_Mini/Interface/AdminIcons/senior_event_master.png
+
+- type: adminRankIcon
+  id: EventWarden
+  rank: Ивент варден
+  icon: /Textures/_Mini/Interface/AdminIcons/event_warden.png
+
+- type: adminRankIcon
+  id: Curator
+  rank: Куратор
+  icon: /Textures/_Mini/Interface/AdminIcons/kurator.png
+
+- type: adminRankIcon
+  id: SeniorMentor
+  rank: Старший ментор
+  icon: /Textures/_Mini/Interface/AdminIcons/senior_mentor.png
+
+- type: adminRankIcon
+  id: Mentor
+  rank: Ментор
+  icon: /Textures/_Mini/Interface/AdminIcons/mentor.png
+
+- type: adminRankIcon
+  id: JuniorMentor
+  rank: Младший ментор
+  icon: /Textures/_Mini/Interface/AdminIcons/junior_mentor.png
+
+# Комбинированные должности (опционально, если хотите и для них иконки)
+# - type: adminRankIcon
+#   id: JuniorModJuniorEvent
+#   rank: М.Модератор | М.Ивент Мастер
+#   icon: /Textures/_Mini/Interface/AdminIcons/junior_mod_junior_event.png
+
+# - type: adminRankIcon
+#   id: JuniorModEventMaster
+#   rank: М.Модератор | Ивент Мастер
+#   icon: /Textures/_Mini/Interface/AdminIcons/junior_mod_event_master.png
+
+# - type: adminRankIcon
+#   id: ModEventMaster
+#   rank: Модератор | Ивент мастер
+#   icon: /Textures/_Mini/Interface/AdminIcons/mod_event_master.png
+
+# - type: adminRankIcon
+#   id: ModJuniorEvent
+#   rank: Модератор | М.Ивент Мастер
+#   icon: /Textures/_Mini/Interface/AdminIcons/mod_junior_event.png

@@ -1,5 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Casha
 using System.Linq;
+using Content.Server._Mini.TypanWar;
+using Content.Server._TT.StationHandleJob;
 using Content.Server.Administration.Managers;
 using Content.Server._Mini.AntagTokens;
 using Content.Server.Antag.Components;
@@ -29,6 +31,7 @@ using Content.Shared.Humanoid;
 using Content.Shared.Inventory;
 using Content.Shared.Mind;
 using Content.Shared.Players;
+using Content.Shared.Preferences;
 using Content.Shared.Roles;
 using Content.Shared.Whitelist;
 using Robust.Server.Audio;
@@ -63,6 +66,8 @@ public sealed partial class AntagSelectionSystem : GameRuleSystem<AntagSelection
     [Dependency] private readonly InventorySystem _inventory = default!; // Goobstation
     [Dependency] private readonly SkillsSystem _skills = default!; // CorvaxGoob-Skills
     [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
+    [Dependency] private readonly TTStationHandleJobSystem _ttStationHandleJob = default!;
+    [Dependency] private readonly TypanStationWarRuleSystem _typanWar = default!;
 
     // arbitrary random number to give late joining some mild interest.
     public const float LateJoinRandomChance = 0.5f;
@@ -246,7 +251,7 @@ public sealed partial class AntagSelectionSystem : GameRuleSystem<AntagSelection
         if (GameTicker.RunLevel != GameRunLevel.InRound)
             return;
 
-        if (component.AssignmentComplete)
+        if (component.AssignmentComplete || _typanWar.IsTypanWarBlocking())
             return;
 
         var players = _playerManager.Sessions
@@ -282,6 +287,9 @@ public sealed partial class AntagSelectionSystem : GameRuleSystem<AntagSelection
     /// <param name="midround">Disable picking players for pre-spawn antags in the middle of a round</param>
     public void ChooseAntags(Entity<AntagSelectionComponent> ent, IList<ICommonSession> pool, bool midround = false)
     {
+        if (_typanWar.IsTypanWarBlocking())
+            return;
+
         foreach (var def in ent.Comp.Definitions)
         {
             ChooseAntags(ent, pool, def, midround: midround);
@@ -404,6 +412,9 @@ public sealed partial class AntagSelectionSystem : GameRuleSystem<AntagSelection
     /// </summary>
     public bool TryMakeAntag(Entity<AntagSelectionComponent> ent, ICommonSession? session, AntagSelectionDefinition def, bool ignoreSpawner = false, bool checkPref = true, bool onlyPreSelect = false)
     {
+        if (_typanWar.IsTypanWarBlocking())
+            return false;
+
         _adminLogger.Add(LogType.AntagSelection, $"Start trying to make {session} become the antagonist: {ToPrettyString(ent)}");
 
         if (checkPref && !ValidAntagPreference(session, def.PrefRoles))
@@ -647,6 +658,10 @@ public sealed partial class AntagSelectionSystem : GameRuleSystem<AntagSelection
         if (ent.Comp.AssignedSessions.Contains(session))
             return false;
 
+        // Typan-only job prefs (all non-Never jobs are on Typan station) cannot become roundstart antags.
+        if (mind == null && SessionPrefersOnlyHandledStationJobs(session))
+            return false;
+
         mind ??= session.GetMind();
 
         //todo: we need some way to check that we're not getting the same role twice. (double picking thieves or zombies through midrounds)
@@ -676,6 +691,31 @@ public sealed partial class AntagSelectionSystem : GameRuleSystem<AntagSelection
             return false;
 
         return true;
+    }
+
+    /// <summary>
+    /// True when every non-Never job in the player's profile belongs to a handled station (e.g. Typan).
+    /// </summary>
+    private bool SessionPrefersOnlyHandledStationJobs(ICommonSession session)
+    {
+        if (!_pref.TryGetCachedPreferences(session.UserId, out var prefs))
+            return false;
+
+        if (prefs.SelectedCharacter is not HumanoidCharacterProfile profile)
+            return false;
+
+        var hasEligibleJob = false;
+        foreach (var (jobId, priority) in profile.JobPriorities)
+        {
+            if (priority == JobPriority.Never)
+                continue;
+
+            hasEligibleJob = true;
+            if (!_ttStationHandleJob.IsHandledJob(jobId))
+                return false;
+        }
+
+        return hasEligibleJob;
     }
 
     /// <summary>

@@ -66,6 +66,13 @@ namespace Content.Shared.Verbs
             IconsOnly = iconsOnly;
         }
 
+        public VerbCategory(string text, SpriteSpecifier? sprite, bool iconsOnly = false)
+        {
+            Text = Loc.GetString(text);
+            Icon = sprite;
+            IconsOnly = iconsOnly;
+        }
+
         public static readonly VerbCategory Admin =
             new("verb-categories-admin", "/Textures/Interface/character.svg.192dpi.png");
 
@@ -102,20 +109,20 @@ namespace Content.Shared.Verbs
             new("verb-categories-transfer", "/Textures/Interface/VerbIcons/spill.svg.192dpi.png");
 
         public static readonly VerbCategory Split =
-            new("verb-categories-split", null);
+            new("verb-categories-split", (string?) null);
 
         public static readonly VerbCategory InstrumentStyle =
-            new("verb-categories-instrument-style", null);
+            new("verb-categories-instrument-style", (string?) null);
 
-        public static readonly VerbCategory ChannelSelect = new("verb-categories-channel-select", null);
+        public static readonly VerbCategory ChannelSelect = new("verb-categories-channel-select", (string?) null);
 
-        public static readonly VerbCategory SetSensor = new("verb-categories-set-sensor", null);
+        public static readonly VerbCategory SetSensor = new("verb-categories-set-sensor", (string?) null);
 
-        public static readonly VerbCategory Lever = new("verb-categories-lever", null);
+        public static readonly VerbCategory Lever = new("verb-categories-lever", (string?) null);
 
-        public static readonly VerbCategory SelectType = new("verb-categories-select-type", null);
+        public static readonly VerbCategory SelectType = new("verb-categories-select-type", (string?) null);
 
-        public static readonly VerbCategory PowerLevel = new("verb-categories-power-level", null);
+        public static readonly VerbCategory PowerLevel = new("verb-categories-power-level", (string?) null);
 
         public static readonly VerbCategory Adjust =
             new("verb-categories-adjust", "/Textures/Interface/VerbIcons/screwdriver.png");
@@ -123,6 +130,9 @@ namespace Content.Shared.Verbs
         // Shitmed - Starlight Abductors
         public static readonly VerbCategory Switch = new("verb-categories-switch", "/Textures/Interface/VerbIcons/group.svg.192dpi.png");
         // Einstein Engines - Interaction Verbs
-        public static readonly VerbCategory Interaction = new("verb-categories-interaction", null);
+        public static readonly VerbCategory Interaction = new("verb-categories-interaction", (string?) null);
+
+        public static readonly VerbCategory BloodSpells = new("verb-categories-blood-cult",
+            new SpriteSpecifier.Rsi(new ResPath("/Textures/WhiteDream/BloodCult/actions.rsi"), "blood_spells"));
     }
 }

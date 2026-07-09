@@ -59,6 +59,7 @@ public abstract partial class SharedHereticAbilitySystem
 
         PredictedSpawnAtPosition(args.InEffect, xform.Coordinates);
         _transform.SetCoordinates(ent, xform, args.Target);
+        _transform.AttachToGridOrMap(ent, xform);
         PredictedSpawnAtPosition(args.OutEffect, args.Target);
 
         var condition = ent.Comp.CurrentPath == "Void";
@@ -98,8 +99,7 @@ public abstract partial class SharedHereticAbilitySystem
                 targetPart: TargetBodyPart.All,
                 canMiss: false);
 
-            _stun.TryUpdateStunDuration(pookie, args.StunTime);
-            _stun.TryKnockdown(pookie.Owner, args.KnockDownTime, true);
+            _stun.TryKnockdown(pookie.Owner, args.KnockDownTime, true, drop: false);
 
             if (condition)
                 Voidcurse.DoCurse(pookie, 3);

@@ -205,6 +205,7 @@ using Content.Server.Discord;
 // using Content.Server._RMC14.LinkAccount; // RMC - Patreon // CorvaxGoob-Coins
 // using Content.Server._RMC14.LinkAccount; CorvaxGoob-Coins
 using Content.Corvax.Interfaces.Shared; // RMC - Patreon
+using Content.Server._Amour.Stickers;
 
 namespace Content.Server.Chat.Managers;
 
@@ -235,6 +236,11 @@ internal sealed partial class ChatManager : IChatManager
     private ISharedSponsorsManager? _sponsorsManager; // CorvaxGoob-Sponsors
     [Dependency] private readonly ISharedPlayerManager _player = default!;
     //[Dependency] private readonly LinkAccountManager _linkAccount = default!; // RMC - Patreon // CorvaxGoob-Coins
+
+    // Amour edit start
+    private StickerSanitizerSystem _stickerSanitizer => _entityManager.EntitySysManager.GetEntitySystem<StickerSanitizerSystem>();
+    // Amour edit end
+
 
     /// <summary>
     /// The maximum length a player-sent message can be sent
@@ -454,7 +460,8 @@ internal sealed partial class ChatManager : IChatManager
             return;
 
         Color? colorOverride = null;
-        var wrappedMessage = Loc.GetString("chat-manager-send-ooc-wrap-message", ("playerName",player.Name), ("message", FormattedMessage.EscapeText(message)));
+        var wrappedMessage = Loc.GetString("chat-manager-send-ooc-wrap-message", ("playerName",player.Name), ("message", _stickerSanitizer.SanitizeMessageWithStickers(message))); // Amour edit
+
         if (_adminManager.HasAdminFlag(player, AdminFlags.NameColor))
         {
             var prefs = _preferencesManager.GetPreferences(player.UserId);
@@ -480,9 +487,8 @@ internal sealed partial class ChatManager : IChatManager
             wrappedMessage = Loc.GetString("chat-manager-send-ooc-patron-wrap-message",
                 ("patronColor", miniDonateColor),
                 ("playerName", player.Name),
-                ("message", FormattedMessage.EscapeText(message)));
-
-            // Если нужно: colorOverride = Color.TryFromHex(miniDonateColor);
+                // Если нужно: colorOverride = Color.TryFromHex(miniDonateColor);
+                ("message", _stickerSanitizer.SanitizeMessageWithStickers(message))); // Amour edit
         }
         /* CorvaxGoob-Revert : DB conflicts
         // RMC - Heavily modified for patreon.
@@ -495,14 +501,14 @@ internal sealed partial class ChatManager : IChatManager
                     ("tierIcon", tier.Icon),
                     ("patronColor", "#aa00ff"),
                     ("playerName", player.Name),
-                    ("message", FormattedMessage.EscapeText(message)));
+                    ("message", _stickerSanitizer.SanitizeMessageWithStickers(message))); // Amour edit
             }
             else
             {
                 wrappedMessage = Loc.GetString("chat-manager-send-ooc-patron-wrap-message-no-icon",
                     ("patronColor", "#aa00ff"),
                     ("playerName", player.Name),
-                    ("message", FormattedMessage.EscapeText(message)));
+                    ("message", _stickerSanitizer.SanitizeMessageWithStickers(message))); // Amour edit
             }
         }
         */
@@ -531,7 +537,7 @@ internal sealed partial class ChatManager : IChatManager
         var clients = _adminManager.ActiveAdmins.Select(p => p.Channel);
         var wrappedMessage = Loc.GetString("chat-manager-send-admin-chat-wrap-message",
                                         ("adminChannelName", Loc.GetString("chat-manager-admin-channel-name")),
-                                        ("playerName", player.Name), ("message", FormattedMessage.EscapeText(message)));
+                                        ("playerName", player.Name), ("message", _stickerSanitizer.SanitizeMessageWithStickers(message))); // Amour edit
 
         foreach (var client in clients)
         {

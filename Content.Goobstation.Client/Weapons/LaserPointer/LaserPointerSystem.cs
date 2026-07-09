@@ -18,12 +18,15 @@ using Robust.Client.Input;
 using Robust.Client.Player;
 using Robust.Client.State;
 using Robust.Shared.Map;
+using Robust.Shared.Network;
 using Robust.Shared.Prototypes;
 
 namespace Content.Goobstation.Client.Weapons.LaserPointer;
 
 public sealed class LaserPointerSystem : SharedLaserPointerSystem
 {
+    private const float UpdateInterval = 0.05f;
+
     [Dependency] private readonly IOverlayManager _overlay = default!;
     [Dependency] private readonly IPrototypeManager _prototype = default!;
     [Dependency] private readonly IPlayerManager _player = default!;
@@ -32,6 +35,11 @@ public sealed class LaserPointerSystem : SharedLaserPointerSystem
     [Dependency] private readonly IStateManager _state = default!;
     [Dependency] private readonly TransformSystem _transform = default!;
     [Dependency] private readonly HandsSystem _hands = default!;
+
+    private float _updateAccumulator;
+    private EntityUid? _lastHovered;
+    private Vector2? _lastDir;
+    private NetEntity? _lastPointer;
 
     public override void Initialize()
     {
@@ -75,19 +83,46 @@ public sealed class LaserPointerSystem : SharedLaserPointerSystem
 
         Vector2? dir = mousePos == null ? null : mousePos.Value.Position - _transform.GetWorldPosition(xform);
 
+        var sent = false;
         foreach (var held in _hands.EnumerateHeld((player, hands)))
         {
             if (!HasComp<LaserPointerComponent>(held))
                 continue;
 
-            if (hovered == null || !TryComp(held, out WieldableComponent? wieldable) || !wieldable.Wielded)
-            {
-                RaisePredictiveEvent(new LaserPointerEntityHoveredEvent(null, dir, GetNetEntity(held)));
-                continue;
-            }
+            var pointer = GetNetEntity(held);
+            EntityUid? target = null;
+            if (hovered != null && TryComp(held, out WieldableComponent? wieldable) && wieldable.Wielded)
+                target = hovered;
 
-            RaisePredictiveEvent(
-                new LaserPointerEntityHoveredEvent(GetNetEntity(hovered.Value), dir, GetNetEntity(held)));
+            var changed = target != _lastHovered
+                || !Approximately(dir, _lastDir)
+                || pointer != _lastPointer;
+
+            if (!changed && _updateAccumulator < UpdateInterval)
+                continue;
+
+            RaisePredictiveEvent(new LaserPointerEntityHoveredEvent(
+                target == null ? null : GetNetEntity(target.Value),
+                dir,
+                pointer));
+
+            _lastHovered = target;
+            _lastDir = dir;
+            _lastPointer = pointer;
+            sent = true;
         }
+
+        if (sent)
+            _updateAccumulator = 0f;
+        else
+            _updateAccumulator += frameTime;
+    }
+
+    private static bool Approximately(Vector2? a, Vector2? b)
+    {
+        if (a == null || b == null)
+            return a == b;
+
+        return a.Value.EqualsApprox(b.Value, 0.01f);
     }
 }

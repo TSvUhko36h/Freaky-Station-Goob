@@ -56,26 +56,9 @@ namespace Content.Client.Stylesheets
                 return Color.InterpolateBetween(original, tonedAccent, tonedMix).WithAlpha(alpha);
             }
 
-            var notoSans10 = resCache.GetFont
-            (
-                new []
-                {
-                    "/Fonts/NotoSans/NotoSans-Regular.ttf",
-                    "/Fonts/NotoSans/NotoSansSymbols-Regular.ttf",
-                    "/Fonts/NotoSans/NotoSansSymbols2-Regular.ttf"
-                },
-                10
-            );
-            var notoSansBold16 = resCache.GetFont
-            (
-                new []
-                {
-                    "/Fonts/NotoSans/NotoSans-Bold.ttf",
-                    "/Fonts/NotoSans/NotoSansSymbols-Regular.ttf",
-                    "/Fonts/NotoSans/NotoSansSymbols2-Regular.ttf"
-                },
-                16
-            );
+            var notoSans10 = resCache.GetStack("Regular", 11);
+            var notoSans12 = resCache.GetStack("Regular", 13);
+            var notoSansBold16 = resCache.GetStack("Bold", 17);
 
             var progressBarBackground = new StyleBoxFlat
             {
@@ -144,6 +127,9 @@ namespace Content.Client.Stylesheets
                 Element<Label>().Class(StyleClassLabelSubText)
                     .Prop(Label.StylePropertyFont, notoSans10)
                     .Prop(Label.StylePropertyFontColor, Color.DarkGray),
+
+                Element<RichTextLabel>()
+                    .Prop("font", notoSans12),
 
                 Element<PanelContainer>().Class(ClassHighDivider)
                     .Prop(PanelContainer.StylePropertyPanel, new StyleBoxFlat

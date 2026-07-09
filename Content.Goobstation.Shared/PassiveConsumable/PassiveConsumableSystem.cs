@@ -73,9 +73,12 @@ public sealed class PassiveConsumableSystem : EntitySystem
             {
                 finished ??= [];
                 finished.Add((uid, edible, comp.Wearer!.Value, shouldDelete));
+                comp.NextConsume = TimeSpan.Zero;
             }
-
-            comp.NextConsume = _timing.CurTime + comp.ConsumeInterval;
+            else
+            {
+                comp.NextConsume = _timing.CurTime + comp.ConsumeInterval;
+            }
         }
 
         if (finished == null)
@@ -83,10 +86,11 @@ public sealed class PassiveConsumableSystem : EntitySystem
 
         foreach (var (uid, edible, user, delete) in finished)
         {
-            _ingestion.SpawnTrash((uid, edible), user);
-
             if (delete)
+            {
+                _ingestion.SpawnTrash((uid, edible), user);
                 QueueDel(uid);
+            }
         }
     }
 
@@ -99,6 +103,9 @@ public sealed class PassiveConsumableSystem : EntitySystem
             || !TryComp<BodyComponent>(wearer, out var body)
             || !_body.TryGetBodyOrganEntityComps<StomachComponent>((wearer, body), out var stomachs)
             || !_solution.TryGetSolution(ent.Owner, edible.Solution, out var soln, out var solution))
+            return false;
+
+        if (solution.Volume <= FixedPoint2.Zero)
             return false;
 
         var transferAmount = FixedPoint2.Min(ent.Comp.Amount, solution.Volume);
@@ -132,7 +139,6 @@ public sealed class PassiveConsumableSystem : EntitySystem
         if (soln.Value.Comp.Solution.Volume > FixedPoint2.Zero)
             return false;
 
-        ent.Comp.NextConsume = TimeSpan.Zero;
         shouldDelete = ent.Comp.DeleteOnEmpty;
         return true;
     }

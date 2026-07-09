@@ -7,7 +7,7 @@ using JetBrains.Annotations;
 namespace Content.Client._White.RadialSelector;
 
 [UsedImplicitly]
-public sealed class TrackedRadialSelectorMenuBUI(EntityUid owner, Enum uiKey) : BasedRadialSelectorMenuBUI(owner, uiKey)
+public sealed class TrackedRadialSelectorMenuBUI(EntityUid owner, Enum uiKey) : RadialSelectorMenuUiBase(owner, uiKey)
 {
     private readonly TrackedRadialMenu _menu = new()
     {

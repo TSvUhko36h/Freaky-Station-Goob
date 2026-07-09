@@ -1,0 +1,36 @@
+- type: entity
+  id: TypanStationWar
+  parent: BaseGameRule
+  components:
+  - type: GameRule
+    minPlayers: 20
+    chaosScore: 900
+  - type: Tag
+    tags:
+    - LoneRunRule
+  - type: TypanStationWarRule
+    announcementDelaySeconds: 15
+    warStartDelaySeconds: 30
+    warDurationSeconds: 1800
+    warMusicDelaySeconds: 90
+    warMusicDurationSeconds: 90
+    roundEndDelaySeconds: 120
+    minNtAlive: 0
+    minTypanAlive: 0
+    maxFactionRatio: 2
+    dropShuttlePath: /Maps/_Mini/Shuttles/typan_drop_shuttle.yml
+    ntDropShuttlePath: /Maps/_Mini/Shuttles/nt_drop_shuttle.yml
+
+- type: gamePreset
+  id: TypanStationWar
+  alias:
+  - typanwar
+  - typan-station-war
+  name: game-presets-typan-station-war
+  showInVote: true
+  minPlayers: 20
+  description: game-presets-typan-station-war-description
+  rules:
+  - TypanStationWar
+  - SpaceTrafficControlFriendlyEventScheduler
+  - BasicRoundstartVariation

@@ -8,6 +8,7 @@ bwoink-system-introductory-message =
     Пожалуйста, не просите об особых событиях или наказаниях для других фриков.
     О любых ошибках и других проблемах следует сообщать через Discord или Github.
     Злоупотребление этим чатом может привести к дисциплинарным наказаниям.
+bwoink-system-username = Система
 bwoink-system-typing-indicator =
     { $players } { $count ->
         [one] печатает
@@ -25,3 +26,16 @@ bwoink-system-player-reconnecting = переподключился.
 bwoink-system-player-banned = был забанен за: { $banReason }
 bwoink-message-admin-only = (Только Админ)
 bwoink-message-silent = (S)
+admin-help-rating-prompt = Оцените работу администратора
+admin-help-rating-collapsible-title = Оценить администратора
+admin-help-rating-select-admin = Администратор:
+admin-help-rating-prompt-remaining = Осталось оценок: {$remaining} из {$max}
+admin-help-rating-submit = Отправить оценку
+admin-help-rating-limit-reached = Лимит оценок на сегодня исчерпан
+admin-help-rating-cooldown = Следующая оценка будет доступна через {$hours} ч. {$minutes} мин.
+admin-help-rating-thanks = Спасибо за оценку!
+admin-help-rating-already-rated = Вы уже оставляли оценку сегодня.
+admin-help-rating-chat = {$player} поставил {$stars} { $stars ->
+    [1] звезду
+   *[other] звёзд
+} администратору {$admin}

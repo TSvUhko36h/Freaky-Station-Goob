@@ -184,6 +184,8 @@ namespace Content.Server.GameTicking
             if (_mapManager.MapExists(DefaultMap))
                 return;
 
+            // Preset rules must be added before the maps load: stations post-init during map load
+            // and systems like roundstart station variation only run if their rule is already added.
             AddGamePresetRules();
 
             var maps = new List<GameMapPrototype>();
@@ -209,13 +211,14 @@ namespace Content.Server.GameTicking
                 throw new Exception("invalid config; couldn't select a valid station map!");
             }
 
-            if (CurrentPreset?.MapPool != null &&
-                _prototypeManager.TryIndex<GameMapPoolPrototype>(CurrentPreset.MapPool, out var pool) &&
+            var activePreset = Preset ?? CurrentPreset;
+            if (activePreset?.MapPool != null &&
+                _prototypeManager.TryIndex<GameMapPoolPrototype>(activePreset.MapPool, out var pool) &&
                 !pool.Maps.Contains(mainStationMap.ID))
             {
                 var msg = Loc.GetString("game-ticker-start-round-invalid-map",
                     ("map", mainStationMap.MapName),
-                    ("mode", Loc.GetString(CurrentPreset.ModeTitle)));
+                    ("mode", Loc.GetString(activePreset.ModeTitle)));
                 Log.Debug(msg);
                 SendServerMessage(msg);
             }
@@ -466,8 +469,10 @@ namespace Content.Server.GameTicking
             var autoDeAdmin = _cfg.GetCVar(CCVars.AdminDeadminOnJoin);
             foreach (var (userId, status) in _playerGameStatuses)
             {
-                if (LobbyEnabled && status != PlayerGameStatus.ReadyToPlay) continue;
-                if (!_playerManager.TryGetSessionById(userId, out var session)) continue;
+                if (LobbyEnabled && status != PlayerGameStatus.ReadyToPlay)
+                    continue;
+                if (!_playerManager.TryGetSessionById(userId, out var session))
+                    continue;
 
                 if (autoDeAdmin && _adminManager.IsAdmin(session))
                 {
@@ -499,6 +504,9 @@ namespace Content.Server.GameTicking
             // applies to players who didn't ready up
             UpdateInfoText();
 
+            // Preset may change after map preload (e.g. forcepreset) — swap in the new
+            // preset's rules if so. Rules queued by other means (e.g. addgamerule) survive.
+            RefreshGamePresetRules();
             StartGamePresetRules();
 
             RoundLengthMetric.Set(0);
@@ -879,6 +887,7 @@ namespace Content.Server.GameTicking
             // Clear up any game rules.
             ClearGameRules();
             CurrentPreset = null;
+            _addedPresetRules.Clear();
 
             _allPreviousGameRules.Clear();
 

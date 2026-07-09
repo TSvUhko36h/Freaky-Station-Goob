@@ -25,6 +25,13 @@ namespace Content.Shared.Administration
         private static readonly string[] FlagsNameMap = new string[32];
 
         /// <summary>
+        ///     Flags that must never be granted. Kept as reserved bits so existing DB rows stay aligned.
+        /// </summary>
+        public static readonly AdminFlags DisabledFlags = AdminFlags.Reserved15;
+
+        private const string DeprecatedMassBanFlag = "MASSBAN";
+
+        /// <summary>
         ///     Every admin flag in the game, at once!
         /// </summary>
         public static readonly AdminFlags Everything;
@@ -47,6 +54,11 @@ namespace Content.Shared.Administration
                 // If, in the future, somebody adds a combined admin flag or something for convenience,
                 // ignore it.
                 if (BitOperations.PopCount((uint) value) != 1)
+                {
+                    continue;
+                }
+
+                if ((value & DisabledFlags) != 0)
                 {
                     continue;
                 }
@@ -74,6 +86,9 @@ namespace Content.Shared.Administration
             var flags = AdminFlags.None;
             foreach (var name in names)
             {
+                if (IsDeprecatedFlagName(name))
+                    continue;
+
                 if (!NameFlagsMap.TryGetValue(name, out var value))
                 {
                     throw new ArgumentException($"Invalid admin flag name: {name}");
@@ -82,7 +97,20 @@ namespace Content.Shared.Administration
                 flags |= value;
             }
 
-            return flags;
+            return SanitizeFlags(flags);
+        }
+
+        /// <summary>
+        ///     Strips permanently disabled flags from a bitfield.
+        /// </summary>
+        public static AdminFlags SanitizeFlags(AdminFlags flags)
+        {
+            return flags & ~DisabledFlags;
+        }
+
+        public static bool IsDeprecatedFlagName(string name)
+        {
+            return name == DeprecatedMassBanFlag;
         }
 
         /// <summary>
@@ -96,6 +124,9 @@ namespace Content.Shared.Administration
         /// </exception>
         public static AdminFlags NameToFlag(string name)
         {
+            if (IsDeprecatedFlagName(name))
+                throw new KeyNotFoundException($"Admin flag name is deprecated: {name}");
+
             return NameFlagsMap[name];
         }
 
@@ -104,20 +135,22 @@ namespace Content.Shared.Administration
         /// </summary>
         public static string[] FlagsToNames(AdminFlags flags)
         {
-            var array = new string[BitOperations.PopCount((uint) flags)];
+            flags = SanitizeFlags(flags);
             var highest = BitOperations.LeadingZeroCount((uint) flags);
 
-            var ai = 0;
+            var names = new List<string>();
             for (var i = 0; i < 32 - highest; i++)
             {
                 var flagValue = (AdminFlags) (1u << i);
                 if ((flags & flagValue) != 0)
                 {
-                    array[ai++] = FlagsNameMap[i];
+                    var flagName = FlagsNameMap[i];
+                    if (flagName != null)
+                        names.Add(flagName);
                 }
             }
 
-            return array;
+            return names.ToArray();
         }
 
         public static string PosNegFlagsText(AdminFlags posFlags, AdminFlags negFlags)

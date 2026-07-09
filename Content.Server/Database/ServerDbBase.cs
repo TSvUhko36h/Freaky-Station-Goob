@@ -986,6 +986,131 @@ namespace Content.Server.Database
             await db.DbContext.SaveChangesAsync();
         }
 
+        public async Task<DailyQuestProgress?> GetDailyQuestProgress(Guid playerId, DateTime questDate, CancellationToken cancel)
+        {
+            await using var db = await GetDb(cancel);
+            var key = DateTime.SpecifyKind(questDate.Date, DateTimeKind.Utc);
+
+            return await db.DbContext.DailyQuestProgresses
+                .SingleOrDefaultAsync(p => p.PlayerId == playerId && p.QuestDate == key, cancel);
+        }
+
+        public async Task<List<DailyQuestProgress>> GetRecentDailyQuestProgress(Guid playerId, int limit, CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+            limit = Math.Clamp(limit, 1, 16);
+
+            return await db.DbContext.DailyQuestProgresses
+                .Where(p => p.PlayerId == playerId)
+                .OrderByDescending(p => p.QuestDate)
+                .Take(limit)
+                .ToListAsync(cancel);
+        }
+
+        public async Task UpsertDailyQuestProgress(DailyQuestProgress progress)
+        {
+            await using var db = await GetDb();
+            progress.QuestDate = DateTime.SpecifyKind(progress.QuestDate.Date, DateTimeKind.Utc);
+
+            var existing = await db.DbContext.DailyQuestProgresses
+                .SingleOrDefaultAsync(p => p.PlayerId == progress.PlayerId && p.QuestDate == progress.QuestDate);
+
+            if (existing == null)
+            {
+                db.DbContext.DailyQuestProgresses.Add(new DailyQuestProgress
+                {
+                    PlayerId = progress.PlayerId,
+                    QuestDate = progress.QuestDate,
+                    AssignedQuestIds = progress.AssignedQuestIds,
+                    ProgressValues = progress.ProgressValues,
+                    StatusFlags = progress.StatusFlags,
+                });
+            }
+            else
+            {
+                existing.AssignedQuestIds = progress.AssignedQuestIds;
+                existing.ProgressValues = progress.ProgressValues;
+                existing.StatusFlags = progress.StatusFlags;
+            }
+
+            await db.DbContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> HasAdminHelpRatingSince(Guid playerUserId, DateTime sinceUtc, CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+
+            return await db.DbContext.AdminHelpRatings
+                .AnyAsync(r => r.PlayerUserId == playerUserId && r.CreatedAt >= sinceUtc, cancel);
+        }
+
+        public async Task<int> GetAdminHelpRatingCountSince(Guid playerUserId, DateTime sinceUtc, CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+
+            return await db.DbContext.AdminHelpRatings
+                .CountAsync(r => r.PlayerUserId == playerUserId && r.CreatedAt >= sinceUtc, cancel);
+        }
+
+        public async Task<bool> HasPlayerRatedAdminToday(Guid playerUserId, Guid adminUserId, DateTime sinceUtc, CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+
+            return await db.DbContext.AdminHelpRatings
+                .AnyAsync(
+                    r => r.PlayerUserId == playerUserId &&
+                         r.AdminUserId == adminUserId &&
+                         r.CreatedAt >= sinceUtc,
+                    cancel);
+        }
+
+        public async Task<HashSet<Guid>> GetRatedAdminUserIdsSince(Guid playerUserId, DateTime sinceUtc, CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+
+            var ids = await db.DbContext.AdminHelpRatings
+                .Where(r => r.PlayerUserId == playerUserId && r.CreatedAt >= sinceUtc)
+                .Select(r => r.AdminUserId)
+                .ToListAsync(cancel);
+
+            return ids.ToHashSet();
+        }
+
+        public async Task<bool> TryAddAdminHelpRating(AdminHelpRating rating)
+        {
+            await using var db = await GetDb();
+
+            db.DbContext.AdminHelpRatings.Add(new AdminHelpRating
+            {
+                PlayerUserId = rating.PlayerUserId,
+                AdminUserId = rating.AdminUserId,
+                RoundId = rating.RoundId,
+                Stars = rating.Stars,
+                CreatedAt = rating.CreatedAt
+            });
+
+            await db.DbContext.SaveChangesAsync();
+
+            var admin = await db.DbContext.Admin
+                .SingleOrDefaultAsync(a => a.UserId == rating.AdminUserId);
+
+            if (admin == null)
+                return true;
+
+            var ratings = await db.DbContext.AdminHelpRatings
+                .Where(r => r.AdminUserId == rating.AdminUserId)
+                .Select(r => r.Stars)
+                .ToListAsync();
+
+            admin.AhelpRatingCount = ratings.Count;
+            admin.AhelpRating = ratings.Count == 0
+                ? 0m
+                : Math.Round((decimal) ratings.Average(s => s), 2, MidpointRounding.AwayFromZero);
+
+            await db.DbContext.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<List<PlayerAntagToken>> GetPlayerAntagTokens(Guid playerId, CancellationToken cancel)
         {
             await using var db = await GetDb(cancel);

@@ -150,6 +150,7 @@ guide-entry-references = Tables & References
 guide-entry-chemicals = Chemicals
 guide-entry-drinks = Drinks
 guide-entry-foodrecipes = Food Recipes
+guide-entry-ingredient-recipes = Ingredients
 
 guide-entry-elements = Elements
 guide-entry-medicine = Medicine
@@ -186,6 +187,8 @@ guide-entry-revolutionaries = Revolutionaries
 guide-entry-minor-antagonists = Minor Antagonists
 guide-entry-space-ninja = Space Ninja
 guide-entry-thieves = Thieves
+guide-entry-blood-cult = Blood Cult
+guide-entry-thief = Thief
 
 guide-entry-rules = Server Rules
 guide-entry-rules-core-only = Core Only Ruleset

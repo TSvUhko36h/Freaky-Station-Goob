@@ -234,6 +234,12 @@ public sealed class MiniCCVars
     public static readonly CVarDef<float> LobbyOpacity =
         CVarDef.Create("lobby.lobby_opacity", 0.90f, CVar.CLIENTONLY | CVar.ARCHIVE);
 
+    /// <summary>
+    /// Show "unlock early for coins" buttons on locked jobs and antags in the lobby.
+    /// </summary>
+    public static readonly CVarDef<bool> RoleUnlockEarlyPurchaseEnabled =
+        CVarDef.Create("role_unlock.early_purchase_enabled", false, CVar.SERVER | CVar.REPLICATED);
+
     public static readonly CVarDef<string> ServerName =
         CVarDef.Create("lobby.server_name", "Freaky Station", CVar.SERVER | CVar.REPLICATED);
 
@@ -298,9 +304,11 @@ public sealed class MiniCCVars
      * NPCs
      */
 
-    public static readonly CVarDef<bool> NPCDisableWithoutPlayers = CVarDef.Create("npc.disable_without_players", true);
+    public static readonly CVarDef<bool> NPCDisableWithoutPlayers =
+        CVarDef.Create("npc.disable_without_players", true, CVar.SERVERONLY | CVar.ARCHIVE);
 
-    public static readonly CVarDef<float> NPCDisableDistance = CVarDef.Create("npc.disable_distance", 20f);
+    public static readonly CVarDef<float> NPCDisableDistance =
+        CVarDef.Create("npc.disable_distance", 20f, CVar.SERVERONLY | CVar.ARCHIVE);
 
     /*
      * Vote

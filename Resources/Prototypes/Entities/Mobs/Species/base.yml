@@ -540,6 +540,7 @@
         Blunt: 0.50 #per second, scales with pressure and other constants.
         Heat: 0.1
   - type: PassiveDamage # Slight passive regen. Assuming one damage type, comes out to about 4 damage a minute.
+    splitBehavior: SplitEnsureAllDamagedAndOrganic # Goob
     allowedStates:
      - Alive
     damageCap: 20 #this looks at vital damage, not total damage, ideally it should look at damage/part but i dont care enough to fix it
@@ -592,7 +593,7 @@
     alternateState: Standing
   # <Goobstation>
   - type: Carriable
-  - type: FootprintOwner # Corvax-Next-Footprints
+  # - type: FootprintOwner Arcane
   - type: CPRTraining # Goobstation - Just give to everyone! This ain't MRP.
   - type: BloodstreamAffectedByMass # Goobstation: port EE height/width sliders. Also, lol at the comment above.
     power: 0.6
@@ -604,6 +605,7 @@
     - Viral
     - Bacterial
     - Parasite
+  - type: ObraDinnBody # Goobstation
   # </Goobstation>
 
 - type: entity

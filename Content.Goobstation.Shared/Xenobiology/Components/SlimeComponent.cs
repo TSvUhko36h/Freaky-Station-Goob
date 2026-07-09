@@ -97,7 +97,7 @@ public sealed partial class SlimeComponent : Component
     /// How many extracts will be produced by this slime?
     /// </summary>
     [DataField, AutoNetworkedField]
-    public int ExtractsProduced = 1;
+    public int ExtractsProduced = 2;
 
     /// <summary>
     /// What is the chance of offspring mutating? (this is per/offspring)
@@ -109,7 +109,7 @@ public sealed partial class SlimeComponent : Component
     /// What hunger threshold must be met for mitosis?
     /// </summary>
     [DataField, AutoNetworkedField]
-    public float MitosisHunger = 200f;
+    public float MitosisHunger = 80f;
 
     /// <summary>
     /// How long in between each mitosis/breeding check?

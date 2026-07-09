@@ -50,6 +50,7 @@ using Content.Client.Guidebook.Controls;
 using Content.Client.Lobby;
 using Content.Client.Players.PlayTimeTracking;
 using Content.Client.UserInterface.Controls;
+using Content.Client.UserInterface.Systems.Info;
 using Content.Shared.CCVar;
 using Content.Shared.Guidebook;
 using Content.Shared.Input;
@@ -70,6 +71,7 @@ public sealed class GuidebookUIController : UIController, IOnStateEntered<LobbyS
     [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
     [Dependency] private readonly IConfigurationManager _configuration = default!;
     [Dependency] private readonly JobRequirementsManager _jobRequirements = default!;
+    [Dependency] private readonly InfoUIController _infoController = default!;
 
     private const int PlaytimeOpenGuidebook = 60;
 
@@ -90,6 +92,8 @@ public sealed class GuidebookUIController : UIController, IOnStateEntered<LobbyS
     private void HandleStateEntered(State state)
     {
         DebugTools.Assert(_guideWindow == null);
+
+        _infoController.CoreRulesChanged += OnCoreRulesChanged;
 
         // setup window
         _guideWindow = UIManager.CreateWindow<GuidebookWindow>();
@@ -121,6 +125,14 @@ public sealed class GuidebookUIController : UIController, IOnStateEntered<LobbyS
         HandleStateExited();
     }
 
+    private void OnCoreRulesChanged()
+    {
+        if (_guideWindow is not { IsOpen: true })
+            return;
+
+        _guideWindow.RefreshRuleTree();
+    }
+
     private void HandleStateExited()
     {
         if (_guideWindow == null)
@@ -129,9 +141,12 @@ public sealed class GuidebookUIController : UIController, IOnStateEntered<LobbyS
         _guideWindow.OnClose -= OnWindowClosed;
         _guideWindow.OnOpen -= OnWindowOpen;
 
+        _guideWindow.SaveCurrentPageState(); // Reserve edit: guide-book #323
+
         // shutdown
         _guideWindow.Dispose();
         _guideWindow = null;
+        _infoController.CoreRulesChanged -= OnCoreRulesChanged;
         CommandBinds.Unregister<GuidebookUIController>();
     }
 
@@ -190,6 +205,7 @@ public sealed class GuidebookUIController : UIController, IOnStateEntered<LobbyS
         if (_guideWindow != null)
         {
             _guideWindow.ReturnContainer.Visible = false;
+            _guideWindow.SaveCurrentPageState(); // Reserve edit: guide-book #323
             _lastEntry = _guideWindow.LastEntry;
         }
     }

@@ -61,6 +61,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Content.Server.GameTicking;
 using Robust.Shared;
 using Robust.Shared.Audio.Components;
 using Robust.Shared.Configuration;
@@ -97,11 +98,16 @@ namespace Content.IntegrationTests.Tests
             var protoIds = prototypeMan
                 .EnumeratePrototypes<EntityPrototype>()
                 .Where(p => !p.Abstract)
+                .Where(p => !p.HideSpawnMenu)
                 .Where(p => !pair.IsTestPrototype(p))
                 .Where(p => !p.Components.ContainsKey("MapGrid")) // This will smash stuff otherwise.
                 .Where(p => !p.Components.ContainsKey("MobReplacementRule")) // goob edit - fuck them mimics
                 .Where(p => !p.Components.ContainsKey("Supermatter")) // Goobstation - Supermatter eats everything, oh no!
                 .Where(p => !p.Components.ContainsKey("RoomFill")) // This comp can delete all entities, and spawn others
+                .Where(p => !p.Components.ContainsKey("GameRule"))
+                .Where(p => !p.Components.ContainsKey("StationData"))
+                .Where(p => !p.Components.ContainsKey("GridSpawn"))
+                .Where(p => !p.Components.ContainsKey("Instrument"))
                 .Select(p => p.ID)
                 .ToList();
             // Goobstation edit end
@@ -260,10 +266,22 @@ namespace Content.IntegrationTests.Tests
         {
             // This test dirties the pair as it simply deletes ALL entities when done. Overhead of restarting the round
             // is minimal relative to the rest of the test.
-            var settings = new PoolSettings { Connected = true, Dirty = true };
+            var settings = new PoolSettings { Connected = true, Dirty = false };
             await using var pair = await PoolManager.GetServerClient(settings);
             var server = pair.Server;
             var client = pair.Client;
+            pair.ClientLogHandler.IgnoredSawmills.Add("state");
+            var ticker = server.System<GameTicker>();
+
+            await server.WaitPost(() =>
+            {
+                ticker.SetGamePreset("Sandbox");
+                ticker.RestartRound();
+                ticker.ToggleReadyAll(true);
+                ticker.StartRound(force: true);
+                ticker.ClearGameRules();
+            });
+            await pair.RunTicksSync(10);
 
             var cfg = server.ResolveDependency<IConfigurationManager>();
             var prototypeMan = server.ResolveDependency<IPrototypeManager>();
@@ -276,15 +294,22 @@ namespace Content.IntegrationTests.Tests
             var protoIds = prototypeMan
                 .EnumeratePrototypes<EntityPrototype>()
                 .Where(p => !p.Abstract)
+                .Where(p => !p.HideSpawnMenu)
                 .Where(p => !pair.IsTestPrototype(p))
                 .Where(p => !p.Components.ContainsKey("MapGrid")) // This will smash stuff otherwise.
                 .Where(p => !p.Components.ContainsKey("MobReplacementRule")) // goob edit - fuck them mimics
                 .Where(p => !p.Components.ContainsKey("Supermatter")) // Goobstation - Supermatter eats everything, oh no!
+                .Where(p => !p.Components.ContainsKey("RoomFill")) // This comp can delete all entities, and spawn others
+                .Where(p => !p.Components.ContainsKey("GameRule"))
+                .Where(p => !p.Components.ContainsKey("StationData"))
+                .Where(p => !p.Components.ContainsKey("GridSpawn"))
+                .Where(p => !p.Components.ContainsKey("Instrument"))
                 .Select(p => p.ID)
                 .ToList();
 
             // Goob start run this test in batches of 10k because fuck you. we got too much shit.
             const int batchSize = 10000;
+            const int spawnChunkSize = 25;
 
             for (var batchStart = 0; batchStart < protoIds.Count; batchStart += batchSize)
             {
@@ -293,19 +318,46 @@ namespace Content.IntegrationTests.Tests
                     .Take(batchSize)
                     .ToList();
 
-                await server.WaitPost(() =>
+                // Spawn in chunks so the server game loop can tick and keep the client connected.
+                for (var chunkStart = 0; chunkStart < batchProtoIds.Count; chunkStart += spawnChunkSize)
                 {
-                    foreach (var protoId in batchProtoIds) // goob Batchprotoids
+                    var chunk = batchProtoIds
+                        .Skip(chunkStart)
+                        .Take(spawnChunkSize)
+                        .ToList();
+
+                    var spawned = new List<EntityUid>(chunk.Count);
+
+                    await server.WaitPost(() =>
                     {
-                        mapSys.CreateMap(out var mapId);
-                        var grid = mapManager.CreateGridEntity(mapId);
-                        var ent = sEntMan.SpawnEntity(protoId, new EntityCoordinates(grid.Owner, 0.5f, 0.5f));
-                        foreach (var (_, component) in sEntMan.GetNetComponents(ent))
+                        spawned.Clear();
+                        foreach (var protoId in chunk)
                         {
-                            sEntMan.Dirty(ent, component);
+                            mapSys.CreateMap(out var mapId);
+                            var grid = mapManager.CreateGridEntity(mapId);
+                            var ent = sEntMan.SpawnEntity(protoId, new EntityCoordinates(grid.Owner, 0.5f, 0.5f));
+                            spawned.Add(ent);
                         }
-                    }
-                });
+                    });
+
+                    await pair.RunTicksSync(3);
+
+                    await server.WaitPost(() =>
+                    {
+                        foreach (var ent in spawned)
+                        {
+                            if (!sEntMan.EntityExists(ent))
+                                continue;
+
+                            foreach (var (_, component) in sEntMan.GetNetComponents(ent))
+                            {
+                                sEntMan.Dirty(ent, component);
+                            }
+                        }
+                    });
+
+                    await pair.RunTicksSync(3);
+                }
 
                 // Goobstation Edit Start  (this test isn't even worth the effort tbh)
                 // Run up to 15 ticks, but stop early if memory usage exceeds 13 GB
@@ -316,13 +368,16 @@ namespace Content.IntegrationTests.Tests
                 // i mean yeah you could run the test in batches of entities but its not really a stress test then is it.
 
                 const int maxTicks = 15; // (default wizden)
+                const int minSyncTicks = 8;
                 const long memoryLimitBytes = 13L * 1024 * 1024 * 1024; // 13 GB
 
                 var warninglog = true; // if we stop caring about this test turn this off.
+                var syncTicks = 0;
 
                 for (var tick = 0; tick < maxTicks; tick++)
                 {
                     await pair.RunTicksSync(1);
+                    syncTicks++;
 
                     var memoryUsed = GC.GetTotalMemory(forceFullCollection: false);
 
@@ -341,11 +396,17 @@ namespace Content.IntegrationTests.Tests
 
                     break; // stop ticking early
                 }
+
+                if (syncTicks < minSyncTicks)
+                    await pair.RunTicksSync(minSyncTicks - syncTicks);
                 // Goobstation Edit End
 
                 // Make sure the client actually received the entities
                 // 500 is completely arbitrary. Note that the client & sever entity counts aren't expected to match.
-                Assert.That(client.ResolveDependency<IEntityManager>().EntityCount, Is.GreaterThan(500));
+                await client.WaitAssertion(() =>
+                {
+                    Assert.That(client.EntMan.EntityCount, Is.GreaterThan(500));
+                });
 
                 await server.WaitPost(() =>
                 {
@@ -370,6 +431,8 @@ namespace Content.IntegrationTests.Tests
                     // i can't believe you've done this.
                     Assert.That(sEntMan.EntityCount, Is.AtMost(1));
                 });
+
+                await pair.RunTicksSync(3);
             } // Goob end, yeah im putting the whole test in a for loop.
 
             await pair.CleanReturnAsync();
@@ -392,17 +455,33 @@ namespace Content.IntegrationTests.Tests
         [Test]
         public async Task SpawnAndDeleteEntityCountTest()
         {
-            var settings = new PoolSettings { Connected = true, Dirty = true };
+            var settings = new PoolSettings { Connected = true, Dirty = false };
             await using var pair = await PoolManager.GetServerClient(settings);
             var mapSys = pair.Server.System<SharedMapSystem>();
             var server = pair.Server;
             var client = pair.Client;
+            pair.ClientLogHandler.IgnoredSawmills.Add("state");
+            var ticker = server.System<GameTicker>();
+
+            await server.WaitPost(() =>
+            {
+                ticker.SetGamePreset("Sandbox");
+                ticker.RestartRound();
+                ticker.ToggleReadyAll(true);
+                ticker.StartRound(force: true);
+                ticker.ClearGameRules();
+            });
+            await pair.RunTicksSync(10);
 
             var excluded = new[]
             {
                 "MapGrid",
                 "StationEvent",
                 "TimedDespawn",
+                "GameRule",
+                "StationData",
+                "GridSpawn",
+                "Instrument",
 
                 // makes an announcement on mapInit.
                 "AnnounceOnSpawn",
@@ -420,6 +499,7 @@ namespace Content.IntegrationTests.Tests
             var protoIds = server.ProtoMan
                 .EnumeratePrototypes<EntityPrototype>()
                 .Where(p => !p.Abstract)
+                .Where(p => !p.HideSpawnMenu)
                 .Where(p => !pair.IsTestPrototype(p))
                 .Where(p => !excluded.Any(p.Components.ContainsKey))
                 .Where(p => p.Categories.All(x => x.ID != SpawnerCategory))
@@ -452,7 +532,7 @@ namespace Content.IntegrationTests.Tests
                     var clientEntities = new HashSet<EntityUid>(Entities(client.EntMan));
                     EntityUid uid = default;
                     await server.WaitPost(() => uid = server.EntMan.SpawnEntity(protoId, coords));
-                    await pair.RunTicksSync(3);
+                    await pair.RunTicksSync(5);
 
                     // If the entity deleted itself, check that it didn't spawn other entities
                     if (!server.EntMan.EntityExists(uid))

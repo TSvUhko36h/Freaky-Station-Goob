@@ -8,3 +8,4 @@ ui-escape-wiki = Wiki
 ui-escape-coin-shop = Магазин коинов
 ui-escape-disconnect = Отключиться
 ui-escape-quit = Выйти
+ui-escape-character = Персонализация

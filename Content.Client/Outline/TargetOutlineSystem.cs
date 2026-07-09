@@ -160,6 +160,8 @@ public sealed class TargetOutlineSystem : EntitySystem
     private ShaderInstance? _shaderTargetInvalid;
 
     private readonly HashSet<SpriteComponent> _highlightedSprites = new();
+    private Vector2 _lastLookupCenter;
+    private bool _hasLastLookupCenter;
 
     public override void Initialize()
     {
@@ -175,6 +177,7 @@ public sealed class TargetOutlineSystem : EntitySystem
             return;
 
         _enabled = false;
+        _hasLastLookupCenter = false;
         RemoveHighlights();
     }
 
@@ -188,6 +191,7 @@ public sealed class TargetOutlineSystem : EntitySystem
         ValidationEvent = validationEvent;
 
         _enabled = Predicate != null || Whitelist != null || Blacklist != null || ValidationEvent != null;
+        _hasLastLookupCenter = false;
     }
 
     public override void Update(float frameTime)
@@ -205,12 +209,18 @@ public sealed class TargetOutlineSystem : EntitySystem
         if (_playerManager.LocalEntity is not { Valid: true } player)
             return;
 
+        var mousePos = _eyeManager.PixelToMap(_inputManager.MouseScreenPosition).Position;
+        if (_hasLastLookupCenter && (mousePos - _lastLookupCenter).LengthSquared() < 0.0025f)
+            return;
+
+        _lastLookupCenter = mousePos;
+        _hasLastLookupCenter = true;
+
         // remove current highlights
         RemoveHighlights();
 
         // find possible targets on screen
         // TODO: Duplicated in SpriteSystem and DragDropSystem. Should probably be cached somewhere for a frame?
-        var mousePos = _eyeManager.PixelToMap(_inputManager.MouseScreenPosition).Position;
         var bounds = new Box2(mousePos - LookupVector, mousePos + LookupVector);
         var pvsEntities = _lookup.GetEntitiesIntersecting(_eyeManager.CurrentEye.Position.MapId, bounds, LookupFlags.Approximate | LookupFlags.Static);
         var spriteQuery = GetEntityQuery<SpriteComponent>();

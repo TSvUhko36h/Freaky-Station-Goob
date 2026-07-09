@@ -125,13 +125,16 @@ public sealed partial class DocumentParsingManager
     private static readonly Parser<char, Unit> TryStartList =
         Try(SkipNewline.Then(SkipWhitespaces).Then(Char('-'))).Then(SkipWhitespaces);
 
+    private static readonly Parser<char, Unit> TryStartNumber =
+        Try(SkipNewline.Then(SkipWhitespaces).Then(Token(char.IsDigit).AtLeastOnceString().Before(Char('.')))).Then(SkipWhitespaces); // Corvax-Guidebook
+
     private static readonly Parser<char, Unit> TryStartTag = Try(Char('<')).Then(SkipWhitespaces);
 
     private static readonly Parser<char, Unit> TryStartParagraph =
         Try(SkipNewline.Then(SkipNewline)).Then(SkipWhitespaces);
 
     private static readonly Parser<char, Unit> TryLookTextEnd =
-        Lookahead(OneOf(TryStartTag, TryStartList, TryStartParagraph, Try(Whitespace.SkipUntil(End))));
+        Lookahead(OneOf(TryStartTag, TryStartList, TryStartNumber, TryStartParagraph, Try(Whitespace.SkipUntil(End)))); // Corvax-Guidebook: TryStartNumber
 
     private static readonly Parser<char, string> TextParser =
         TextChar.AtLeastOnceUntil(TryLookTextEnd).Select(string.Concat);
@@ -145,9 +148,9 @@ public sealed partial class DocumentParsingManager
                     };
 
                     var msg = new FormattedMessage();
-                    // THANK YOU RICHTEXT VERY COOL
-                    // (text doesn't default to white).
-                    msg.PushColor(Color.White);
+                    // Guidebook documents assume a dark background; use an explicit light tone so text
+                    // stays readable on semi-transparent UI panels.
+                    msg.PushColor(Color.FromHex("#E2E8F0"));
 
                     // If the parsing fails, don't throw an error and instead make an inline error message
                     string? error;
@@ -159,7 +162,8 @@ public sealed partial class DocumentParsingManager
                     }
 
                     msg.Pop();
-                    rt.SetMessage(msg);
+                    // Guidebook markup includes textlink and other tags not in RichTextEntry.DefaultTags.
+                    rt.SetMessage(msg, tagsAllowed: null);
                     return rt;
                 },
                 TextParser)
@@ -198,17 +202,46 @@ public sealed partial class DocumentParsingManager
 
     private static readonly Parser<char, Control> TryHeaderControl = OneOf(TertiaryHeaderControlParser, SubHeaderControlParser, HeaderControlParser);
 
-    private static readonly Parser<char, Control> ListControlParser = Try(Char('-'))
+    // Corvax-Guidebook-Start
+    private static readonly Parser<char, Control> BulletListControlParser = Try(Char('-'))
         .Then(SkipWhitespaces)
         .Then(Map(
-                control => new BoxContainer
+                control =>
                 {
-                    Children = { new Label { Text = ListBullet, VerticalAlignment = VAlignment.Top }, control },
-                    Orientation = LayoutOrientation.Horizontal
+                    _lastControlWasList = true;
+                    return new BoxContainer
+                    {
+                        Children = { new Label { Text = ListBullet, VerticalAlignment = VAlignment.Top }, control },
+                        Orientation = LayoutOrientation.Horizontal
+                    };
                 },
                 TextControlParser)
             .Cast<Control>())
-        .Labelled("list");
+        .Labelled("bulletlist");
+
+    private static int _numberedListCounter;
+    private static bool _lastControlWasList;
+
+    // Parser for numbered lists like "1. text". The displayed number is auto-incremented across consecutive items.
+    private static readonly Parser<char, Control> NumberedListControlParser = Try(Token(char.IsDigit).AtLeastOnceString().Before(Char('.')))
+        .Then(SkipWhitespaces)
+        .Then(Map(control =>
+                {
+                    _numberedListCounter++;
+                    _lastControlWasList = true;
+                    var label = new Label { Text = $"  {_numberedListCounter}. ", VerticalAlignment = VAlignment.Top };
+                    return new BoxContainer
+                    {
+                        Children = { label, control },
+                        Orientation = LayoutOrientation.Horizontal
+                    };
+                },
+                TextControlParser)
+            .Cast<Control>())
+        .Labelled("numberedlist");
+
+    private static readonly Parser<char, Control> ListControlParser = OneOf(NumberedListControlParser, BulletListControlParser);
+    // Corvax-Guidebook-End
 
     #region Text Parsing
 

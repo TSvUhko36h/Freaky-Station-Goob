@@ -1,0 +1,36 @@
+- type: entity
+  parent: BaseItem
+  id: RatvarSoulVessel
+  suffix: Ratvar
+  components:
+  - type: Transform
+    noRot: true
+  - type: Sprite
+    sprite: DarkStation/MainGame/DarkForces/Ratvar/Items/soul_vessel.rsi
+    noRot: true
+    layers:
+    - state: soul_vessel
+      map: [ "soul" ]
+  - type: MindContainer
+  - type: RatvarSoulVessel
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.RatvarSoulVesselVisualState.State:
+        soul:
+          True: { state: "soul_vessel_occupied" }
+          False: { state: "soul_vessel" }
+  - type: RatvarItem
+
+- type: entity
+  parent: RatvarSoulVessel
+  id: RatvarSoulVesselGhost
+  suffix: Ghost Role
+  components:
+  - type: GhostRole
+    allowMovement: false
+    allowSpeech: false
+    name: ghost-role-name-RatvarSoulVessel
+    description: ghost-role-desc-RatvarSoulVessel
+    rules: ghost-role-rules-RatvarSoulVessel
+  - type: GhostTakeoverAvailable

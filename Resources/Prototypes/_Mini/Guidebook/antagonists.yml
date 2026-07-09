@@ -1,0 +1,9 @@
+- type: guideEntry
+  id: RatvarCult
+  name: guide-entry-ratvar-cult
+  text: "/ServerInfo/_Mini/Guidebook/Antagonist/RatvarCult.xml"
+
+- type: guideEntry
+  id: BloodCultCult
+  name: guide-entry-blood-cult-cult
+  text: "/ServerInfo/_Mini/Guidebook/Antagonist/BloodCult.xml"

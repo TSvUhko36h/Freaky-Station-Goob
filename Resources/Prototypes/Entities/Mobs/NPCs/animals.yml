@@ -1639,6 +1639,7 @@
   description: The genetic bipedal ancestor of... Uh... Something. Yeah, there's definitely something on the station that descended from whatever this is.
   abstract: true
   components:
+  - type: Blindable # monkeys can be blind while sleeping!
   - type: VentCrawler # goobstation - Ventcrawl
     allowInventory: false
   - type: CombatMode
@@ -3071,10 +3072,10 @@
   description: Combines the two most terrifying things in existence, spiders and clowns.
   components:
     # Mini edit start
-    - type: GhostPanelAntagonistMarker
-      name: ghost-panel-antagonist-spider-clown-name
-      description: ghost-panel-antagonist-spider-clown-description
-      priority: 90
+    # - type: GhostPanelAntagonistMarker
+    #   name: ghost-panel-antagonist-spider-clown-name
+    #   description: ghost-panel-antagonist-spider-clown-description
+    #   priority: 90
     # Mini edit end
     - type: Sprite
       drawdepth: Mobs
@@ -4134,6 +4135,10 @@
   id: MobDionaNymph
   description: It's like a cat, only.... branch-ier.
   components:
+  # Goobstation - Diona nymphs can also see through kudzu.
+  - type: SeeOverLayer
+    layers:
+    - kudzu
   - type: Sprite
     drawdepth: Mobs
     layers:

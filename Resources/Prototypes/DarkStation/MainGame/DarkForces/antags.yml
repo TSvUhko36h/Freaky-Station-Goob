@@ -1,0 +1,19 @@
+﻿#Ratvar
+- type: antag
+  id: RatvarRighteous
+  name: antag-name-RatvarRighteous
+  antagonist: true
+  setPreference: true
+  objective: antag-objective-RatvarRighteous
+  requirements:
+  - !type:OverallPlaytimeRequirement
+    time: 18000 # 5h
+  guides: [ RatvarCult ]
+
+- type: startingGear
+  id: RatvarWarriorGear
+  equipment:
+    head: ClothingHeadHelmetRatvar
+    shoes: ClothingShoesRatvar
+    outerClothing: ClothingOuterRobesRatvar
+    gloves: ClothingHandsRatvar

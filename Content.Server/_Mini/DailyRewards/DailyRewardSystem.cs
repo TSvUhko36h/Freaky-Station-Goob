@@ -6,7 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Content.Server._Mini.AntagTokens;
+using Content.Server._Mini.DailyQuests;
 using Content.Shared._Mini.AntagTokens;
+using Content.Shared._Mini.DailyQuests;
 using Content.Shared._Mini.DailyRewards;
 using Content.Shared._Mini.GhostRolePurchase;
 using Content.Server.Database;
@@ -15,6 +17,7 @@ using Content.Server.Popups;
 using Content.Shared.Database;
 using Content.Shared.GameTicking;
 using Content.Shared.Players;
+using Robust.Shared.Enums;
 using Robust.Shared.Network;
 using Robust.Server.Player;
 using Robust.Shared.Player;
@@ -25,6 +28,9 @@ namespace Content.Server._Mini.DailyRewards;
 public sealed class DailyRewardSystem : EntitySystem
 {
     private const string StreakRewardIconPath = "/Textures/_Mini/DailyRewards/streak.png";
+    private const float StateRefreshInterval = 1f;
+
+    private float _stateRefreshAccumulator;
 
     [Dependency] private readonly IPlayerManager _playerManager = default!;
     [Dependency] private readonly IServerDbManager _db = default!;
@@ -33,6 +39,7 @@ public sealed class DailyRewardSystem : EntitySystem
     [Dependency] private readonly PopupSystem _popup = default!;
     [Dependency] private readonly AntagTokenSystem _antagTokens = default!;
     [Dependency] private readonly AntagTokenListingSystem _antagListings = default!;
+    [Dependency] private readonly DailyQuestSystem _dailyQuests = default!;
 
     private readonly Dictionary<NetUserId, SessionRewardState> _states = new();
     private readonly DailyRewardComponent _defaultComponent = new();
@@ -48,6 +55,7 @@ public sealed class DailyRewardSystem : EntitySystem
         SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestartCleanup);
         SubscribeNetworkEvent<DailyRewardOpenRequestEvent>(OnOpenRequest);
         SubscribeNetworkEvent<DailyRewardClaimRequestEvent>(OnClaimRequest);
+        SubscribeNetworkEvent<DailyQuestReplaceRequestEvent>(OnQuestReplaceRequest);
 
         _userDb.AddOnLoadPlayer(LoadPlayerData);
         _userDb.AddOnFinishLoad(OnPlayerDataLoaded);
@@ -187,19 +195,33 @@ public sealed class DailyRewardSystem : EntitySystem
         return true;
     }
 
+    public void RefreshUi(NetUserId userId)
+    {
+        if (_playerManager.TryGetSessionById(userId, out var session))
+            SendState(session);
+    }
+
     public override void Update(float frameTime)
     {
         base.Update(frameTime);
 
+        _stateRefreshAccumulator += frameTime;
+        var sendState = _stateRefreshAccumulator >= StateRefreshInterval;
+        if (sendState)
+            _stateRefreshAccumulator = 0f;
+
         foreach (var session in _playerManager.Sessions)
         {
+            if (session.Status == SessionStatus.Disconnected)
+                continue;
+
             if (!_states.ContainsKey(session.UserId))
                 continue;
 
-            // Grant tickets for playtime milestones
             GrantTicketsForPlaytime(session);
 
-            SendState(session);
+            if (sendState)
+                SendState(session);
         }
     }
 
@@ -288,6 +310,12 @@ public sealed class DailyRewardSystem : EntitySystem
     private void OnClaimRequest(DailyRewardClaimRequestEvent _, EntitySessionEventArgs args)
     {
         ClaimReward(args.SenderSession);
+    }
+
+    private void OnQuestReplaceRequest(DailyQuestReplaceRequestEvent ev, EntitySessionEventArgs args)
+    {
+        Log.Info($"Daily quest replace requested by {args.SenderSession.Name}: quest={ev.QuestId}, slot={ev.SlotIndex}");
+        _dailyQuests.TryReplaceQuest(args.SenderSession, ev.QuestId, ev.SlotIndex);
     }
 
     private void StartTracking(ICommonSession session)
@@ -426,6 +454,9 @@ public sealed class DailyRewardSystem : EntitySystem
 
     private void SendState(ICommonSession session)
     {
+        if (session.Status == SessionStatus.Disconnected)
+            return;
+
         if (!_states.TryGetValue(session.UserId, out var state))
             return;
 
@@ -484,7 +515,8 @@ public sealed class DailyRewardSystem : EntitySystem
             component.MinimumActiveTime,
             rewards,
             onlineElapsed,
-            onlineGranted)), session);
+            onlineGranted,
+            _dailyQuests.BuildQuestEntries(session))), session);
     }
 
     private RewardDefinition GetRewardPreview(DailyRewardComponent component, int day)
@@ -719,7 +751,7 @@ public sealed class DailyRewardSystem : EntitySystem
 
     private sealed class SessionRewardState(DailyRewardProgress progress)
     {
-        public DailyRewardProgress Progress { get; } = progress;
+        public DailyRewardProgress Progress { get; private set; } = progress;
         public TimeSpan? ActiveSince { get; set; }
         public DateTime? ActiveStartedAtUtc { get; set; }
         public int LocalMutationCount { get; private set; }

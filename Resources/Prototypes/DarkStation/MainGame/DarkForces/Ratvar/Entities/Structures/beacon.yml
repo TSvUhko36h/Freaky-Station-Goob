@@ -1,0 +1,95 @@
+- type: entity
+  id: RatvarBeacon
+  parent: BaseRatvarStructure
+  suffix: Ratvar
+  components:
+  - type: Sprite
+    sprite: DarkStation/MainGame/DarkForces/Ratvar/Structures/heralds_beacon.rsi
+    layers:
+    - state: beacon
+      map: [ "base" ]
+  - type: Icon
+    sprite: DarkStation/MainGame/DarkForces/Ratvar/Structures/heralds_beacon.rsi
+    state: beacon
+  - type: AmbientSound
+    range: 5
+    volume: 1
+    sound:
+      path:  /Audio/_Mini/Misc/ratvar_beacon.ogg
+  - type: GenericVisualizer
+    visuals:
+      enum.BeaconVisuals.State:
+        base:
+          True: { state: beacon }
+          False: { state: beacon-off }
+  - type: Appearance
+  - type: RatvarBeacon
+  - type: PointLight
+    enabled: true
+    radius: 4
+    energy: 2
+    color: "#9a5d00"
+    softness: 1
+    castShadows: false
+  - type: Construction
+    graph: RatvarBeaconGraph
+    node: beacon
+  - type: Destructible
+    thresholds:
+    - trigger: !type:DamageTrigger
+        damage: 75
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+    - trigger: !type:DamageTrigger
+        damage: 25
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalBreak
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          SheetBrass1:
+            min: 1
+            max: 3
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+
+#Construction
+- type: constructionGraph
+  id: RatvarBeaconGraph
+  start: start
+  graph:
+  - node: start
+    edges:
+    - to: beacon
+      completed:
+      - !type:SnapToGrid
+        southRotation: true
+      steps:
+      - material: Brass
+        amount: 6
+        doAfter: 10
+
+  - node: beacon
+    entity: RatvarBeacon
+
+- type: construction
+  name: construction-recipe-ratvar-beacon
+  id: RatvarBeaconConstruction
+  graph: RatvarBeaconGraph
+  startNode: start
+  targetNode: beacon
+  hide: true
+  category: craft-category-RatvarConstruction
+  objectType: Structure
+  entityWhitelist:
+    components:
+    - RatvarRighteous
+  description: construction-recipe-ratvar-beacon-desc
+  conditions:
+  - !type:TileNotBlocked
+    failIfSpace: false
+  placementMode: SnapgridCenter
+  canRotate: false

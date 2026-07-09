@@ -11,6 +11,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Content.Client.Stylesheets;
+using Content.Client.Resources;
 using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
 using Content.Shared.Atmos.Monitor;
@@ -43,6 +44,32 @@ public sealed partial class AtmosAlarmEntryContainer : BoxContainer
         [AtmosAlarmType.Danger] = "atmos-alerts-window-danger-state",
     };
 
+    private Dictionary<Gas, string> _gasShorthands = new Dictionary<Gas, string>()
+    {
+        [Gas.Ammonia] = "NH₃",
+        [Gas.CarbonDioxide] = "CO₂",
+        [Gas.Frezon] = "F",
+        [Gas.Nitrogen] = "N₂",
+        [Gas.NitrousOxide] = "N₂O",
+        [Gas.Oxygen] = "O₂",
+        [Gas.Plasma] = "P",
+        [Gas.Tritium] = "T",
+        [Gas.WaterVapor] = "H₂O",
+        // WD EDIT START
+        [Gas.BZ] = "BZ",
+        [Gas.Pluoxium] = "TCO₃",
+        [Gas.Hydrogen] = "H₂",
+        [Gas.Nitrium] = "NT₂",
+        [Gas.Healium] = "FBZ",
+        [Gas.HyperNoblium] = "TN₂",
+        [Gas.ProtoNitrate] = "HTCO₃",
+        [Gas.Zauker] = "(NT)₃",
+        [Gas.Halon] = "Ha",
+        [Gas.Helium] = "He",
+        [Gas.AntiNoblium] = "AN",
+        // WD EDIT END
+    };
+
     public AtmosAlarmEntryContainer(NetEntity uid, EntityCoordinates? coordinates)
     {
         RobustXamlLoader.Load(this);
@@ -54,9 +81,9 @@ public sealed partial class AtmosAlarmEntryContainer : BoxContainer
         Coordinates = coordinates;
 
         // Load fonts
-        var headerFont = new VectorFont(_cache.GetResource<FontResource>("/Fonts/NotoSans/NotoSans-Bold.ttf"), 11);
-        var normalFont = new VectorFont(_cache.GetResource<FontResource>("/Fonts/NotoSansDisplay/NotoSansDisplay-Regular.ttf"), 11);
-        var smallFont = new VectorFont(_cache.GetResource<FontResource>("/Fonts/NotoSans/NotoSans-Regular.ttf"), 10);
+        var headerFont = new VectorFont(_cache.GetResource<FontResource>(MiniFonts.Bold), 11);
+        var normalFont = new VectorFont(_cache.GetResource<FontResource>(MiniFonts.Regular), 11);
+        var smallFont = new VectorFont(_cache.GetResource<FontResource>(MiniFonts.Regular), 10);
 
         // Set fonts
         TemperatureHeaderLabel.FontOverride = headerFont;
@@ -80,7 +107,7 @@ public sealed partial class AtmosAlarmEntryContainer : BoxContainer
         Coordinates = _entManager.GetCoordinates(entry.Coordinates);
 
         // Load fonts
-        var normalFont = new VectorFont(_cache.GetResource<FontResource>("/Fonts/NotoSansDisplay/NotoSansDisplay-Regular.ttf"), 11);
+        var normalFont = new VectorFont(_cache.GetResource<FontResource>(MiniFonts.Regular), 11);
 
         // Update alarm state
         if (!_alarmStrings.TryGetValue(entry.AlarmState, out var alarmString))

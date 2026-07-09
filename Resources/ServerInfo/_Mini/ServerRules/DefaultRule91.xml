@@ -1,11 +1,14 @@
-<Document>
-  <ColorBox Color="#392a3aff" OutlineColor="#5a4a59ff" OutlineThickness="2" Margin="1">
+﻿<Document>
+  <ColorBox Color="#1C1C2866" OutlineColor="#E2E8F022" OutlineThickness="1" Margin="2">
     <Box Orientation="Vertical">
       <Box Orientation="Horizontal" HorizontalAlignment="Center">
-       9.1. Экономика
+        [color=#E2E8F0][head=2]9.1. Экономика[/head][/color]
+      </Box>
+      <Box Orientation="Vertical" Margin="12">
+        Абуз протолата, техфабов и других систем для быстрого заработка кредитов запрещён.
 
-       Абуз протолата/техфабов для быстрого заработка кредитов — запрещён.
-        </Box>
+        Эксплуатация багов экономики, дюпы и обход лимитов считаются нечестной игрой.
+      </Box>
     </Box>
   </ColorBox>
 </Document>

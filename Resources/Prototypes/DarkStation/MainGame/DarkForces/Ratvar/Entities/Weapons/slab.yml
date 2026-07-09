@@ -1,0 +1,151 @@
+- type: entity
+  id: RatvarSlab
+  parent: BaseItem
+  suffix: Ratvar
+  components:
+  - type: Sprite
+    sprite: DarkStation/MainGame/DarkForces/Ratvar/Weapons/clockwork_slab.rsi
+    layers:
+    - state: clock_slab
+  - type: Item
+    size: Small
+  - type: UserInterface
+    interfaces:
+      enum.RatvarEnchantmentUIKey.Key:
+        type: RatvarEnchantmentBUI
+  - type: GenericVisualizer
+    visuals:
+      enum.RatvarEnchantmentableVisuals.State:
+        overlay:
+          Stun: { state: clock_slab_overlay_1 }
+          Doors: { state: clock_slab_overlay_2 }
+          Walls: { state: clock_slab_overlay_3 }
+          Teleport: { state: clock_slab_overlay_4 }
+          Heal: { state: clock_slab_overlay_5 }
+          Hidings: { state: clock_slab_overlay_6 }
+  - type: RatvarSlab
+  - type: RatvarEnchantmentable
+    enchantments:
+    - action: ActionRatvarSlabStun
+      name: enchant-name-RatvarSlab-0
+      icon:
+        sprite: DarkStation/MainGame/DarkForces/Ratvar/Weapons/clockwork_slab.rsi
+        state: clock_slab_overlay_1
+      visuals: Stun
+    - action: ActionRatvarSlabDoors
+      name: enchant-name-RatvarSlab-1
+      icon:
+        sprite: DarkStation/MainGame/DarkForces/Ratvar/Weapons/clockwork_slab.rsi
+        state: clock_slab_overlay_2
+      visuals: Doors
+    - action: ActionRatvarSlabWalls
+      name: enchant-name-RatvarSlab-2
+      icon:
+        sprite: DarkStation/MainGame/DarkForces/Ratvar/Weapons/clockwork_slab.rsi
+        state: clock_slab_overlay_3
+      visuals: Walls
+    - action: ActionRatvarSlabTeleport
+      name: enchant-name-RatvarSlab-3
+      icon:
+        sprite: DarkStation/MainGame/DarkForces/Ratvar/Weapons/clockwork_slab.rsi
+        state: clock_slab_overlay_4
+      visuals: Teleport
+    - action: ActionRatvarSlabHidings
+      name: enchant-name-RatvarSlab-4
+      icon:
+        sprite: DarkStation/MainGame/DarkForces/Ratvar/Weapons/clockwork_slab.rsi
+        state: clock_slab_overlay_6
+      visuals: Hidings
+  - type: Appearance
+  - type: UseDelay
+    delay: 10.0
+  - type: RatvarItem
+  - type: Tool
+    qualities:
+    - RatvarScrewing
+    - RatvarAnchoring
+
+- type: entity
+  parent: BaseAction
+  id: ActionRatvarSlabStun
+  components:
+  - type: Action
+    itemIconStyle: BigItem
+    useDelay: 10
+    checkCanInteract: true
+  - type: TargetAction
+    range: 6
+    interactOnMiss: false
+  - type: EntityTargetAction
+    canTargetSelf: false
+    whitelist:
+      components:
+      - Body
+    event: !type:RatvarSlabStun
+
+- type: entity
+  parent: BaseAction
+  id: ActionRatvarSlabDoors
+  components:
+  - type: Action
+    itemIconStyle: BigItem
+    useDelay: 10
+    checkCanInteract: true
+  - type: TargetAction
+    range: 6
+    interactOnMiss: false
+  - type: EntityTargetAction
+    canTargetSelf: false
+    whitelist:
+      components:
+      - Door
+    event: !type:RatvarSlabDoors
+
+- type: entity
+  parent: BaseAction
+  id: ActionRatvarSlabWalls
+  components:
+  - type: Action
+    itemIconStyle: BigItem
+    useDelay: 30
+    checkCanInteract: true
+  - type: TargetAction
+    range: 6
+    interactOnMiss: false
+  - type: EntityTargetAction
+    canTargetSelf: false
+    whitelist:
+      tags:
+      - Wall
+    event: !type:RatvarSlabWalls
+
+- type: entity
+  parent: BaseAction
+  id: ActionRatvarSlabTeleport
+  components:
+  - type: Action
+    itemIconStyle: BigItem
+    useDelay: 10
+  - type: TargetAction
+    range: 16
+  - type: WorldTargetAction
+    event: !type:RatvarSlabTeleport
+
+- type: entity
+  parent: BaseAction
+  id: ActionRatvarSlabHidings
+  components:
+  - type: Action
+    itemIconStyle: BigItem
+    useDelay: 10
+    checkCanInteract: true
+  - type: TargetAction
+    range: 6
+    interactOnMiss: false
+  - type: EntityTargetAction
+    canTargetSelf: false
+    whitelist:
+      components:
+      - RatvarItem
+      - RatvarStructure
+    event: !type:RatvarSlabHidings

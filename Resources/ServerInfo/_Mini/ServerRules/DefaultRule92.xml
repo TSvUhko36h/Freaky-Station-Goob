@@ -1,11 +1,14 @@
-<Document>
-  <ColorBox Color="#392a3aff" OutlineColor="#5a4a59ff" OutlineThickness="2" Margin="1">
+﻿<Document>
+  <ColorBox Color="#1C1C2866" OutlineColor="#E2E8F022" OutlineThickness="1" Margin="2">
     <Box Orientation="Vertical">
       <Box Orientation="Horizontal" HorizontalAlignment="Center">
-       9.2. Читы и баг
+        [color=#E2E8F0][head=2]9.2. Читы и баги[/head][/color]
+      </Box>
+      <Box Orientation="Vertical" Margin="12">
+        Запрещены читы, макросы, стороннее ПО для получения преимущества и намеренная эксплуатация багов.
 
-       Запрещены читы и прочее ПО.
-        </Box>
+        О найденных багах сообщайте администрации, а не используйте их в своих интересах.
+      </Box>
     </Box>
   </ColorBox>
 </Document>

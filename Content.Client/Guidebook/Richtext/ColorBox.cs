@@ -17,7 +17,7 @@ public sealed class ColorBox : PanelContainer, IDocumentTag
     public bool TryParseTag(Dictionary<string, string> args, [NotNullWhen(true)] out Control? control)
     {
         HorizontalExpand = true;
-        VerticalExpand = true;
+        VerticalExpand = false;
         control = this;
 
         if (args.TryGetValue("Margin", out var margin))

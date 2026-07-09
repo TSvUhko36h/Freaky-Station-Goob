@@ -1,22 +1,43 @@
 - type: entity
-  parent: BaseStructure
+  parent: MarkerBase
+  id: SpawnPointGhostCorticalBorer
+  name: ghost role spawn point
+  suffix: cortical borer
+  categories: [ Spawner ]
+  # requirements:
+  #   - !type:OverallPlaytimeRequirement
+  #     time: 36000 # 10 hrs
+  components:
+  - type: GhostRole
+    name: cortical-borer-ghostrole-name
+    description: cortical-borer-ghostrole-desc
+    rules: ghost-role-information-antagonist-rules
+    mindRoles:
+    - MindRoleCorticalBorer
+    raffle:
+      settings: default
+  - type: GhostRoleMobSpawner
+    prototype: MobCorticalBorer
+  - type: Sprite
+    sprite: Markers/jobs.rsi
+    layers:
+      - state: green
+      - sprite: _Orion/Mobs/Aliens/cortical_borer.rsi
+        state: cortical_borer
+
+- type: entity
+  parent: MarkerBase
   id: SpawnPointSkeletonPirate
-  name: skeleton pirate sleeper
+  name: skeleton pirate cryo capsule
   suffix: Spawner, Ghost Role
   categories: [ Spawner ]
   components:
-  - type: GhostRole
-    name: ghost-role-information-skeleton-pirate-bitrunning-name
-    description: ghost-role-information-skeleton-pirate-bitrunning-description
-    rules: ghost-role-information-antagonist-rules
-    raffle:
-      settings: default
-    mindRoles:
-    - MindRoleGhostRoleFreeAgent
-  - type: GhostRoleMobSpawner
-    prototype: MobSkeletonPirateBitrun
   - type: Sprite
+    sprite: Markers/jobs.rsi
     layers:
-    - sprite: _Orion/Structures/cryostasis_sleeper.rsi
-      state: sleeper_1
-      map: [ "base" ]
+      - state: green
+      - sprite: Mobs/Species/Skeleton/parts.rsi
+        state: skull_icon
+  - type: ConditionalSpawner
+    prototypes:
+    - MobSkeletonPirateBitrun

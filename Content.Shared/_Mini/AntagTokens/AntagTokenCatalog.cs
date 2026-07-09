@@ -46,14 +46,14 @@ public static class AntagTokenCatalog
     public const string WraithRole = "wraith";
     public const string HasturRole = "hastur";
     public const string VoxRole = "vox";
+    public const string BorerRole = "borer";
+    public const string RatvarCultRole = "ratvar_cult";
+    public const string BloodCultRole = "blood_cultist";
 
 
 
 
-    public static readonly (TimeSpan Threshold, int RewardAmount)[] OnlineRewardMilestones =
-    [
-        (TimeSpan.FromHours(3), 1),
-    ];
+    public static readonly (TimeSpan Threshold, int RewardAmount)[] OnlineRewardMilestones = [];
 
     private static readonly Dictionary<int, int> SponsorMonthlyCaps = new()
     {
@@ -130,4 +130,5 @@ public sealed record AntagRoleDefinition(
     string? GhostAutoJoinEntityProto = null,
     int FreeMinimumSponsorLevel = -1,
     IReadOnlyList<ProtoId<JobPrototype>>? JobBlacklist = null,
-    IReadOnlyList<ProtoId<SpeciesPrototype>>? SpeciesBlacklist = null);
+    IReadOnlyList<ProtoId<SpeciesPrototype>>? SpeciesBlacklist = null,
+    string? RequiresPresetGameRuleId = null);

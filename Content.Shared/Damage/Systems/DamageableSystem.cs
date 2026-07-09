@@ -518,8 +518,11 @@ namespace Content.Shared.Damage
                 if (damageable.DamageModifierSetId != null &&
                     _prototypeManager.TryIndex(damageable.DamageModifierSetId, out var modifierSet))
                 {
+//                    damage = DamageSpecifier.ApplyModifierSet(damage, 
+//                        DamageSpecifier.PenetrateArmor(modifierSet, damage.ArmorPenetration)); // Goob edit // Commented by CorvaxGoob
                     damage = DamageSpecifier.ApplyModifierSet(damage,
-                        DamageSpecifier.PenetrateArmor(modifierSet, damage.ArmorPenetration)); // Goob edit
+                        DamageSpecifier.PenetrateArmor(modifierSet, damage.ArmorPenetration),
+                        damage.BypassFlatReductions); // CorvaxGoob
                 }
 
                 if (TryComp(uid, out BodyPartComponent? bodyPart))
@@ -1063,7 +1066,7 @@ namespace Content.Shared.Damage
     public sealed class DamageModifyEvent : EntityEventArgs, IInventoryRelayEvent
     {
         // Whenever locational damage is a thing, this should just check only that bit of armour.
-        public SlotFlags TargetSlots { get; } = ~SlotFlags.POCKET;
+        public SlotFlags TargetSlots { get; private set; } = ~SlotFlags.POCKET;
 
         public readonly EntityUid Target; // Goobstation
         public readonly DamageSpecifier OriginalDamage;

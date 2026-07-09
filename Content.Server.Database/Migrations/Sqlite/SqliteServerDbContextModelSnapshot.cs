@@ -28,6 +28,14 @@ namespace Content.Server.Database.Migrations.Sqlite
                         .HasColumnType("INTEGER")
                         .HasColumnName("admin_rank_id");
 
+                    b.Property<decimal>("AhelpRating")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("ahelp_rating");
+
+                    b.Property<int>("AhelpRatingCount")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("ahelp_rating_count");
+
                     b.Property<bool>("Deadminned")
                         .HasColumnType("INTEGER")
                         .HasColumnName("deadminned");
@@ -79,6 +87,41 @@ namespace Content.Server.Database.Migrations.Sqlite
                         .IsUnique();
 
                     b.ToTable("admin_flag", (string)null);
+                });
+
+            modelBuilder.Entity("Content.Server.Database.AdminHelpRating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("admin_help_rating_id");
+
+                    b.Property<Guid>("AdminUserId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("admin_user_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("PlayerUserId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("player_user_id");
+
+                    b.Property<int?>("RoundId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("round_id");
+
+                    b.Property<byte>("Stars")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("stars");
+
+                    b.HasKey("Id")
+                        .HasName("PK_admin_help_rating");
+
+                    b.HasIndex("PlayerUserId", "CreatedAt");
+
+                    b.ToTable("admin_help_rating", (string)null);
                 });
 
             modelBuilder.Entity("Content.Server.Database.AdminLog", b =>
@@ -796,6 +839,45 @@ namespace Content.Server.Database.Migrations.Sqlite
                     b.HasIndex("UserId");
 
                     b.ToTable("connection_log", (string)null);
+                });
+
+            modelBuilder.Entity("Content.Server.Database.DailyQuestProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("daily_quest_progress_id");
+
+                    b.Property<string>("AssignedQuestIds")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("assigned_quest_ids");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("player_id");
+
+                    b.Property<string>("ProgressValues")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("progress_values");
+
+                    b.Property<DateTime>("QuestDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("quest_date");
+
+                    b.Property<string>("StatusFlags")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("status_flags");
+
+                    b.HasKey("Id")
+                        .HasName("PK_daily_quest_progress");
+
+                    b.HasIndex("PlayerId", "QuestDate")
+                        .IsUnique();
+
+                    b.ToTable("daily_quest_progress", (string)null);
                 });
 
             modelBuilder.Entity("Content.Server.Database.DailyRewardProgress", b =>

@@ -1,0 +1,58 @@
+- type: entity
+  id: RatvarShard
+  parent: BaseItem
+  suffix: Ratvar
+  components:
+  - type: Sprite
+    sprite: DarkStation/MainGame/DarkForces/Ratvar/Items/shard.rsi
+    layers:
+    - state: shard
+  - type: GenericVisualizer
+    visuals:
+      enum.RatvarEnchantmentableVisuals.State:
+        overlay:
+          Reconstruct: { state: shard_overlay_1 }
+          Emp: { state: shard_overlay_2 }
+  - type: UserInterface
+    interfaces:
+      enum.RatvarEnchantmentUIKey.Key:
+        type: RatvarEnchantmentBUI
+  - type: RatvarEnchantmentable
+    enchantments:
+    - action: RatvarShardReconstruct
+      name: enchant-name-RatvarShard-0
+      icon:
+        sprite: DarkStation/MainGame/DarkForces/Ratvar/Items/shard.rsi
+        state: shard_overlay_1
+      visuals: Reconstruct
+    - action: RatvarShardEmp
+      name: enchant-name-RatvarShard-1
+      icon:
+        sprite: DarkStation/MainGame/DarkForces/Ratvar/Items/shard.rsi
+        state: shard_overlay_2
+      visuals: Emp
+  - type: Appearance
+  - type: Item
+    size: Small
+  - type: RatvarShard
+  - type: RatvarItem
+
+- type: entity
+  parent: BaseAction
+  id: RatvarShardReconstruct
+  components:
+  - type: Action
+    itemIconStyle: BigItem
+    useDelay: 10
+  - type: InstantAction
+    event: !type:RatvarShardReconstructEvent
+
+- type: entity
+  parent: BaseAction 
+  id: RatvarShardEmp
+  components:
+  - type: Action
+    itemIconStyle: BigItem
+    useDelay: 10
+  - type: InstantAction
+    event: !type:RatvarShardEmpEvent

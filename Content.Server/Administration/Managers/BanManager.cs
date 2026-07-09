@@ -66,6 +66,12 @@ public sealed partial class BanManager : IBanManager, IPostInjectInit
     // Cached ban exemption flags are used to handle
     private readonly Dictionary<ICommonSession, ServerBanExemptFlags> _cachedBanExemptions = new();
 
+    // Rate limit ban creation to mitigate mass-ban abuse (e.g. via external admin tools).
+    private static readonly TimeSpan BanCreateRateLimitWindow = TimeSpan.FromMinutes(1);
+    private const int BanCreateRateLimitCount = 5;
+    private readonly object _banCreateRateLimitLock = new();
+    private readonly Dictionary<NetUserId, (TimeSpan Start, int Count)> _banCreateRateLimits = new();
+
     public void Initialize()
     {
         _netManager.RegisterNetMessage<MsgRoleBans>();
@@ -139,6 +145,12 @@ public sealed partial class BanManager : IBanManager, IPostInjectInit
     #region Server Bans
     public async void CreateServerBan(CreateServerBanInfo banInfo)
     {
+        if (!CheckBanCreateRateLimit(banInfo.BanningAdmin))
+        {
+            _sawmill.Warning($"Rejected server ban from {banInfo.BanningAdmin}: rate limit exceeded");
+            return;
+        }
+
         var (banDef, expires) = await CreateBanDef(banInfo, BanType.Server, null);
 
         await _db.AddBanAsync(banDef);
@@ -241,6 +253,12 @@ public sealed partial class BanManager : IBanManager, IPostInjectInit
 
     public async void CreateRoleBan(CreateRoleBanInfo banInfo)
     {
+        if (!CheckBanCreateRateLimit(banInfo.BanningAdmin))
+        {
+            _sawmill.Warning($"Rejected role ban from {banInfo.BanningAdmin}: rate limit exceeded");
+            return;
+        }
+
         ImmutableArray<BanRoleDef> roleDefs =
         [
             .. ToBanRoleDef(banInfo.JobPrototypes),

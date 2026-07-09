@@ -1,16 +1,17 @@
-<Document>
-  <ColorBox Color="#3a2a2a" OutlineColor="#5a4a4a" OutlineThickness="2" Margin="1">
+﻿<Document>
+  <ColorBox Color="#1C1C2866" OutlineColor="#E2E8F022" OutlineThickness="1" Margin="2">
     <Box Orientation="Vertical">
       <Box Orientation="Horizontal" HorizontalAlignment="Center">
-        Правило 7: Валидхант
+        [color=#E2E8F0][head=2]Правило 7. Валидхант[/head][/color]
       </Box>
-      <Box Orientation="Vertical" Margin="10">
-        Охота на антагонистов — прерогатива СБ. Обычные игроки не должны бросать работу ради охоты.
+      <Box Orientation="Vertical" Margin="12">
+        Охота на антагонистов: прерогатива СБ. Обычные игроки не должны бросать работу ради охоты.
+
+        - [textlink="7.1. Защита и преследование" link="DefaultRule71"]
+        - [textlink="7.2. Специальные роли" link="DefaultRule72"]
+        - [textlink="7.3. Отсутствие СБ" link="DefaultRule73"]
+        - [textlink="7.4. Доказательства" link="DefaultRule74"]
       </Box>
-    - [textlink="7.1 Защита и преследование" link="DefaultRule71"]
-    - [textlink="7.2 Специальные роли" link="DefaultRule72"]
-    - [textlink="7.3 Отсутствие СБ" link="DefaultRule73"]
-    - [textlink="7.4 Доказательства" link="DefaultRule74"]
-   </Box>
+    </Box>
   </ColorBox>
 </Document>

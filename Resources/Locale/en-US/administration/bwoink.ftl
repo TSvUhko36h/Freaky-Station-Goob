@@ -29,6 +29,8 @@ bwoink-system-introductory-message =
     Any bugs and other related issues should be reported through Discord or Github.
     Misuse of this message system may result in disciplinary action.
 
+bwoink-system-username = System
+
 bwoink-system-typing-indicator = {$players} {$count ->
 [one] is
 *[other] are
@@ -49,3 +51,17 @@ bwoink-system-player-banned = has been banned for: {$banReason}
 
 bwoink-message-admin-only = (Admin Only)
 bwoink-message-silent = (S)
+
+admin-help-rating-prompt = Rate the administrator
+admin-help-rating-collapsible-title = Rate administrator
+admin-help-rating-select-admin = Administrator:
+admin-help-rating-prompt-remaining = Ratings remaining: {$remaining} of {$max}
+admin-help-rating-submit = Submit rating
+admin-help-rating-limit-reached = Daily rating limit reached
+admin-help-rating-cooldown = Next rating available in {$hours} h {$minutes} min
+admin-help-rating-thanks = Thank you for your feedback!
+admin-help-rating-already-rated = You have already submitted a rating today.
+admin-help-rating-chat = {$player} rated {$admin} {$stars} { $stars ->
+    [1] star
+   *[other] stars
+}

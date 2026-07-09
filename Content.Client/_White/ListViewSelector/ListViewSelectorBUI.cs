@@ -14,25 +14,30 @@ public sealed class ListViewSelectorBUI(EntityUid owner, Enum uiKey) : BoundUser
 {
     [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
 
-    private FancyWindow _window = new();
+    private FancyWindow? _window;
     private BoxContainer? _itemsContainer;
     private Dictionary<string, object> _metaData = new();
 
     protected override void Open()
     {
+        base.Open();
+
         _window = FormWindow();
         _window.OnClose += Close;
         _window.OpenCentered();
+
+        if (State is ListViewSelectorState listViewSelectorState)
+            ApplyState(listViewSelectorState);
     }
 
     protected override void UpdateState(BoundUserInterfaceState state)
     {
         base.UpdateState(state);
+
         if (state is not ListViewSelectorState listViewSelectorState)
             return;
 
-        PopulateWindow(listViewSelectorState.Items);
-        _metaData = listViewSelectorState.MetaData;
+        ApplyState(listViewSelectorState);
     }
 
     protected override void Dispose(bool disposing)
@@ -40,7 +45,13 @@ public sealed class ListViewSelectorBUI(EntityUid owner, Enum uiKey) : BoundUser
         base.Dispose(disposing);
 
         if (disposing)
-            _window.Close();
+            _window?.Close();
+    }
+
+    private void ApplyState(ListViewSelectorState listViewSelectorState)
+    {
+        PopulateWindow(listViewSelectorState.Items);
+        _metaData = listViewSelectorState.MetaData;
     }
 
     private FancyWindow FormWindow()
@@ -66,7 +77,7 @@ public sealed class ListViewSelectorBUI(EntityUid owner, Enum uiKey) : BoundUser
         };
 
         scrollContainer.AddChild(itemsContainer);
-        window.AddChild(scrollContainer);
+        window.ContentsContainer.AddChild(scrollContainer);
 
         _itemsContainer = itemsContainer;
 
@@ -89,6 +100,9 @@ public sealed class ListViewSelectorBUI(EntityUid owner, Enum uiKey) : BoundUser
                 itemName = itemPrototype.Name;
                 itemDesc = itemPrototype.Description;
             }
+
+            if (string.IsNullOrWhiteSpace(itemName))
+                itemName = Loc.GetString("list-view-selector-unnamed-entry");
 
             var button = new Button
             {

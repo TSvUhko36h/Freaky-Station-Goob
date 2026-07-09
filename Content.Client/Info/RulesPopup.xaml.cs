@@ -34,6 +34,8 @@ public sealed partial class RulesPopup : Control
     public event Action? OnQuitPressed;
     public event Action? OnAcceptPressed;
 
+    public RulesControl RulesControl => Rules;
+
     public RulesPopup()
     {
         RobustXamlLoader.Load(this);

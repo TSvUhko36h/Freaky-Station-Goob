@@ -18,6 +18,8 @@
     - board
   - type: Paintable
     group: null
+  - type: PinionDoor
+  - type: PinionAirlock
 
 - type: entity
   parent: AirlockGlass
@@ -31,7 +33,7 @@
     node: glassAirlock
     containers:
     - board
-  - type: StaticPrice
-    price: 165
   - type: Paintable
     group: null
+  - type: PinionDoor
+  - type: PinionAirlock

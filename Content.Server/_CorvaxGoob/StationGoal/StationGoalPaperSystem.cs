@@ -1,4 +1,7 @@
 using Content.Server.Fax;
+using Content.Server._Mini.Typan.StationGoal;
+using Content.Server._Mini.TypanWar;
+using Content.Server._TT.StationHandleJob;
 using Content.Server.Station.Systems;
 using Content.Shared._CorvaxGoob.CCCVars;
 using Content.Shared.Fax.Components;
@@ -22,6 +25,8 @@ namespace Content.Server._CorvaxGoob.StationGoal
         [Dependency] private readonly IPlayerManager _playerManager = default!;
         [Dependency] private readonly StationSystem _station = default!;
         [Dependency] private readonly IConfigurationManager _cfg = default!;
+        [Dependency] private readonly TypanStationGoalObjectiveSystem _typanGoals = default!;
+    [Dependency] private readonly NtStationGoalObjectiveSystem _ntGoals = default!;
 
         public override void Initialize()
         {
@@ -125,6 +130,14 @@ namespace Content.Server._CorvaxGoob.StationGoal
                     SpawnAtPosition(spawnEnt, Transform(faxUid).Coordinates);
 
                 wasSent |= fax.ReceiveStationGoal;
+            }
+
+            if (wasSent)
+            {
+                if (HasComp<TTStationHandleJobComponent>(ent))
+                    _typanGoals.OnStationGoalSent(ent, goal);
+                else
+                    _ntGoals.OnStationGoalSent(ent, goal);
             }
 
             return wasSent;

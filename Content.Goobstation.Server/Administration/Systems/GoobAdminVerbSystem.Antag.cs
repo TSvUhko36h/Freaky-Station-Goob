@@ -15,6 +15,8 @@ using Content.Goobstation.Server.Devil.GameTicking.Rules;
 using Content.Goobstation.Server.Shadowling.Rules;
 using Content.Server.Administration.Managers;
 using Content.Server.Antag;
+using Content.Server.RPSX.GameTicking.Rules.Ratvar;
+using Content.Server.WhiteDream.BloodCult.Gamerule;
 using Content.Shared._EinsteinEngines.Silicon.Components;
 using Content.Shared.Administration;
 using Content.Shared.Database;
@@ -99,6 +101,42 @@ public sealed partial class GoobAdminVerbSystem
             Message = Loc.GetString("admin-verb-make-shadowling"),
         };
         args.Verbs.Add(shadowling);
+
+        // WhiteDream - Blood Cult
+        var bloodCultistName = Loc.GetString("admin-verb-text-make-blood-cultist");
+        Verb bloodCultist = new()
+        {
+            Text = bloodCultistName,
+            Category = VerbCategory.Antag,
+            Icon = new SpriteSpecifier.Rsi(
+                new ResPath("/Textures/WhiteDream/BloodCult/cult_hud.rsi"),
+                "cult_member"),
+            Act = () =>
+            {
+                _antag.ForceMakeAntag<BloodCultRuleComponent>(targetPlayer, "BloodCult");
+            },
+            Impact = LogImpact.High,
+            Message = string.Join(": ", bloodCultistName, Loc.GetString("admin-verb-make-blood-cultist")),
+        };
+        args.Verbs.Add(bloodCultist);
+
+        // RPSX - Ratvar
+        var ratvarRighteousName = Loc.GetString("admin-verb-text-make-ratvar-righteous");
+        Verb ratvarRighteous = new()
+        {
+            Text = ratvarRighteousName,
+            Category = VerbCategory.Antag,
+            Icon = new SpriteSpecifier.Rsi(
+                new ResPath("/Textures/DarkStation/MainGame/DarkForces/Ratvar/actions.rsi"),
+                "ratvar"),
+            Act = () =>
+            {
+                _antag.ForceMakeAntag<RatvarRuleComponent>(targetPlayer, "Ratvar");
+            },
+            Impact = LogImpact.High,
+            Message = string.Join(": ", ratvarRighteousName, Loc.GetString("admin-verb-make-ratvar-righteous")),
+        };
+        args.Verbs.Add(ratvarRighteous);
     }
 
     public bool AntagVerbAllowed(GetVerbsEvent<Verb> args, [NotNullWhen(true)] out ICommonSession? target)

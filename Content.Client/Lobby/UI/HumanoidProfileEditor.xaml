@@ -26,9 +26,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
          xmlns:ui="clr-namespace:Content.Client.Lobby.UI"
          HorizontalExpand="True">
         <!-- Left side -->
-        <BoxContainer Orientation="Vertical" Margin="10 10 10 10" HorizontalExpand="True">
+        <BoxContainer Orientation="Vertical" Margin="8 8 8 8" HorizontalExpand="True">
             <!-- Middle container -->
-            <BoxContainer Orientation="Horizontal" SeparationOverride="10" HorizontalExpand="True">
+            <BoxContainer Orientation="Horizontal" SeparationOverride="12" HorizontalExpand="True">
                 <!-- Name box-->
                 <BoxContainer Orientation="Vertical">
                     <ui:HighlightedContainer>
@@ -65,9 +65,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                     </ui:HighlightedContainer>
                 </BoxContainer>
             </BoxContainer>
-            <Control MinHeight="10" />
+            <Control MinHeight="8" />
             <!-- tabContainer -->
-            <TabContainer Name="TabContainer" VerticalExpand="True">
+            <TabContainer Name="TabContainer" VerticalExpand="True" Margin="0 2 0 0">
                 <BoxContainer Orientation="Vertical">
                     <ScrollContainer VerticalExpand="True">
                         <!-- appearanceList -->
@@ -167,26 +167,26 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                         </BoxContainer>
                     </ScrollContainer>
                 </BoxContainer>
-                <BoxContainer Orientation="Vertical">
+                <BoxContainer Orientation="Vertical" Margin="8">
                     <!-- Jobs -->
                     <OptionButton Name="PreferenceUnavailableButton" />
-                    <ScrollContainer VerticalExpand="True">
+                    <ScrollContainer VerticalExpand="True" Margin="0 4 0 0">
                         <BoxContainer Name="JobList" Orientation="Vertical" />
                     </ScrollContainer>
                 </BoxContainer>
-                <BoxContainer Orientation="Vertical" Margin="10">
+                <BoxContainer Orientation="Vertical" Margin="8">
                     <!-- Antags -->
-                    <ScrollContainer VerticalExpand="True">
-                        <BoxContainer Name="AntagList" Orientation="Vertical" />
+                    <ScrollContainer VerticalExpand="True" HScrollEnabled="False">
+                        <BoxContainer Name="AntagList" Orientation="Vertical" HorizontalExpand="True" />
                     </ScrollContainer>
                 </BoxContainer>
-                <BoxContainer Orientation="Vertical" Margin="10">
+                <BoxContainer Orientation="Vertical" Margin="8">
                     <!-- Traits -->
                     <ScrollContainer VerticalExpand="True">
                         <BoxContainer Name="TraitsList" Orientation="Vertical" />
                     </ScrollContainer>
                 </BoxContainer>
-                <BoxContainer Name="MarkingsTab" Orientation="Vertical" Margin="10">
+                <BoxContainer Name="MarkingsTab" Orientation="Vertical" Margin="8">
                     <!-- Markings -->
                     <ScrollContainer VerticalExpand="True">
                         <humanoid:MarkingPicker Name="Markings" IgnoreCategories="Hair,FacialHair" />
@@ -195,9 +195,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </TabContainer>
         </BoxContainer>
         <!-- Right side -->
-        <BoxContainer Orientation="Vertical" VerticalExpand="True" VerticalAlignment="Center">
+        <BoxContainer Orientation="Vertical" VerticalExpand="True" VerticalAlignment="Center" Margin="4 8 8 8">
             <SpriteView Name="SpriteView" Scale="8 8" Margin="4" SizeFlagsStretchRatio="1" />
-            <BoxContainer Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 5">
+            <BoxContainer Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 6">
                 <Button Name="SpriteRotateLeft" Text="◀" StyleClasses="OpenRight" />
                 <cc:VSeparator Margin="2 0 3 0" />
                 <Button Name="SpriteRotateRight" Text="▶" StyleClasses="OpenLeft" />

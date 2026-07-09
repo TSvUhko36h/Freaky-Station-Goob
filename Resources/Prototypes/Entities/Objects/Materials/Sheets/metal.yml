@@ -83,6 +83,13 @@
   suffix: Full
   components:
   - type: Material
+  - type: UserInterface
+    interfaces:
+      enum.RatvarMidasTouchUIKey.Key:
+        type: RatvarMidasTouchBUI
+  - type: MidasMaterial
+    targets:
+    - MidasTouchSteel
   - type: PhysicalComposition
     materialComposition:
       Steel: 100
@@ -191,6 +198,20 @@
           Quantity: 3.3
         - ReagentId: Copper
           Quantity: 6.7
+  - type: UserInterface
+    interfaces:
+      enum.RatvarConstructionUiKey.Key:
+        type: RatvarConstructionMenuBoundUserInterface
+  - type: ActivatableUI
+    inHandsOnly: true
+    key: enum.RatvarConstructionUiKey.Key
+  - type: RatvarConstruction
+    entries:
+    - prototype: RatvarBeaconConstruction
+    - prototype: RatvarWorkshopConstruction
+    - prototype: RatvarAltarConstruction
+    - prototype: ClockworkWallConstruction
+    - prototype: PinionAirlockConstruction
 
 - type: entity
   parent: SheetBrass
@@ -223,6 +244,13 @@
   suffix: Full
   components:
   - type: Material
+  - type: UserInterface
+    interfaces:
+      enum.RatvarMidasTouchUIKey.Key:
+        type: RatvarMidasTouchBUI
+  - type: MidasMaterial
+    targets:
+    - MidasTouchPlasteel
   - type: PhysicalComposition
     materialComposition:
       Plasteel: 100

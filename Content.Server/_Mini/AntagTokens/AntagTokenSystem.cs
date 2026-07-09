@@ -7,7 +7,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Content.Server.Administration.Managers;
+using Content.Server._Mini.AntagUnlock;
+using Content.Server._Mini.JobUnlock;
+using Content.Server._Mini.TypanWar;
+using Content.Server.Popups;
 using Content.Server.Sponsors;
 using Content.Server.Antag;
 using Content.Server.Antag.Components;
@@ -15,11 +18,13 @@ using Content.Server.Database;
 using Content.Server.GameTicking;
 using Content.Server.GameTicking.Events;
 using Content.Server.Mind;
-using Content.Server.Popups;
+using Content.Server.Players.PlayTimeTracking;
 using Content.Server.Preferences.Managers;
 using Content.Server.Roles;
 using Content.Server.Roles.Jobs;
+using Content.Shared._Mini.AntagUnlock;
 using Content.Shared._Mini.AntagTokens;
+using Content.Shared._Mini.JobUnlock;
 using Content.Shared.GameTicking;
 using Content.Shared.Ghost;
 using Content.Shared.Roles;
@@ -66,6 +71,7 @@ public sealed class AntagTokenSystem : EntitySystem
     [Dependency] private readonly TransformSystem _transform = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly IServerPreferencesManager _preferences = default!;
+    [Dependency] private readonly TypanStationWarRuleSystem _typanWar = default!;
 
     private readonly Dictionary<NetUserId, PlayerTokenState> _states = new();
     private readonly Dictionary<NetUserId, int?> _sponsorLevelOverrides = new();
@@ -80,7 +86,7 @@ public sealed class AntagTokenSystem : EntitySystem
     private bool _databaseSyncPassRunning;
     private bool _storeEnabled = true;
     private const float DatabaseSyncInterval = 15f;
-    private const int SharedTokenSlotsPlayersPerSlot = 10;
+    private const int SharedTokenSlotsPlayersPerSlot = 8;
     private bool _enforcingSharedTokenSlotCapacity;
     private readonly Dictionary<string, int> _ghostMinimumTimeRandomBonusByRole = new();
     private static readonly HashSet<string> BlockedRoundstartRolePresets = new(StringComparer.OrdinalIgnoreCase)
@@ -94,6 +100,7 @@ public sealed class AntagTokenSystem : EntitySystem
         "NukeTraitor",
         "NukeLing",
         "Honkops",
+        "TypanStationWar",
     };
 
     private static int EncodeUtcDayNumber(DateTime utc)
@@ -267,6 +274,103 @@ public sealed class AntagTokenSystem : EntitySystem
         return true;
     }
 
+    public bool HasJobUnlock(NetUserId userId, ProtoId<JobPrototype> jobId)
+    {
+        return _states.TryGetValue(userId, out var state) && state.JobUnlocks.Contains(jobId);
+    }
+
+    public HashSet<ProtoId<JobPrototype>> GetJobUnlocks(NetUserId userId)
+    {
+        if (_states.TryGetValue(userId, out var state))
+            return new HashSet<ProtoId<JobPrototype>>(state.JobUnlocks);
+
+        return new HashSet<ProtoId<JobPrototype>>();
+    }
+
+    public bool TryUnlockJob(NetUserId userId, ProtoId<JobPrototype> jobId, int cost, out string? error)
+    {
+        error = null;
+
+        var state = EnsureStateExists(userId);
+        if (state == null)
+        {
+            error = Loc.GetString("antag-tokens-error-currency-not-loaded");
+            return false;
+        }
+
+        if (state.JobUnlocks.Contains(jobId))
+        {
+            error = Loc.GetString("job-unlock-error-already-unlocked");
+            return false;
+        }
+
+        if (!TrySpendBalance(userId, cost, out error))
+            return false;
+
+        state = EnsureStateExists(userId);
+        if (state == null)
+            return false;
+
+        state.JobUnlocks.Add(jobId);
+        PersistState(userId, state);
+        EntityManager.System<JobUnlockSystem>().SendJobUnlocksIfOnline(userId);
+        return true;
+    }
+
+    public bool HasAntagUnlock(NetUserId userId, ProtoId<AntagPrototype> antagId)
+    {
+        return _states.TryGetValue(userId, out var state) && state.AntagUnlocks.Contains(antagId);
+    }
+
+    public HashSet<ProtoId<AntagPrototype>> GetAntagUnlocks(NetUserId userId)
+    {
+        if (_states.TryGetValue(userId, out var state))
+            return new HashSet<ProtoId<AntagPrototype>>(state.AntagUnlocks);
+
+        return new HashSet<ProtoId<AntagPrototype>>();
+    }
+
+    public bool TryUnlockAntag(NetUserId userId, ProtoId<AntagPrototype> antagId, int cost, out string? error)
+    {
+        error = null;
+
+        var state = EnsureStateExists(userId);
+        if (state == null)
+        {
+            error = Loc.GetString("antag-tokens-error-currency-not-loaded");
+            return false;
+        }
+
+        if (state.AntagUnlocks.Contains(antagId))
+        {
+            error = Loc.GetString("antag-unlock-error-already-unlocked");
+            return false;
+        }
+
+        if (!TrySpendBalance(userId, cost, out error))
+            return false;
+
+        state = EnsureStateExists(userId);
+        if (state == null)
+            return false;
+
+        state.AntagUnlocks.Add(antagId);
+        PersistState(userId, state);
+        EntityManager.System<AntagUnlockSystem>().SendAntagUnlocksIfOnline(userId);
+        return true;
+    }
+
+    public bool HasAntagPlaytimeAccess(ICommonSession session, ProtoId<AntagPrototype> antagId)
+    {
+        if (GetEffectiveSponsorLevel(session.UserId) > 0)
+            return true;
+
+        if (HasAntagUnlock(session.UserId, antagId))
+            return true;
+
+        return EntityManager.System<PlayTimeTrackingSystem>().IsAllowed(session, antagId);
+    }
+
     public int GetBalance(NetUserId userId)
     {
         return EnsureStateExists(userId)?.Balance ?? 0;
@@ -330,6 +434,7 @@ public sealed class AntagTokenSystem : EntitySystem
         if (EnsureStateExists(session.UserId) == null)
             return false;
 
+        EntityManager.System<AntagUnlockSystem>().SendRoleBypassState(session);
         SendState(session.UserId);
         return true;
     }
@@ -367,6 +472,14 @@ public sealed class AntagTokenSystem : EntitySystem
         if (!_listings.TryGetListing(roleId, out var role))
         {
             error = Loc.GetString("antag-tokens-error-role-not-in-store");
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(role.AntagId) &&
+            _prototype.TryIndex<AntagPrototype>(role.AntagId, out var antagProto) &&
+            !HasAntagPlaytimeAccess(session, antagProto.ID))
+        {
+            error = Loc.GetString("antag-unlock-error-playtime-required");
             return false;
         }
 
@@ -625,6 +738,9 @@ public sealed class AntagTokenSystem : EntitySystem
         _onlineRewards[player.UserId].Resume(now);
         if (prevMonthlyYear != state.MonthlyYear || prevMonthlyMonth != state.MonthlyMonth)
             PersistState(player.UserId, state);
+
+        EntityManager.System<JobUnlockSystem>().SendJobUnlocksIfOnline(player.UserId);
+        EntityManager.System<AntagUnlockSystem>().SendRoleBypassStateIfOnline(player.UserId);
     }
 
     private PlayerTokenState BuildPlayerTokenStateFromRows(
@@ -675,6 +791,18 @@ public sealed class AntagTokenSystem : EntitySystem
                     {
                         state.PendingGhostAutoRoleId = token.TokenId["ghost-auto-pending:".Length..];
                         state.PendingGhostAutoQueuedAtUtc = DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
+                    }
+                    else if (token.TokenId.StartsWith(AntagUnlockCatalog.EntryPrefix, StringComparison.Ordinal) &&
+                             token.Amount > 0)
+                    {
+                        var antagId = token.TokenId[AntagUnlockCatalog.EntryPrefix.Length..];
+                        state.AntagUnlocks.Add(new ProtoId<AntagPrototype>(antagId));
+                    }
+                    else if (token.TokenId.StartsWith(JobUnlockCatalog.EntryPrefix, StringComparison.Ordinal) &&
+                             token.Amount > 0)
+                    {
+                        var jobId = token.TokenId[JobUnlockCatalog.EntryPrefix.Length..];
+                        state.JobUnlocks.Add(new ProtoId<JobPrototype>(jobId));
                     }
                     else if (token.TokenId.StartsWith("role-credit:", StringComparison.Ordinal) &&
                         token.Amount > 0)
@@ -736,6 +864,24 @@ public sealed class AntagTokenSystem : EntitySystem
         foreach (var (key, amount) in a.RoleCredits)
         {
             if (!b.RoleCredits.TryGetValue(key, out var other) || other != amount)
+                return false;
+        }
+
+        if (a.JobUnlocks.Count != b.JobUnlocks.Count)
+            return false;
+
+        foreach (var jobId in a.JobUnlocks)
+        {
+            if (!b.JobUnlocks.Contains(jobId))
+                return false;
+        }
+
+        if (a.AntagUnlocks.Count != b.AntagUnlocks.Count)
+            return false;
+
+        foreach (var antagId in a.AntagUnlocks)
+        {
+            if (!b.AntagUnlocks.Contains(antagId))
                 return false;
         }
 
@@ -984,8 +1130,10 @@ public sealed class AntagTokenSystem : EntitySystem
 
             if (IsReservedRoleBlockedByCurrentJob(session, role))
             {
-                ShowPopup(session, Loc.GetString("antag-tokens-popup-job-blocks-queued"));
+                RefundPendingDeposit(session.UserId, state);
+                PersistState(session.UserId, state);
                 SendState(session.UserId);
+                ShowPopup(session, Loc.GetString("antag-tokens-popup-job-blocks-queued"));
                 continue;
             }
 
@@ -1194,7 +1342,9 @@ public sealed class AntagTokenSystem : EntitySystem
             return false;
         }
 
-        var ruleEntity = _gameTicker.AddGameRule(role.GameRuleId!);
+        var ruleEntity = TryResolveGameRuleForTokenRole(role, out var existingRule)
+            ? existingRule
+            : _gameTicker.AddGameRule(role.GameRuleId!);
         if (!TryComp<AntagSelectionComponent>(ruleEntity, out var selection))
         {
             error = Loc.GetString("antag-tokens-error-rule-missing-antag-selection");
@@ -1404,10 +1554,28 @@ public sealed class AntagTokenSystem : EntitySystem
             return false;
         }
 
-        if (role.Mode == AntagPurchaseMode.LobbyDeposit && cache.RoundstartBlockedByPreset)
+        if (cache.RoundstartBlockedByPreset &&
+            role.Mode is AntagPurchaseMode.LobbyDeposit or AntagPurchaseMode.GhostRule)
         {
             statusLocKey = "antag-store-status-unavailable";
             return false;
+        }
+
+        if (!string.IsNullOrEmpty(role.RequiresPresetGameRuleId))
+        {
+            if (cache.InRound)
+            {
+                if (!_gameTicker.IsGameRuleAdded(role.RequiresPresetGameRuleId))
+                {
+                    statusLocKey = "antag-store-status-unavailable";
+                    return false;
+                }
+            }
+            else if (IsPresetMissingRequiredGameRule(role.RequiresPresetGameRuleId))
+            {
+                statusLocKey = "antag-store-status-unavailable";
+                return false;
+            }
         }
 
         if (role.Mode == AntagPurchaseMode.LobbyDeposit && !purchased && IsAntagTrackGloballySaturated(in cache))
@@ -1784,6 +1952,16 @@ private async Task PersistStateAsync(NetUserId userId, PlayerTokenState state)
         tasks.Add(_db.SetPlayerAntagTokenAmount(userId.UserId, AntagTokenCatalog.GetRoleCreditEntryId(role), amount));
     }
 
+    foreach (var jobId in state.JobUnlocks)
+    {
+        tasks.Add(_db.SetPlayerAntagTokenAmount(userId.UserId, JobUnlockCatalog.GetEntryId(jobId), 1));
+    }
+
+    foreach (var antagId in state.AntagUnlocks)
+    {
+        tasks.Add(_db.SetPlayerAntagTokenAmount(userId.UserId, AntagUnlockCatalog.GetEntryId(antagId), 1));
+    }
+
     foreach (var listing in _listings.ListingsOrdered)
     {
         if (listing.Mode != AntagPurchaseMode.GhostRule || string.IsNullOrWhiteSpace(listing.GhostAutoJoinEntityProto))
@@ -1853,11 +2031,57 @@ private void NormalizeMonthlyState(PlayerTokenState state, DateTime nowUtc, NetU
 
     private bool IsRoundstartRoleBlockedByPreset()
     {
+        if (_typanWar.IsTypanWarBlocking())
+            return true;
+
         var preset = _gameTicker.RunLevel == GameRunLevel.PreRoundLobby
             ? _gameTicker.Preset
             : _gameTicker.CurrentPreset ?? _gameTicker.Preset;
 
         return preset != null && BlockedRoundstartRolePresets.Contains(preset.ID);
+    }
+
+    private bool IsPresetMissingRequiredGameRule(string requiredRuleId)
+    {
+        var preset = _gameTicker.RunLevel == GameRunLevel.PreRoundLobby
+            ? _gameTicker.Preset
+            : _gameTicker.CurrentPreset ?? _gameTicker.Preset;
+
+        if (preset == null)
+            return true;
+
+        foreach (var rule in preset.Rules)
+        {
+            if (rule.Id == requiredRuleId)
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool TryFindAddedGameRule(string ruleId, out EntityUid ruleEntity)
+    {
+        foreach (var rule in _gameTicker.GetAddedGameRules())
+        {
+            if (MetaData(rule).EntityPrototype?.ID == ruleId)
+            {
+                ruleEntity = rule;
+                return true;
+            }
+        }
+
+        ruleEntity = EntityUid.Invalid;
+        return false;
+    }
+
+    private bool TryResolveGameRuleForTokenRole(AntagRoleDefinition role, out EntityUid ruleEntity)
+    {
+        ruleEntity = EntityUid.Invalid;
+
+        if (string.IsNullOrEmpty(role.RequiresPresetGameRuleId))
+            return false;
+
+        return TryFindAddedGameRule(role.RequiresPresetGameRuleId, out ruleEntity);
     }
 
     private static void SpendForRole(PlayerTokenState state, AntagRoleDefinition role, bool useRoleCredit, bool useDonorDailyFree,
@@ -1934,7 +2158,7 @@ private void NormalizeMonthlyState(PlayerTokenState state, DateTime nowUtc, NetU
     private sealed class OnlineRewardState
     {
         private static readonly TimeSpan RewardCycleLength = TimeSpan.FromHours(24);
-        public HashSet<TimeSpan> GrantedThresholds { get; } = new();
+        public HashSet<TimeSpan> GrantedThresholds { get; private set; } = new();
         private TimeSpan _accumulatedOnline = TimeSpan.Zero;
         private DateTime? _onlineSinceUtc;
         private DateTime _cycleStartUtc = DateTime.MinValue;
@@ -2016,7 +2240,11 @@ private void NormalizeMonthlyState(PlayerTokenState state, DateTime nowUtc, NetU
         /// </summary>
         public bool GhostAntagConsumedMark { get; set; }
 
-        public Dictionary<string, int> RoleCredits { get; } = new();
+        public Dictionary<string, int> RoleCredits { get; private set; } = new();
+
+        public HashSet<ProtoId<JobPrototype>> JobUnlocks { get; private set; } = new();
+
+        public HashSet<ProtoId<AntagPrototype>> AntagUnlocks { get; private set; } = new();
     }
 
     private void OnGhostRoleTakenForToken(EntityUid uid, GhostRoleComponent _, ref TakeGhostRoleEvent args)

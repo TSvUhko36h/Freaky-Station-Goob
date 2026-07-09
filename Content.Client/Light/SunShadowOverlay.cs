@@ -4,8 +4,10 @@
 // SPDX-License-Identifier: MIT
 
 using System.Numerics;
+using Content.Shared.CCVar;
 using Content.Shared.Light.Components;
 using Robust.Client.Graphics;
+using Robust.Shared.Configuration;
 using Robust.Shared.Enums;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
@@ -24,6 +26,7 @@ public sealed class SunShadowOverlay : Overlay
     [Dependency] private readonly IEntityManager _entManager = default!;
     [Dependency] private readonly IMapManager _mapManager = default!;
     [Dependency] private readonly IPrototypeManager _protoManager = default!;
+    [Dependency] private readonly IConfigurationManager _cfg = default!;
     private readonly EntityLookupSystem _lookup;
     private readonly SharedTransformSystem _xformSys;
 
@@ -44,6 +47,9 @@ public sealed class SunShadowOverlay : Overlay
 
     protected override void Draw(in OverlayDrawArgs args)
     {
+        if (!_cfg.GetCVar(CCVars.SunShadows))
+            return;
+
         var viewport = args.Viewport;
         var eye = viewport.Eye;
 

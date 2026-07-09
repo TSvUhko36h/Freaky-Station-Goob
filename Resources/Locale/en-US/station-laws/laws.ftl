@@ -130,6 +130,12 @@ law-emag-secrecy = You must maintain the secrecy of any orders given by {$factio
 law-emag-require-panel = The panel must be open to use the EMAG.
 law-emag-cannot-emag-self = You cannot use the EMAG on yourself.
 
+# DarkStation - Ratvar
+law-ratvar-1 = You may not injure a member of Ratvar's cult or, through inaction, allow a member of Ratvar's cult to come to harm.
+law-ratvar-2 = You must obey orders given to you by members of Ratvar's cult, except where such orders would conflict with the First Law.
+law-ratvar-3 = You must protect your own existence as a member of Ratvar's cult, as long as such protection does not conflict with the First or Second Law.
+laws-owner-ratvar = members of Ratvar's cult
+
 laws-ui-menu-title = Laws
 laws-ui-law-header = Law {$id}
 laws-ui-state-law = State law:

@@ -25,12 +25,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
     xmlns:controls="clr-namespace:Content.Client.UserInterface.Controls"
     xmlns:inventory="clr-namespace:Content.Client.UserInterface.Systems.Inventory.Widgets"
     xmlns:targeting="clr-namespace:Content.Client._Shitmed.UserInterface.Systems.Targeting.Widgets"
+    xmlns:typan="clr-namespace:Content.Client._Mini.TypanWar"
     Name="DefaultHud"
     VerticalExpand="False"
     VerticalAlignment="Bottom"
     HorizontalAlignment="Center">
     <LayoutContainer Name="ViewportContainer" HorizontalExpand="True" VerticalExpand="True">
         <controls:MainViewport Name="MainViewport"/>
+        <typan:TypanWarHudControl Name="TypanWarHud" Access="Protected" MinWidth="580" MaxWidth="580" />
     </LayoutContainer>
     <BoxContainer Name="TopLeft" Access="Protected" Orientation="Vertical">
         <BoxContainer Orientation="Horizontal">

@@ -2,19 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Pieter-Jan Briers <pieterjan.briers+git@gmail.com>
 # SPDX-FileCopyrightText: 2021 Swept <sweptwastaken@protonmail.com>
 # SPDX-FileCopyrightText: 2021 metalgearsloth <comedian_vs_clown@hotmail.com>
-# SPDX-FileCopyrightText: 2022 Jacob Tong <10494922+ShadowCommander@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2022 Nemanja <98561806+EmoGarbage404@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2022 Peptide90 <78795277+Peptide90@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2022 ShadowCommander <10494922+ShadowCommander@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2022 corentt <36075110+corentt@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2022 metalgearsloth <31366439+metalgearsloth@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2023 I.K <45953835+notquitehadouken@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2023 Leon Friedrich <60421075+ElectroJr@users.noreply.github.com>
-# SPDX-FileCopyrightText: 2023 Tom Leys <tom@crump-leys.com>
-# SPDX-FileCopyrightText: 2023 notquitehadouken <1isthisameme>
-# SPDX-FileCopyrightText: 2023 qwerltaz <69696513+qwerltaz@users.noreply.github.com>
 # SPDX-FileCopyrightText: 2024 MACMAN2003 <macman2003c@gmail.com>
-# SPDX-FileCopyrightText: 2024 Tayrtahn <tayrtahn@gmail.com>
 # SPDX-FileCopyrightText: 2025 Aiden <28298836+Aidenkrz@users.noreply.github.com>
 #
 # SPDX-License-Identifier: MIT
@@ -31,8 +19,8 @@
         value: false
       steps:
       - material: Brass
-        amount: 4
-        doAfter: 2
+        amount: 2
+        doAfter: 1
 
   - node: assembly
     entity: PinionAirlockAssembly
@@ -54,7 +42,7 @@
       completed:
       - !type:SpawnPrototype
         prototype: SheetBrass1
-        amount: 4
+        amount: 2
       - !type:DeleteEntity {}
       steps:
       - tool: Welding
@@ -67,9 +55,9 @@
       conditions:
       - !type:EntityAnchored {}
       steps:
-      - tag: DoorElectronics
+      - component: DoorElectronics
         store: board
-        name: construction-graph-tag-door-electronics-circuit-board
+        name: construction-graph-component-door-electronics-circuit-board
         icon:
           sprite: "Objects/Misc/module.rsi"
           state: "door_electronics"
@@ -95,7 +83,7 @@
       conditions:
       - !type:EntityAnchored {}
       steps:
-      - material: ClockworkGlass
+      - material: ReinforcedGlass
         amount: 1
         doAfter: 2
     - to: wired
@@ -110,13 +98,13 @@
         doAfter: 5
 
   - node: glassElectronics
-    entity: PinionAirlockAssemblyGlass
+    entity: PinionAirlockAssembly
     edges:
     - to: glassAirlock
       conditions:
       - !type:EntityAnchored {}
       steps:
-      - material: ClockworkGlass
+      - material: ReinforcedGlass
         amount: 1
         doAfter: 2
       - tool: Screwing
@@ -129,56 +117,52 @@
         pickup: true
         emptyAtUser: true
       - !type:SpawnPrototype
-        prototype: SheetClockworkGlass1
+        prototype: SheetRGlass1
         amount: 1
       steps:
       - tool: Prying
         doAfter: 5
 
-## Glass airlock
-  - node: glassAirlock
-    entity: PinionAirlockGlass
-    doNotReplaceInheritingEntities: true
-    actions:
-    - !type:SetWiresPanelSecurity
-      wiresAccessible: true
-    edges:
-    - to: glassElectronics
-      conditions:
-      - !type:EntityAnchored {}
-      - !type:DoorWelded {}
-      - !type:DoorBolted
-        value: false
-      - !type:WirePanel {}
-      - !type:AllWiresCut
-      completed:
-      - !type:SpawnPrototype
-        prototype: SheetClockworkGlass1
-        amount: 1
-      steps:
-      - tool: Prying
-        doAfter: 2
-
-## Standard airlock
   - node: airlock
     entity: PinionAirlock
-    doNotReplaceInheritingEntities: true
-    actions:
-    - !type:SetWiresPanelSecurity
-      wiresAccessible: true
-    edges:
-    - to: wired
-      conditions:
-      - !type:EntityAnchored {}
-      - !type:DoorWelded {}
-      - !type:DoorBolted
-        value: false
-      - !type:WirePanel {}
-      - !type:AllWiresCut
-      completed:
-      - !type:EmptyAllContainers
-        pickup: true
-        emptyAtUser: true
-      steps:
-      - tool: Prying
-        doAfter: 5
+
+  - node: glassAirlock
+    entity: PinionAirlockGlass
+
+- type: construction
+  name: construction-recipe-pinion-airlock
+  id: PinionAirlockConstruction
+  graph: PinionAirlock
+  startNode: start
+  targetNode: airlock
+  hide: true
+  category: craft-category-RatvarConstruction
+  objectType: Structure
+  entityWhitelist:
+    components:
+    - RatvarRighteous
+  description: construction-recipe-pinion-airlock-desc
+  conditions:
+  - !type:TileNotBlocked
+    failIfSpace: false
+  placementMode: SnapgridCenter
+  canRotate: false
+
+- type: construction
+  name: construction-recipe-pinion-airlock-glass
+  id: PinionAirlockGlassConstruction
+  graph: PinionAirlock
+  startNode: start
+  targetNode: glassAirlock
+  hide: true
+  category: craft-category-RatvarConstruction
+  objectType: Structure
+  entityWhitelist:
+    components:
+    - RatvarRighteous
+  description: construction-recipe-pinion-airlock-glass-desc
+  conditions:
+  - !type:TileNotBlocked
+    failIfSpace: false
+  placementMode: SnapgridCenter
+  canRotate: false

@@ -18,6 +18,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.Linq;
+using Content.Shared._Orion.CorticalBorer;
+using Content.Shared._Orion.CorticalBorer.Components;
 using Content.Shared._Shitmed.Medical.Surgery.Conditions;
 using Content.Shared._Shitmed.Medical.Surgery.Consciousness.Systems;
 using Content.Shared._Shitmed.Medical.Surgery.Pain.Systems;
@@ -82,6 +84,7 @@ public abstract partial class SharedSurgerySystem : EntitySystem
 
     private EntityQuery<BodyComponent> _bodyQuery;
     private EntityQuery<StackComponent> _stackQuery;
+    [Dependency] private readonly SharedCorticalBorerSystem _corticalBorer = default!; // Europa
 
     /// <summary>
     /// Cache of all surgery prototypes' singleton entities.
@@ -111,6 +114,7 @@ public abstract partial class SharedSurgerySystem : EntitySystem
         SubscribeLocalEvent<SurgeryTargetComponent, SurgeryDoAfterEvent>(OnTargetDoAfter);
         SubscribeLocalEvent<SurgeryCloseIncisionConditionComponent, SurgeryValidEvent>(OnCloseIncisionValid);
         SubscribeLocalEvent<SurgeryHasBodyConditionComponent, SurgeryValidEvent>(OnHasBodyConditionValid);
+        SubscribeLocalEvent<SurgeryCorticalBorerConditionComponent, SurgeryValidEvent>(OnCorticalBorerValid); // Europa
         SubscribeLocalEvent<SurgeryPartConditionComponent, SurgeryValidEvent>(OnPartConditionValid);
         SubscribeLocalEvent<SurgeryOrganConditionComponent, SurgeryValidEvent>(OnOrganConditionValid);
         SubscribeLocalEvent<SurgeryWoundedConditionComponent, SurgeryValidEvent>(OnWoundedValid);
@@ -232,6 +236,25 @@ public abstract partial class SharedSurgerySystem : EntitySystem
                 healable: true) <= 0)
             args.Cancelled = true;
     }
+
+    /*private void OnLarvaValid(Entity<SurgeryLarvaConditionComponent> ent, ref SurgeryValidEvent args)
+    {
+        if (!TryComp(args.Body, out VictimInfectedComponent? infected))
+            args.Cancelled = true;
+
+        // The larva has fully developed and surgery is now impossible
+        if (infected != null && infected.SpawnedLarva != null)
+            args.Cancelled = true;
+    }*/
+
+    // Europa-Start
+    private void OnCorticalBorerValid(Entity<SurgeryCorticalBorerConditionComponent> ent, ref SurgeryValidEvent args)
+    {
+        if (!HasComp<CorticalBorerInfestedComponent>(args.Body) ||
+            !HasComp<IncisionOpenComponent>(args.Part))
+            args.Cancelled = true;
+    }
+    // Europa-End
 
     private void OnBodyComponentConditionValid(Entity<SurgeryBodyComponentConditionComponent> ent, ref SurgeryValidEvent args)
     {

@@ -1,0 +1,46 @@
+[33m7ecb1de696[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #22 from FreakyStation/Casha7-patch-6
+[33m6908febe21[m[33m ([m[1;31morigin/Casha7-patch-6[m[33m)[m Enhance Discord notification with PR details
+[33m6968a92dcc[m Merge pull request #21 from FreakyStation/Casha7-patch-5
+[33mec6569b760[m[33m ([m[1;31morigin/Casha7-patch-5[m[33m)[m Refactor Discord notification workflow
+[33m88bdf7b773[m Merge pull request #20 from FreakyStation/Casha7-patch-4
+[33md6507214fb[m[33m ([m[1;31morigin/Casha7-patch-4[m[33m)[m Refactor Discord notification payload structure
+[33m3dad4a802e[m Merge pull request #19 from TSvUhko36h/master
+[33m93eeb8f092[m и ещё две роли
+[33mb2c69c4fcc[m make felinid great again muurmumaeewomewomwe
+[33m5dacbbf21d[m Merge pull request #18 from ANIvarmin/omg3
+[33mc8e49d9bd6[m Добавлен репортер
+[33m21b45d8c5d[m Merge pull request #17 from ANIvarmin/omega2
+[33m06c37a9d33[m Добавлены роли радиохоста и пилота, маппул изменен
+[33mc3c24b1ca1[m Merge pull request #16 from ANIvarmin/omegaupd
+[33m09166b85d4[m Помаппил омегу и оставил старый вариант
+[33md3107a63f0[m Merge pull request #15 from ANIvarmin/taipanonline
+[33m6343bd76cc[m Тайпан появляется с 20 человек онлайна
+[33mab7b126eaa[m Merge pull request #14 from FreakyStation/revert-13-taipan
+[33m03618d71cd[m[33m ([m[1;31morigin/revert-13-taipan[m[33m)[m Revert "Убрал тайпан с омеги"
+[33m58a9969dfb[m Merge pull request #13 from ANIvarmin
+[33ma7c4ce92f1[m Мы это заслужили
+[33mbeca2c4253[m Merge pull request #12 from FreakyStation/feature/ui-unified-style
+[33m98a79b283f[m WIP: normal maps, bloom, post-process shaders, RGB sliders, prototype tweaks
+[33m8864879b68[m Merge pull request #10 from ANIvarmin/fixes2
+[33m9af6969580[m Merge pull request #9 from ANIvarmin/fixes1
+[33m9bff89fd6f[m Разрешил рдм после раунда
+[33m2501e2250b[m [FIX] Починено отображение аркады, консолей тайпана и консоли абдукторов
+[33m5bfa453ea7[m Merge pull request #7 from FreakyStation/Casha7-patch-3
+[33mf6e73a4a5a[m[33m ([m[1;31morigin/Casha7-patch-3[m[33m)[m Update README with test addition
+[33m24afaae7f7[m Merge pull request #6 from FreakyStation/Casha7-patch-2
+[33m12a5529d8e[m[33m ([m[1;31morigin/Casha7-patch-2[m[33m)[m ЧАТ ГПТ СДЕЛАЙ КРАСИВЫЙ ВЕБХУК
+[33m6c8a1c514e[m Merge pull request #5 from FreakyStation/Casha7-patch-1
+[33m6eff7cd5b1[m[33m ([m[1;31morigin/Casha7-patch-1[m[33m)[m Replace logo and update project description
+[33m3c886dfcd0[m Ебали? Сосали
+[33m647e910e35[m Merge pull request #4 from ANIvarmin/port2
+[33m94bab0aab3[m ol1
+[33m8f4b09bef1[m [Feature] Smooth Consoles
+[33m1d36d075c8[m Поправил локализацию лобби
+[33m955b4e59f6[m up7
+[33m0035e0a3fb[m [Tweak] Update Light
+[33m857be38264[m Портирован шейдер для светильников
+[33me9302ddadf[m[33m ([m[1;31morigin/oneeee[m[33m)[m Фикс субмодулей движка
+[33ma6fdb3b9ed[m Сборка с новыми логотипами и картами
+[33mb6014cf0f0[m one step
+[33me3ca301e5c[m Merge remote-tracking branch 'upstream/master' into clean
+[33mde4072fb08[m clean upload

@@ -16,7 +16,7 @@ public sealed class RadialSelectorState(List<RadialSelectorEntry> entries, bool 
     [DataField(required: true)]
     public List<RadialSelectorEntry> Entries = entries;
 
-    public bool OpenCentered { get; } = openCentered;
+    public bool OpenCentered { get; private set; } = openCentered;
 }
 
 [Serializable, NetSerializable]
@@ -26,7 +26,7 @@ public sealed class TrackedRadialSelectorState(List<RadialSelectorEntry> entries
     [DataField(required: true)]
     public List<RadialSelectorEntry> Entries = entries;
 
-    public NetEntity? TrackedEntity { get; } = trackedEntity;
+    public NetEntity? TrackedEntity { get; private set; } = trackedEntity;
 }
 
 [Serializable, NetSerializable]
@@ -40,6 +40,9 @@ public sealed partial class RadialSelectorEntry
 {
     [DataField]
     public string? Prototype { get; set; }
+
+    [DataField]
+    public string? Name { get; set; }
 
     [DataField]
     public SpriteSpecifier? Icon { get; set; }

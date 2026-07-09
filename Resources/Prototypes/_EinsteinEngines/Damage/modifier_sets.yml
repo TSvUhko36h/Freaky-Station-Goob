@@ -12,19 +12,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 - type: damageModifierSet
-  id: IPC
-  coefficients:
-    Blunt: 0.8
-    Slash: 0.8
-    Piercing: 0.8
-    Heat: 1.7
-    Shock: 2
-  # Goobstation
-    Radiation: 0.4
-    Ion: 0.8
-  ignoreArmorPierceFlags: All
-
-- type: damageModifierSet
   id: Shadowkin
   coefficients:
     Blunt: 1.25
@@ -44,4 +31,17 @@
     Heat: 1.5
     Poison: 0.8
     Radiation: 0
-    Bloodloss: 0.0 # Immune to weapons that directly deal bloodloss damage
+
+- type: damageModifierSet
+  id: IPC
+  coefficients:
+    Blunt: 0.8
+    Slash: 0.8
+    Piercing: 0.8
+    Heat: 1.7
+    Shock: 2
+    Poison: 0
+    Cold: 0.2
+    Radiation: 0.4
+    Ion: 0.8
+  ignoreArmorPierceFlags: All

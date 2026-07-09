@@ -15,6 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
          xmlns:gfx="clr-namespace:Robust.Client.Graphics;assembly=Robust.Client"
          xmlns:style="clr-namespace:Content.Client.Stylesheets"
+         xmlns:ui="clr-namespace:Content.Client.Lobby.UI"
          xmlns:cc="clr-namespace:Content.Client.Administration.UI.CustomControls"
          VerticalExpand="True">
     <Control>
@@ -43,16 +44,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             </BoxContainer>
             <PanelContainer>
                 <PanelContainer.PanelOverride>
-                    <gfx:StyleBoxFlat BackgroundColor="{x:Static style:StyleNano.NanoGold}" ContentMarginTopOverride="2" />
+                    <gfx:StyleBoxFlat BackgroundColor="{x:Static ui:LobbyUiStyles.GlassAccentLine}" ContentMarginTopOverride="1" />
                 </PanelContainer.PanelOverride>
             </PanelContainer>
             <BoxContainer Orientation="Horizontal" VerticalExpand="True" SeparationOverride="0">
-                <ScrollContainer MinSize="325 0" Margin="5 5 0 0">
+                <ScrollContainer MinSize="325 0" Margin="6 6 0 6">
                     <BoxContainer Name="Characters" Orientation="Vertical" />
                 </ScrollContainer>
-                <PanelContainer MinSize="2 0">
+                <PanelContainer MinSize="1 0">
                     <PanelContainer.PanelOverride>
-                        <gfx:StyleBoxFlat BackgroundColor="{x:Static style:StyleNano.NanoGold}" ContentMarginTopOverride="2" />
+                        <gfx:StyleBoxFlat BackgroundColor="{x:Static ui:LobbyUiStyles.GlassAccentLine}" ContentMarginTopOverride="1" />
                     </PanelContainer.PanelOverride>
                 </PanelContainer>
                 <BoxContainer Name="CharEditor" HorizontalExpand="True" />

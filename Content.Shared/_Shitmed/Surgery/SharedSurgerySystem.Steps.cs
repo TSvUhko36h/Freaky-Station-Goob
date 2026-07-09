@@ -47,6 +47,8 @@ using Content.Shared.Popups;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
 using System.Linq;
+using Content.Shared._Orion.CorticalBorer;
+using Content.Shared._Orion.CorticalBorer.Components;
 using Content.Shared._Shitmed.Surgery;
 
 namespace Content.Shared._Shitmed.Medical.Surgery;
@@ -78,6 +80,7 @@ public abstract partial class SharedSurgerySystem
 
         SubSurgery<SurgeryTendWoundsEffectComponent>(OnTendWoundsStep, OnTendWoundsCheck);
         SubSurgery<SurgeryStepCavityEffectComponent>(OnCavityStep, OnCavityCheck);
+        SubSurgery<SurgeryStepRemoveCorticalBorerComponent>(OnCorticalBorerRemovalStep, OnCorticalBorerRemovalCheck); // Orion
         SubSurgery<SurgeryAddPartStepComponent>(OnAddPartStep, OnAddPartCheck);
         SubSurgery<SurgeryAffixPartStepComponent>(OnAffixPartStep, OnAffixPartCheck);
         SubSurgery<SurgeryRemovePartStepComponent>(OnRemovePartStep, OnRemovePartCheck);
@@ -235,7 +238,7 @@ public abstract partial class SharedSurgerySystem
 
     private void OnTendWoundsCheck(Entity<SurgeryTendWoundsEffectComponent> ent, ref SurgeryStepCompleteCheckEvent args)
     {
-        if (_wounds.HasDamageOfGroup(args.Part, ent.Comp.MainGroup, true))
+        if (_wounds.HasDamageOfGroup(args.Part, ent.Comp.MainGroup))
             args.Cancelled = true;
     }
 
@@ -269,6 +272,26 @@ public abstract partial class SharedSurgerySystem
             && itemComp.Slots[partComp.ContainerName].HasItem)
             args.Cancelled = true;
     }
+
+    // Orion-Start
+    private void OnCorticalBorerRemovalStep(Entity<SurgeryStepRemoveCorticalBorerComponent> ent, ref SurgeryStepEvent args)
+    {
+        if (!TryComp<CorticalBorerInfestedComponent>(args.Body, out var infested) ||
+            infested.InfestationContainer.ContainedEntities.Count == 0)
+            return;
+
+        if (!_corticalBorer.TryEjectBorer(infested.Borer))
+            return;
+
+        RaiseLocalEvent(infested.Borer, new CorticalBorerSurgicallyRemovedEvent());
+    }
+
+    private void OnCorticalBorerRemovalCheck(Entity<SurgeryStepRemoveCorticalBorerComponent> ent, ref SurgeryStepCompleteCheckEvent args)
+    {
+        if (HasComp<CorticalBorerInfestedComponent>(args.Body))
+            args.Cancelled = true;
+    }
+    // Orion-End
 
     private void OnAddPartStep(Entity<SurgeryAddPartStepComponent> ent, ref SurgeryStepEvent args)
     {

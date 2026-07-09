@@ -141,6 +141,7 @@ public sealed class WizardTeleportSystem : SharedWizardTeleportSystem
 
         var coords = _transform.GetMapCoordinates(location);
         _transform.SetMapCoordinates(user, coords);
+        _transform.AttachToGridOrMap(user);
 
         Spawn(SmokeProto, coords);
         _audio.PlayPvs(PostTeleportSound, userXform.Coordinates);

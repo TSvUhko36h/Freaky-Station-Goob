@@ -29,6 +29,7 @@
 using System.Linq;
 using Content.Client.UserInterface.Systems.Chat.Controls;
 using Content.Goobstation.Common.CCVar; // Goobstation Change
+using Content.Client.UserInterface;
 using Content.Shared.Chat;
 using Content.Shared.Input;
 using Robust.Client.Audio;
@@ -85,6 +86,8 @@ public partial class ChatBox : UIWidget
         _controller.HighlightsUpdated += OnHighlightsUpdated;
         _controller.RegisterChat(this);
 
+        RefreshChatFont();
+
         // WD EDIT START
         _cfg = IoCManager.Resolve<IConfigurationManager>();
         _coalescence = _cfg.GetCVar(GoobCVars.CoalesceIdenticalMessages); // i am uncomfortable calling repopulate on chatbox in its ctor, even though it worked in testing i'll still err on the side of caution
@@ -111,6 +114,7 @@ public partial class ChatBox : UIWidget
         msg.Read = true;
 
         var color = msg.MessageColorOverride ?? msg.Channel.TextColor();
+        var displayMessage = msg.WrappedMessage;
 
         // WD EDIT START
         (string, Color) tup = (msg.WrappedMessage, color);
@@ -123,14 +127,14 @@ public partial class ChatBox : UIWidget
         if (_coalescence && msg.CanCoalesce && _lastLine == tup)
         {
             _lastLineRepeatCount++;
-            AddLine(msg.WrappedMessage, color, _lastLineRepeatCount);
+            AddLine(displayMessage, color, _lastLineRepeatCount);
             Contents.RemoveEntry(^2);
         }
         else
         {
             _lastLineRepeatCount = 0;
             _lastLine = (msg.WrappedMessage, color);
-            AddLine(msg.WrappedMessage, color, _lastLineRepeatCount);
+            AddLine(displayMessage, color, _lastLineRepeatCount);
         } // WD EDIT END
     }
 
@@ -176,6 +180,14 @@ public partial class ChatBox : UIWidget
     {
         _controller.UpdateHighlights(highlighs);
     }
+
+    public void RefreshChatFont()
+    {
+        UiChatFonts.ApplyToOutput(Contents);
+        Repopulate();
+    }
+
+    public void InvalidateFontLayout() => RefreshChatFont();
 
     public void AddLine(string message, Color color, int repeat = 0)
     {

@@ -1,0 +1,37 @@
+- type: entity
+  id: RatvarMidasTouch
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    checkCanInteract: true
+    useDelay: 10
+    icon:
+      sprite: DarkStation/MainGame/DarkForces/Ratvar/actions.rsi
+      state: clocked_hand
+    sound:
+      path: /Audio/Magic/forcewall.ogg
+  - type: TargetAction
+    interactOnMiss: false
+    range: 6
+  - type: EntityTargetAction
+    canTargetSelf: false
+    event: !type:MidasTouchEvent
+
+- type: entity
+  id: RatvarClockMagic
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    checkCanInteract: true
+    useDelay: 10
+    icon:
+      sprite: DarkStation/MainGame/DarkForces/Ratvar/actions.rsi
+      state: carve
+    sound:
+      path: /Audio/Magic/forcewall.ogg
+  - type: TargetAction
+    interactOnMiss: false
+    range: 6
+  - type: EntityTargetAction
+    canTargetSelf: false
+    event: !type:RatvarMagicEvent

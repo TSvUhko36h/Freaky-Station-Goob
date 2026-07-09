@@ -84,6 +84,7 @@ using Content.Server.Materials;
 using Content.Server.Popups;
 using Content.Server.Power.EntitySystems;
 using Content.Server.Stack;
+using Content.Shared._Mini.DailyQuests;
 using Content.Shared.Atmos;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Chemistry.EntitySystems;
@@ -115,7 +116,7 @@ using Content.Shared.Chat;
 namespace Content.Server.Lathe
 {
     [UsedImplicitly]
-    public sealed class LatheSystem : SharedLatheSystem
+    public sealed partial class LatheSystem : SharedLatheSystem // Goobstation edit - made partial
     {
         [Dependency] private readonly IGameTiming _timing = default!;
         [Dependency] private readonly IPrototypeManager _proto = default!;
@@ -133,8 +134,6 @@ namespace Content.Server.Lathe
         [Dependency] private readonly SharedSolutionContainerSystem _solution = default!;
         [Dependency] private readonly StackSystem _stack = default!;
         [Dependency] private readonly TransformSystem _transform = default!;
-        [Dependency] private readonly ChatSystem _chatSystem = default!; // Goobstation - New recipes message
-        [Dependency] private readonly IComponentFactory _factory = default!; // Goobstation - Output to material storage
 
         /// <summary>
         /// Per-tick cache
@@ -293,6 +292,11 @@ namespace Content.Server.Lathe
 
             if (time == TimeSpan.Zero)
             {
+                // Goobstation edit start: handle special case with lots of 0-time recipes that insert into storage
+                if (component.OutputToStorage)
+                    FinishProducingManyStorage((uid, component, lathe));
+                // Goobstation edit end
+
                 FinishProducing(uid, component, lathe);
             }
             return true;
@@ -318,6 +322,10 @@ namespace Content.Server.Lathe
                     {
                         var result = Spawn(resultProto, Transform(uid).Coordinates);
                         RaiseLocalEvent(uid, new LatheGetResultEvent(result)); // CorvaxGoob-Prefilled-Printers
+
+                        var latheEv = new LatheItemProducedEvent(uid, comp.LastQuestActor);
+                        RaiseLocalEvent(ref latheEv);
+
                         _stack.TryMergeToContacts(result);
                         if (TryComp<ScannableForPointsComponent>(result, out var scannable)) // Goobstation
                             scannable.Points = 0; // Goobstation, this thing is to prevent ntr duping points via an emagged lathe
@@ -474,37 +482,6 @@ namespace Content.Server.Lathe
             // Goobstation - Lathe message on recipes update - End
         }
 
-
-        // Goobstation - Lathe Queue Reset
-        private void OnLatheQueueResetMessage(EntityUid uid, LatheComponent component, LatheQueueResetMessage args)
-        {
-            if (component.Queue.Count > 0)
-            {
-                var allMaterials = component.Queue.SelectMany(q => _proto.Index(q).Materials);
-                var totalMaterials = new Dictionary<string, int>();
-
-                foreach (var (mat, amount) in allMaterials)
-                {
-                    if(!totalMaterials.ContainsKey(mat))
-                        totalMaterials[mat] = 0;
-                    totalMaterials[mat] += amount;
-                }
-
-                if(_materialStorage.CanChangeMaterialAmount(uid, totalMaterials))
-                {
-                    foreach (var (mat, amount) in totalMaterials)
-                    {
-                        _materialStorage.TryChangeMaterialAmount(uid, mat, amount);
-                    }
-                    component.Queue.Clear();
-                } else {
-                    _popup.PopupEntity(Loc.GetString("lathe-queue-reset-material-overflow"), uid);
-                }
-            }
-            UpdateUserInterfaceState(uid, component);
-        }
-        // Goobstation - Lathe Queue Reset
-
         private void OnResearchRegistrationChanged(EntityUid uid, LatheComponent component, ref ResearchRegistrationChangedEvent args)
         {
             UpdateUserInterfaceState(uid, component);
@@ -531,6 +508,7 @@ namespace Content.Server.Lathe
                 }
                 if (count > 0)
                 {
+                    component.LastQuestActor = args.Actor;
                     _adminLogger.Add(LogType.Action,
                         LogImpact.Low,
                         $"{ToPrettyString(args.Actor):player} queued {count} {GetRecipeName(recipe)} at {ToPrettyString(uid):lathe}");

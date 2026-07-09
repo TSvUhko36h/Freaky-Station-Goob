@@ -208,6 +208,9 @@ public abstract class SharedActionsSystem : EntitySystem
 
     private void OnActionShutdown(Entity<ActionComponent> ent, ref ComponentShutdown args)
     {
+        if (TerminatingOrDeleted(ent.Owner))
+            return;
+
         if (ent.Comp.AttachedEntity is {} user && !TerminatingOrDeleted(user))
             RemoveAction(user, (ent, ent));
     }
@@ -222,7 +225,14 @@ public abstract class SharedActionsSystem : EntitySystem
 
     private void OnGetState(Entity<ActionsComponent> ent, ref ComponentGetState args)
     {
-        args.State = new ActionsComponentState(GetNetEntitySet(ent.Comp.Actions));
+        var actions = new HashSet<EntityUid>();
+        foreach (var action in ent.Comp.Actions)
+        {
+            if (Exists(action))
+                actions.Add(action);
+        }
+
+        args.State = new ActionsComponentState(GetNetEntitySet(actions));
     }
 
     /// <summary>
@@ -1015,7 +1025,7 @@ public abstract class SharedActionsSystem : EntitySystem
         DirtyField(ent, ent.Comp, nameof(ActionComponent.AttachedEntity));
         ActionRemoved((performer, performer.Comp), ent);
 
-        if (ent.Comp.Temporary)
+        if (ent.Comp.Temporary && !TerminatingOrDeleted(ent))
             QueueDel(ent);
     }
 

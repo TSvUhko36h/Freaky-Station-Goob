@@ -339,6 +339,7 @@
     pathStage: 4 # Mark of rust
   - type: CosmicCorruptible # DeltaV - Cosmic Cult
     convertTo: WallCosmicCult
+  - type: WallClock
 
 - type: entity
   parent: BaseWall
@@ -434,6 +435,9 @@
     sprite: Structures/Walls/cult.rsi
   - type: Icon
     sprite: Structures/Walls/cult.rsi
+  - type: Construction
+    graph: CultGirder
+    node: wall
   - type: Destructible
     thresholds:
     - trigger:
@@ -1959,6 +1963,6 @@
   - type: IconSmooth
     key: cards
     base: card
-  - type: Occluder 
+  - type: Occluder
   - type: BlockWeather
-  - type: SunShadowCast 
+  - type: SunShadowCast

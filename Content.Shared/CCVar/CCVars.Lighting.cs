@@ -5,7 +5,7 @@ namespace Content.Shared.CCVar;
 public sealed partial class CCVars
 {
     public static readonly CVarDef<bool> AmbientOcclusion =
-        CVarDef.Create("light.ambient_occlusion", true, CVar.CLIENTONLY | CVar.ARCHIVE);
+        CVarDef.Create("light.ambient_occlusion", false, CVar.CLIENTONLY | CVar.ARCHIVE);
 
     /// <summary>
     /// Distance in world-pixels of ambient occlusion.
@@ -18,4 +18,10 @@ public sealed partial class CCVars
     /// </summary>
     public static readonly CVarDef<float> AmbientOcclusionDistance =
         CVarDef.Create("light.ambient_occlusion_distance", 4f, CVar.CLIENTONLY);
+
+    /// <summary>
+    /// Planet sun-shadow overlay (entity queries + blur each frame on outdoor maps).
+    /// </summary>
+    public static readonly CVarDef<bool> SunShadows =
+        CVarDef.Create("light.sun_shadows", true, CVar.CLIENTONLY | CVar.ARCHIVE);
 }

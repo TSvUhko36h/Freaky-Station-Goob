@@ -8,6 +8,7 @@
 using System.Linq;
 using Content.Goobstation.Common.CCVar;
 using Content.Goobstation.Server.StationEvents.Components;
+using Content.Server._Mini.TypanWar;
 using Content.Goobstation.Shared.StationEvents;
 using Content.Server.Antag;
 using Content.Server.Antag.Components;
@@ -78,6 +79,7 @@ public sealed class SecretPlusSystem : GameRuleSystem<SecretPlusComponent>
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly TagSystem _tag = default!;
     [Dependency] private readonly GameTicker _ticker = default!;
+    [Dependency] private readonly TypanStationWarRuleSystem _typanWar = default!;
 
     // cvars
     private float _minimumTimeUntilFirstEvent;
@@ -187,6 +189,9 @@ public sealed class SecretPlusSystem : GameRuleSystem<SecretPlusComponent>
     /// </summary>
     protected override void ActiveTick(EntityUid uid, SecretPlusComponent scheduler, GameRuleComponent gameRule, float frameTime)
     {
+        if (_typanWar.IsTypanWarBlocking())
+            return;
+
         var count = CountActivePlayers();
         var ramp = GetRamping((uid, scheduler));
         var speedup = _event.EventSpeedup;
