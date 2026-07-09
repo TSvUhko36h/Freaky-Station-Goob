@@ -81,6 +81,7 @@ using System.Numerics;
 using Content.Client.Actions.UI;
 using Content.Client.Cooldown;
 using Content.Shared.Alert;
+using Content.Shared.Localization;
 using Robust.Client.GameObjects;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
@@ -159,8 +160,10 @@ namespace Content.Client.UserInterface.Systems.Alerts.Controls
 
         private Control SupplyTooltip(Control? sender)
         {
-            var msg = FormattedMessage.FromMarkupOrThrow(Loc.GetString(Alert.Name));
-            var desc = FormattedMessage.FromMarkupOrThrow(Loc.GetString(Alert.Description));
+            var msg = FormattedMessage.FromMarkupPermissive(LocExtensions.LocalizeOrRaw(Alert.Name));
+            var desc = string.IsNullOrEmpty(Alert.Description)
+                ? FormattedMessage.FromUnformatted(string.Empty)
+                : FormattedMessage.FromMarkupPermissive(LocExtensions.LocalizeOrRaw(Alert.Description));
             return new ActionAlertTooltip(msg, desc) { Cooldown = Cooldown };
         }
 
