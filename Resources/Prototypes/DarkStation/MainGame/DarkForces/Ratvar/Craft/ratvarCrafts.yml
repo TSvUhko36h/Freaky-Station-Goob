@@ -89,8 +89,8 @@
 - type: ratvarCraft
   id: RatvarCuirass
   name: craft-recipe-RatvarCuirass
-  brassCost: 1500
-  powerCost: 400
+  brassCost: 3000
+  powerCost: 600
   craftingTime: 20
   icon:
     sprite: DarkStation/MainGame/DarkForces/Ratvar/Clothing/cuirass.rsi

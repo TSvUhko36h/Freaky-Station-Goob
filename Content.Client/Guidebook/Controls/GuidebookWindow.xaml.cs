@@ -121,6 +121,7 @@ public sealed partial class GuidebookWindow : FancyWindow, ILinkClickHandler, IG
 {
     [Dependency] private readonly DocumentParsingManager _parsingMan = default!;
     [Dependency] private readonly IResourceManager _resourceManager = default!;
+    [Dependency] private readonly IPrototypeManager _prototype = default!;
 
     private Dictionary<ProtoId<GuideEntryPrototype>, GuideEntry> _entries = new();
     private readonly GuidebookCrossReferenceIndex _crossReferences = new();
@@ -158,8 +159,13 @@ public sealed partial class GuidebookWindow : FancyWindow, ILinkClickHandler, IG
 
     public void HandleClick(string link)
     {
-        if (!_entries.TryGetValue(link, out var entry))
-            return;
+        if (!_entries.TryGetValue(link, out GuideEntry? entry))
+        {
+            if (!_prototype.TryIndex(new ProtoId<GuideEntryPrototype>(link), out var proto))
+                return;
+
+            entry = proto;
+        }
 
         if (Tree.TryGetIndexFromMetadata(entry, out var index))
         {
@@ -580,6 +586,29 @@ public sealed partial class GuidebookWindow : FancyWindow, ILinkClickHandler, IG
         }
 
         Tree.SetAllExpanded(true);
+    }
+
+    public void RefreshRuleTree()
+    {
+        if (_entries.Count == 0)
+            return;
+
+        var selected = _currentGuideEntry?.Id;
+        RepopulateTree(_treeRootEntries, _treeForceRoot);
+
+        if (selected != null)
+        {
+            var item = Tree.Items.FirstOrDefault(x => x.Metadata is GuideEntry entry && entry.Id == selected);
+            if (item != null)
+            {
+                Tree.SetSelectedIndex(item.Index);
+                return;
+            }
+        }
+
+        var coreRule = UserInterfaceManager.GetUIController<InfoUIController>().GetCoreRuleEntry();
+        var coreItem = Tree.Items.FirstOrDefault(x => x.Metadata is GuideEntry entry && entry.Id == coreRule.Id);
+        Tree.SetSelectedIndex(coreItem?.Index);
     }
 
     private TreeItem? AddEntry(ProtoId<GuideEntryPrototype> id,

@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.Text.Json.Serialization;
+using Robust.Shared.Network;
 
 namespace Content.Server.Administration.Managers;
 
@@ -73,6 +74,27 @@ public sealed partial class BanManager
 
             _banNotificationRateLimitCount += 1;
             return _banNotificationRateLimitCount <= BanNotificationRateLimitCount;
+        }
+    }
+
+    private bool CheckBanCreateRateLimit(NetUserId? adminId)
+    {
+        if (adminId == null)
+            return true;
+
+        lock (_banCreateRateLimitLock)
+        {
+            var now = _gameTiming.RealTime;
+            if (!_banCreateRateLimits.TryGetValue(adminId.Value, out var state)
+                || state.Start + BanCreateRateLimitWindow < now)
+            {
+                _banCreateRateLimits[adminId.Value] = (now, 1);
+                return true;
+            }
+
+            state.Count++;
+            _banCreateRateLimits[adminId.Value] = state;
+            return state.Count <= BanCreateRateLimitCount;
         }
     }
 

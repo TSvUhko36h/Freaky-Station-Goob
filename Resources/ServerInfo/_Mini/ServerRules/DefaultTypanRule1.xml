@@ -1,0 +1,16 @@
+﻿<Document>
+  <ColorBox Color="#2A1F0C55" OutlineColor="#DAA52044" OutlineThickness="1" Margin="2">
+    <Box Orientation="Vertical">
+      <Box Orientation="Horizontal" HorizontalAlignment="Center">
+        [color=#DAA520][head=2]Правило 1. Цели Тайпана[/head][/color]
+      </Box>
+      <Box Orientation="Vertical" Margin="12">
+        Основная миссия подразделения «Тайпан»: углублённое изучение НИО, варка различных газов, фарм ТК и другие игровые механики.
+
+        Систематическое уничтожение персонала станции NanoTrasen или массовое применение насилия без оснований (РДМ) не соответствуют целям Тайпана.
+
+        Сотрудники Тайпана обязаны стремиться к мирному сосуществованию и продуктивному взаимодействию с экипажем станции, минимизируя конфликты и применение насилия.
+      </Box>
+    </Box>
+  </ColorBox>
+</Document>

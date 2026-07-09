@@ -148,9 +148,9 @@ public sealed partial class DocumentParsingManager
                     };
 
                     var msg = new FormattedMessage();
-                    // THANK YOU RICHTEXT VERY COOL
-                    // (text doesn't default to white).
-                    msg.PushColor(Color.White);
+                    // Guidebook documents assume a dark background; use an explicit light tone so text
+                    // stays readable on semi-transparent UI panels.
+                    msg.PushColor(Color.FromHex("#E2E8F0"));
 
                     // If the parsing fails, don't throw an error and instead make an inline error message
                     string? error;
@@ -162,7 +162,8 @@ public sealed partial class DocumentParsingManager
                     }
 
                     msg.Pop();
-                    rt.SetMessage(msg);
+                    // Guidebook markup includes textlink and other tags not in RichTextEntry.DefaultTags.
+                    rt.SetMessage(msg, tagsAllowed: null);
                     return rt;
                 },
                 TextParser)

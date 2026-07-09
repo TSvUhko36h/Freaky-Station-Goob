@@ -177,6 +177,7 @@ using Content.Shared.Guidebook;
 using Content.Shared.Humanoid;
 using Content.Shared.Humanoid.Markings;
 using Content.Shared.Humanoid.Prototypes;
+using Content.Shared.Localization;
 using Content.Shared.Preferences;
 using Content.Shared.Preferences.Loadouts;
 using Content.Shared.Roles;
@@ -772,7 +773,7 @@ namespace Content.Client.Lobby.UI
         {
             TraitsList.DisposeAllChildren();
 
-            var traits = _prototypeManager.EnumeratePrototypes<TraitPrototype>().OrderBy(t => Loc.GetString(t.Name)).ToList();
+            var traits = _prototypeManager.EnumeratePrototypes<TraitPrototype>().OrderBy(t => LocExtensions.LocalizeOrRaw(t.Name)).ToList();
             //TabContainer.SetTabTitle(3, Loc.GetString("humanoid-profile-editor-traits-tab")); // CorvaxGoob-TTS-Edit
 
             if (traits.Count < 1)
@@ -826,7 +827,7 @@ namespace Content.Client.Lobby.UI
                     // Label
                     TraitsList.AddChild(new Label
                     {
-                        Text = Loc.GetString(category.Name),
+                        Text = LocExtensions.LocalizeOrRaw(category.Name),
                         Margin = new Thickness(0, 10, 0, 0),
                         StyleClasses = { StyleBase.StyleClassLabelHeading },
                     });
@@ -908,7 +909,7 @@ namespace Content.Client.Lobby.UI
 
             for (var i = 0; i < _species.Count; i++)
             {
-                var name = Loc.GetString(_species[i].Name);
+                var name = LocExtensions.LocalizeOrRaw(_species[i].Name);
 
                 if (_species[i].SponsorOnly) // CorvaxGoob-Sponsors
                     name += SponsorUtils.GetSponsorOnlySuffix();

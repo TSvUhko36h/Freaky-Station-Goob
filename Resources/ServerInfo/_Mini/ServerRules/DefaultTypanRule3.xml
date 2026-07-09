@@ -1,0 +1,16 @@
+﻿<Document>
+  <ColorBox Color="#2A1F0C55" OutlineColor="#DAA52044" OutlineThickness="1" Margin="2">
+    <Box Orientation="Vertical">
+      <Box Orientation="Horizontal" HorizontalAlignment="Center">
+        [color=#DAA520][head=2]Правило 3. Покидание сектора[/head][/color]
+      </Box>
+      <Box Orientation="Vertical" Margin="12">
+        Покидание сектора НИКК сотрудниками подразделения «Тайпан» разрешается только с использованием штатного шаттла и только при наличии такого указания в цели станции.
+
+        Борги, функционирующие в рамках Тайпана, не имеют права покидать пределы сектора НИКК без других членов экипажа.
+
+        Этот регламент нужен для поддержания порядка и безопасности на станции.
+      </Box>
+    </Box>
+  </ColorBox>
+</Document>

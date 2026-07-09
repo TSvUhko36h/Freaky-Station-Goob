@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Content.Shared._CorvaxGoob.TintedWindow;
 using Robust.Client.Player;
 
@@ -8,6 +9,8 @@ public sealed class TintedWindowSystem : EntitySystem
     [Dependency] private readonly IPlayerManager _player = default!;
     [Dependency] private readonly SharedTransformSystem _xform = default!;
     [Dependency] private readonly OccluderSystem _occluder = default!;
+
+    private readonly Dictionary<EntityUid, bool> _occluderStates = new();
 
     public override void Update(float frameTime)
     {
@@ -26,6 +29,11 @@ public sealed class TintedWindowSystem : EntitySystem
             var angle = Angle.FromWorldVec(_xform.GetWorldPosition(_player.LocalEntity.Value) - _xform.GetWorldPosition(uid));
             var angleDelta = (_xform.GetWorldRotation(uid) - angle).Reduced().FlipPositive();
             var showOccluder = angleDelta < window.Arc / 2 || Math.Tau - angleDelta < window.Arc / 2;
+
+            if (_occluderStates.TryGetValue(uid, out var previous) && previous == showOccluder)
+                continue;
+
+            _occluderStates[uid] = showOccluder;
             _occluder.SetEnabled(uid, showOccluder, occluder);
         }
     }

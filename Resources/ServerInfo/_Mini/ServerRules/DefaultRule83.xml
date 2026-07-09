@@ -1,12 +1,12 @@
-<Document>
-  <ColorBox Color="#392a3aff" OutlineColor="#5a4a59ff" OutlineThickness="2" Margin="1">
+﻿<Document>
+  <ColorBox Color="#2A1A2866" OutlineColor="#C084FC33" OutlineThickness="1" Margin="2">
     <Box Orientation="Vertical">
       <Box Orientation="Horizontal" HorizontalAlignment="Center">
-        8.3. Граничные случаи
-        </Box>
-        <Box Orientation="Vertical" Margin="10">
-        Если администратор прикажет прекратить действия «на грани» — вы                   обязаны немедленно подчиниться.
-     </Box>
+        [color=#C084FC][head=2]8.3. Граничные случаи[/head][/color]
+      </Box>
+      <Box Orientation="Vertical" Margin="12">
+        Если администратор прикажет прекратить действия «на грани», вы обязаны немедленно подчиниться.
+      </Box>
     </Box>
   </ColorBox>
 </Document>

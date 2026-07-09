@@ -12,8 +12,11 @@ namespace Content.Client._Mini.DailyQuests;
 /// </summary>
 public sealed class DailyQuestUiSystem : EntitySystem
 {
+    private const float TimerRefreshInterval = 0.1f;
+
     private readonly List<DailyQuestEntry> _quests = new();
     private float _interpSeconds;
+    private float _timerRefreshAccumulator;
     private bool _hasActiveTimeQuest;
     private bool _hasClaimedQuestTimer;
 
@@ -37,6 +40,11 @@ public sealed class DailyQuestUiSystem : EntitySystem
             return;
 
         _interpSeconds += frameTime;
+        _timerRefreshAccumulator += frameTime;
+        if (_timerRefreshAccumulator < TimerRefreshInterval)
+            return;
+
+        _timerRefreshAccumulator = 0f;
         QuestsUpdated?.Invoke(_quests, _interpSeconds);
     }
 

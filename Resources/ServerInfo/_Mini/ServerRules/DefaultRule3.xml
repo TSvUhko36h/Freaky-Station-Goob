@@ -1,20 +1,18 @@
-<Document>
-
-  <ColorBox Color="#2a2a3a" OutlineColor="#4a4a5a" OutlineThickness="2" Margin="1">
+﻿<Document>
+  <ColorBox Color="#1C1C2866" OutlineColor="#E2E8F022" OutlineThickness="1" Margin="2">
     <Box Orientation="Vertical">
       <Box Orientation="Horizontal" HorizontalAlignment="Center">
-        Правило 3: Нарушение игровой атмосферы.
+        [color=#E2E8F0][head=2]Правило 3. Нарушение игровой атмосферы[/head][/color]
       </Box>
-      <Box Orientation="Vertical" Margin="10">
+      <Box Orientation="Vertical" Margin="12">
         Требуется оставаться в роли (IC) и отыгрывать персонажа в соответствии с сеттингом: высокотехнологичная космическая станция, принадлежащая корпорации с сомнительной моралью.
-        <Box Orientation="Vertical" Margin="10">
+
         Запрещён намеренный выход в ССД или Ghost при любом РП-взаимодействии с другим игроком или при конвертации в антагониста (например, во время допроса).
 
         При любых ИРЛ или технических обстоятельствах рекомендуется сообщить об этом через LOOC.
-        </Box>
-        Играйте свою роль честно и ответственно. Не забывайте, что мы находимся в далеком будущем, в эпохе исследований и открытий.
+
+        Играйте свою роль честно и ответственно. Мы находимся в далёком будущем, в эпохе исследований и открытий.
       </Box>
     </Box>
   </ColorBox>
-
 </Document>

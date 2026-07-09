@@ -229,6 +229,7 @@ namespace Content.Server.Database
         Task<DailyRewardProgress?> GetDailyRewardProgress(Guid playerId, CancellationToken cancel = default);
         Task UpsertDailyRewardProgress(DailyRewardProgress progress);
         Task<DailyQuestProgress?> GetDailyQuestProgress(Guid playerId, DateTime questDate, CancellationToken cancel = default);
+        Task<List<DailyQuestProgress>> GetRecentDailyQuestProgress(Guid playerId, int limit, CancellationToken cancel = default);
         Task UpsertDailyQuestProgress(DailyQuestProgress progress);
         Task<List<PlayerAntagToken>> GetPlayerAntagTokens(Guid playerId, CancellationToken cancel = default);
         Task<PlayerAntagTokenSelection?> GetPlayerAntagTokenSelection(Guid playerId, CancellationToken cancel = default);
@@ -683,6 +684,12 @@ namespace Content.Server.Database
         {
             DbReadOpsMetric.Inc();
             return RunDbCommand(() => _db.GetDailyQuestProgress(playerId, questDate, cancel));
+        }
+
+        public Task<List<DailyQuestProgress>> GetRecentDailyQuestProgress(Guid playerId, int limit, CancellationToken cancel = default)
+        {
+            DbReadOpsMetric.Inc();
+            return RunDbCommand(() => _db.GetRecentDailyQuestProgress(playerId, limit, cancel));
         }
 
         public Task UpsertDailyQuestProgress(DailyQuestProgress progress)

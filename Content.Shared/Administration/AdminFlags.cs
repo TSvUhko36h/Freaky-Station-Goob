@@ -111,9 +111,9 @@ namespace Content.Shared.Administration
         EditNotes = 1 << 14,
 
         /// <summary>
-        ///     Lets you Massban, on SS14.Admin
+        ///     Reserved bit. Formerly MassBan (SS14.Admin) — permanently disabled on this fork.
         /// </summary>
-        MassBan = 1 << 15,
+        Reserved15 = 1 << 15,
 
         /// <summary>
         /// Allows you to remain hidden from adminwho except to other admins with this flag.

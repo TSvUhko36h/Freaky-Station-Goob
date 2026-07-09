@@ -75,9 +75,9 @@ public sealed partial class ChameleonStampWindow : FancyWindow
 
         _preview = _entMan.Spawn(chameleonStamp.SelectedStampSpritePrototype, MapCoordinates.Nullspace);
 
-        this.StampMetaDataName.PlaceHolder = Loc.GetString(stampSpritePrototype.Name);
-        this.StampMetaDataDescription.PlaceHolder = Loc.GetString(stampSpritePrototype.Description);
-        this.StampedNameLineEdit.PlaceHolder = Loc.GetString(stampSpriteComponent.StampedName);
+        this.StampMetaDataName.PlaceHolder = LocalizeOrRaw(stampSpritePrototype.Name);
+        this.StampMetaDataDescription.PlaceHolder = LocalizeOrRaw(stampSpritePrototype.Description);
+        this.StampedNameLineEdit.PlaceHolder = LocalizeOrRaw(stampSpriteComponent.StampedName);
 
         this.StampMetaDataName.Text = LocalizeOrRaw(chameleonStamp.CustomName);
         this.StampMetaDataDescription.Text = LocalizeOrRaw(chameleonStamp.CustomDescription);
@@ -118,9 +118,9 @@ public sealed partial class ChameleonStampWindow : FancyWindow
         if (!_chameleonStampSystem.ValidatePreset((string) meta, out var stampSpritePrototype, out var stampSpriteComponent))
             return;
 
-        this.StampMetaDataName.PlaceHolder = Loc.GetString(stampSpritePrototype.Name);
-        this.StampMetaDataDescription.PlaceHolder = Loc.GetString(stampSpritePrototype.Description);
-        this.StampedNameLineEdit.PlaceHolder = Loc.GetString(stampSpriteComponent.StampedName);
+        this.StampMetaDataName.PlaceHolder = LocalizeOrRaw(stampSpritePrototype.Name);
+        this.StampMetaDataDescription.PlaceHolder = LocalizeOrRaw(stampSpritePrototype.Description);
+        this.StampedNameLineEdit.PlaceHolder = LocalizeOrRaw(stampSpriteComponent.StampedName);
     }
 
     private void ColorOptionButton_OnItemSelected(ItemSelectedEventArgs obj)

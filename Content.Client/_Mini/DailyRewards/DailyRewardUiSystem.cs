@@ -116,7 +116,11 @@ public sealed class DailyRewardUiSystem : EntitySystem
     public override void Update(float frameTime)
     {
         base.Update(frameTime);
-        _window?.AdvanceTimers(frameTime);
+
+        if (_window == null || _window.Disposed || !_window.IsOpen)
+            return;
+
+        _window.AdvanceTimers(frameTime);
     }
 
     public override void Shutdown()
