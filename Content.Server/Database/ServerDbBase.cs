@@ -758,16 +758,28 @@ namespace Content.Server.Database
         public async Task<DailyQuestProgress?> GetDailyQuestProgress(Guid playerId, DateTime questDate, CancellationToken cancel)
         {
             await using var db = await GetDb(cancel);
-            var date = questDate.Date;
+            var key = DateTime.SpecifyKind(questDate.Date, DateTimeKind.Utc);
 
             return await db.DbContext.DailyQuestProgresses
-                .SingleOrDefaultAsync(p => p.PlayerId == playerId && p.QuestDate == date, cancel);
+                .SingleOrDefaultAsync(p => p.PlayerId == playerId && p.QuestDate == key, cancel);
+        }
+
+        public async Task<List<DailyQuestProgress>> GetRecentDailyQuestProgress(Guid playerId, int limit, CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+            limit = Math.Clamp(limit, 1, 16);
+
+            return await db.DbContext.DailyQuestProgresses
+                .Where(p => p.PlayerId == playerId)
+                .OrderByDescending(p => p.QuestDate)
+                .Take(limit)
+                .ToListAsync(cancel);
         }
 
         public async Task UpsertDailyQuestProgress(DailyQuestProgress progress)
         {
             await using var db = await GetDb();
-            progress.QuestDate = progress.QuestDate.Date;
+            progress.QuestDate = DateTime.SpecifyKind(progress.QuestDate.Date, DateTimeKind.Utc);
 
             var existing = await db.DbContext.DailyQuestProgresses
                 .SingleOrDefaultAsync(p => p.PlayerId == progress.PlayerId && p.QuestDate == progress.QuestDate);

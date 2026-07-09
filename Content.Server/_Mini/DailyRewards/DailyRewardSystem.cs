@@ -28,6 +28,9 @@ namespace Content.Server._Mini.DailyRewards;
 public sealed class DailyRewardSystem : EntitySystem
 {
     private const string StreakRewardIconPath = "/Textures/_Mini/DailyRewards/streak.png";
+    private const float StateRefreshInterval = 1f;
+
+    private float _stateRefreshAccumulator;
 
     [Dependency] private readonly IPlayerManager _playerManager = default!;
     [Dependency] private readonly IServerDbManager _db = default!;
@@ -202,6 +205,11 @@ public sealed class DailyRewardSystem : EntitySystem
     {
         base.Update(frameTime);
 
+        _stateRefreshAccumulator += frameTime;
+        var sendState = _stateRefreshAccumulator >= StateRefreshInterval;
+        if (sendState)
+            _stateRefreshAccumulator = 0f;
+
         foreach (var session in _playerManager.Sessions)
         {
             if (session.Status == SessionStatus.Disconnected)
@@ -210,10 +218,10 @@ public sealed class DailyRewardSystem : EntitySystem
             if (!_states.ContainsKey(session.UserId))
                 continue;
 
-            // Grant tickets for playtime milestones
             GrantTicketsForPlaytime(session);
 
-            SendState(session);
+            if (sendState)
+                SendState(session);
         }
     }
 

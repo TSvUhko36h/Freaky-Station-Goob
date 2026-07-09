@@ -68,8 +68,6 @@ public sealed class DailyQuestSystem : EntitySystem
     private const int DailyQuestCount = 2;
     private const float UiRefreshInterval = 1f;
 
-    private static readonly TimeZoneInfo MoscowTimeZone = InitializeMoscowTimeZone();
-
     private float _uiRefreshAccumulator;
 
     [Dependency] private readonly IPlayerManager _playerManager = default!;
@@ -164,7 +162,7 @@ public sealed class DailyQuestSystem : EntitySystem
 
             FlushPlaytime(state);
             var changed = UpdateLiveQuestProgress(session, state);
-            if (changed || HasActiveTimeQuest(state))
+            if (changed)
                 EntityManager.System<DailyRewardSystem>().RefreshUi(session.UserId);
         }
     }
@@ -177,31 +175,14 @@ public sealed class DailyQuestSystem : EntitySystem
         if (!ArePreferencesReady(session))
             return false;
 
-        var today = GetCurrentQuestDate();
-        if (state.QuestDate.Date == today)
+        var today = DailyQuestWeek.GetCurrentWeekStart();
+        if (DailyQuestWeek.Matches(state.QuestDate, today))
             return false;
 
         var previousDate = state.QuestDate;
         EnsureDailyAssignments(session, state);
         Log.Info($"Weekly quests refreshed for {session.Name}: {previousDate:yyyy-MM-dd} -> {today:yyyy-MM-dd}");
         return true;
-    }
-
-    private bool HasActiveTimeQuest(PlayerDailyQuestState state)
-    {
-        foreach (var slot in state.Slots)
-        {
-            if (slot.Status != DailyQuestStatus.Active)
-                continue;
-
-            if (!_prototypes.TryIndex(slot.QuestId, out DailyQuestPrototype? proto))
-                continue;
-
-            if (IsTimeBasedQuest(proto))
-                return true;
-        }
-
-        return false;
     }
 
     public List<DailyQuestEntry> BuildQuestEntries(ICommonSession session)
@@ -261,7 +242,7 @@ public sealed class DailyQuestSystem : EntitySystem
 
         DateTime? nextQuestResetUtc = null;
         if (!preview && slot.Status >= DailyQuestStatus.Completed)
-            nextQuestResetUtc = GetNextQuestResetUtc(state.QuestDate);
+            nextQuestResetUtc = DailyQuestWeek.GetNextResetUtc(state.QuestDate);
 
         return new DailyQuestEntry(
             slot.QuestId,
@@ -392,12 +373,21 @@ public sealed class DailyQuestSystem : EntitySystem
 
     private async Task LoadPlayerData(ICommonSession player, CancellationToken cancel)
     {
-        var today = GetCurrentQuestDate();
+        var weekStart = DailyQuestWeek.GetCurrentWeekStart();
         DailyQuestProgress? progress = null;
 
         try
         {
-            progress = await _db.GetDailyQuestProgress(player.UserId.UserId, today, cancel);
+            progress = await _db.GetDailyQuestProgress(
+                player.UserId.UserId,
+                DailyQuestWeek.ToStoredKey(weekStart),
+                cancel);
+
+            if (progress == null)
+            {
+                var history = await _db.GetRecentDailyQuestProgress(player.UserId.UserId, 8, cancel);
+                progress = history.FirstOrDefault(p => DailyQuestWeek.Matches(p.QuestDate, weekStart));
+            }
         }
         catch (Exception e)
         {
@@ -407,7 +397,7 @@ public sealed class DailyQuestSystem : EntitySystem
         if (_states.TryGetValue(player.UserId, out var existing) && existing.LoadedFromDb)
             return;
 
-        _states[player.UserId] = PlayerDailyQuestState.FromDb(progress, player.UserId.UserId, today);
+        _states[player.UserId] = PlayerDailyQuestState.FromDb(progress, player.UserId.UserId, weekStart);
         DeduplicateSlots(_states[player.UserId]);
         RestoreRoundTracker(player.UserId, _states[player.UserId]);
         _states[player.UserId].LoadedFromDb = true;
@@ -415,7 +405,9 @@ public sealed class DailyQuestSystem : EntitySystem
 
     private void OnPlayerDataLoaded(ICommonSession player)
     {
-        var state = EnsureState(player.UserId);
+        if (!_states.TryGetValue(player.UserId, out var state) || !state.LoadedFromDb)
+            return;
+
         RestoreRoundTracker(player.UserId, state);
         if (ArePreferencesReady(player))
             EnsureDailyAssignmentsIfNeeded(player, state);
@@ -443,10 +435,8 @@ public sealed class DailyQuestSystem : EntitySystem
         if (ev.Player.AttachedEntity is not { Valid: true } uid)
             return;
 
-        if (!_states.TryGetValue(ev.Player.UserId, out var state))
-        {
-            state = EnsureState(ev.Player.UserId);
-        }
+        if (!_states.TryGetValue(ev.Player.UserId, out var state) || !state.LoadedFromDb)
+            return;
 
         if (ev.Player.GetMind() is { } mindId && _roles.MindHasRole<ObserverRoleComponent>(mindId))
             return;
@@ -1114,8 +1104,8 @@ public sealed class DailyQuestSystem : EntitySystem
         if (_states.TryGetValue(userId, out var existing))
             return existing;
 
-        var today = GetCurrentQuestDate();
-        var state = PlayerDailyQuestState.FromDb(null, userId.UserId, today);
+        var weekStart = DailyQuestWeek.GetCurrentWeekStart();
+        var state = PlayerDailyQuestState.FromDb(null, userId.UserId, weekStart);
         DeduplicateSlots(state);
         RestoreRoundTracker(userId, state, onlyIfEmpty: true);
         _states[userId] = state;
@@ -1166,12 +1156,12 @@ public sealed class DailyQuestSystem : EntitySystem
 
     private void TopUpDailyQuestSlots(ICommonSession session, PlayerDailyQuestState state)
     {
-        var today = GetCurrentQuestDate();
+        var weekStart = DailyQuestWeek.GetCurrentWeekStart();
         var assigned = state.Slots.Select(s => s.QuestId).ToHashSet();
 
         while (state.Slots.Count < DailyQuestCount)
         {
-            var pick = PickRandomQuest(session, today, assigned);
+            var pick = PickRandomQuest(session, weekStart, assigned);
             if (pick == null)
                 break;
 
@@ -1190,11 +1180,11 @@ public sealed class DailyQuestSystem : EntitySystem
         if (!ArePreferencesReady(session))
             return;
 
-        var today = GetCurrentQuestDate();
+        var weekStart = DailyQuestWeek.GetCurrentWeekStart();
 
-        if (state.QuestDate.Date != today)
+        if (!DailyQuestWeek.Matches(state.QuestDate, weekStart))
         {
-            state.QuestDate = today;
+            state.QuestDate = weekStart;
             state.Slots.Clear();
             state.Round = new DailyQuestRoundTracker();
             state.DailyReplaceUsed = false;
@@ -1216,7 +1206,7 @@ public sealed class DailyQuestSystem : EntitySystem
         var assigned = state.Slots.Select(s => s.QuestId).ToHashSet();
         while (state.Slots.Count < DailyQuestCount)
         {
-            var pick = PickRandomQuest(session, today, assigned);
+            var pick = PickRandomQuest(session, weekStart, assigned);
             if (pick == null)
                 break;
 
@@ -1301,46 +1291,6 @@ public sealed class DailyQuestSystem : EntitySystem
     private static bool IsQuestFamilyBlocked(DailyQuestPrototype quest, HashSet<string> assignedFamilies)
         => assignedFamilies.Contains(GetQuestFamilyKey(quest));
 
-    private static TimeZoneInfo InitializeMoscowTimeZone()
-    {
-        foreach (var id in new[] { "Europe/Moscow", "Russian Standard Time" })
-        {
-            try
-            {
-                return TimeZoneInfo.FindSystemTimeZoneById(id);
-            }
-            catch (TimeZoneNotFoundException)
-            {
-            }
-        }
-
-        // Moscow has no DST since 2011 — fixed UTC+3 offset as fallback.
-        return TimeZoneInfo.CreateCustomTimeZone(
-            "MSK",
-            TimeSpan.FromHours(3),
-            "Moscow Standard Time",
-            "Moscow Standard Time");
-    }
-
-    /// <summary>
-    /// Start of the current quest week (Monday, MSK), used as the quest period key in the database.
-    /// </summary>
-    private static DateTime GetCurrentQuestDate()
-    {
-        var moscowDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, MoscowTimeZone).Date;
-        var daysFromMonday = ((int) moscowDate.DayOfWeek + 6) % 7;
-        return moscowDate.AddDays(-daysFromMonday);
-    }
-
-    /// <summary>
-    /// Next quest reset instant (Monday 00:00 MSK) expressed in UTC for client countdown.
-    /// </summary>
-    private static DateTime GetNextQuestResetUtc(DateTime questDate)
-    {
-        var nextWeekStart = DateTime.SpecifyKind(questDate.Date.AddDays(7), DateTimeKind.Unspecified);
-        return TimeZoneInfo.ConvertTimeToUtc(nextWeekStart, MoscowTimeZone);
-    }
-
     private void DeduplicateSlots(PlayerDailyQuestState state)
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -1382,7 +1332,7 @@ public sealed class DailyQuestSystem : EntitySystem
                 QuestDate = date.Date,
             };
 
-            if (db != null && db.QuestDate.Date == date.Date)
+            if (db != null && DailyQuestWeek.Matches(db.QuestDate, date))
             {
                 var (flagValues, dailyReplaceUsed) = ParseStatusFlags(db.StatusFlags);
                 var ids = Split(db.AssignedQuestIds);
@@ -1415,7 +1365,7 @@ public sealed class DailyQuestSystem : EntitySystem
             return new DailyQuestProgress
             {
                 PlayerId = PlayerId,
-                QuestDate = QuestDate,
+                QuestDate = DailyQuestWeek.ToStoredKey(QuestDate),
                 AssignedQuestIds = string.Join(',', Slots.Select(s => s.QuestId)),
                 ProgressValues = string.Join(',', Slots.Select(s => s.Progress)),
                 StatusFlags = flags,
