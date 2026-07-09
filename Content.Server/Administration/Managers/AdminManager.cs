@@ -561,6 +561,9 @@ namespace Content.Server.Administration.Managers
 
                 foreach (var dbFlag in dbData.Flags)
                 {
+                    if (AdminFlagsHelper.IsDeprecatedFlagName(dbFlag.Flag))
+                        continue;
+
                     var flag = AdminFlagsHelper.NameToFlag(dbFlag.Flag);
                     if (dbFlag.Negative)
                     {
@@ -574,7 +577,7 @@ namespace Content.Server.Administration.Managers
 
                 var data = new AdminData
                 {
-                    Flags = flags,
+                    Flags = AdminFlagsHelper.SanitizeFlags(flags),
                     Active = !dbData.Deadminned,
                 };
 

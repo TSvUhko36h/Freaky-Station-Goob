@@ -62,6 +62,7 @@ namespace Content.IntegrationTests.Tests.GameRules
                 sGameTicker.StartGameRule("MaxTimeRestart", out var ruleEntity);
                 Assert.That(entityManager.TryGetComponent<MaxTimeRestartRuleComponent>(ruleEntity, out maxTime));
                 maxTime.RoundMaxTime = TimeSpan.FromSeconds(3);
+                maxTimeRestart.RestartTimer(maxTime);
             });
 
             Assert.That(server.EntMan.Count<GameRuleComponent>(), Is.EqualTo(2));
