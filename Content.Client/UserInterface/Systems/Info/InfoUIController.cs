@@ -38,6 +38,8 @@ public sealed class InfoUIController : UIController, IOnStateExited<GameplayStat
 
     public ProtoId<GuideEntryPrototype> RulesEntryId = DefaultRuleset;
 
+    public event Action? CoreRulesChanged;
+
     protected override string SawmillName => "rules";
 
     public override void Initialize()
@@ -58,10 +60,16 @@ public sealed class InfoUIController : UIController, IOnStateExited<GameplayStat
 
     private void OnRulesInformationMessage(SendRulesInformationMessage message)
     {
+        var rulesChanged = RulesEntryId != message.CoreRules;
         RulesEntryId = message.CoreRules;
+
+        if (rulesChanged)
+            CoreRulesChanged?.Invoke();
 
         if (message.ShouldShowRules)
             ShowRules(message.PopupTime);
+        else
+            _rulesPopup?.RulesControl.Refresh();
     }
 
     public void OnStateExited(GameplayState state)
@@ -119,6 +127,7 @@ public sealed class InfoUIController : UIController, IOnStateExited<GameplayStat
         if (_infoWindow == null || _infoWindow.Disposed)
             _infoWindow = UIManager.CreateWindow<RulesAndInfoWindow>();
 
+        _infoWindow.Rules.Refresh();
         _infoWindow?.OpenCentered();
     }
 }

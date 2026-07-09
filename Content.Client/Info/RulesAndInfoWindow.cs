@@ -37,6 +37,8 @@ namespace Content.Client.Info
     {
         [Dependency] private readonly IResourceManager _resourceManager = default!;
 
+        public RulesControl Rules { get; }
+
         public RulesAndInfoWindow()
         {
             IoCManager.InjectDependencies(this);
@@ -49,6 +51,7 @@ namespace Content.Client.Info
             {
                 Margin = new Thickness(10)
             };
+            Rules = rulesList;
             var tutorialList = new Info
             {
                 Margin = new Thickness(10)
